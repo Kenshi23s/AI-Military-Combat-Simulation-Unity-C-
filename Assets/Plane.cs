@@ -36,6 +36,18 @@ public class Plane : Vehicle
         shootComponent = GetComponent<ShootComponent>();
         _planeFSM = CreateFSM();
     }
+    private void Update()
+    {
+        _planeFSM.Update();
+    }
+    private void LateUpdate()
+    {
+        _planeFSM.LateUpdate();
+    }
+    private void FixedUpdate()
+    {
+        _planeFSM.FixedUpdate();
+    }
 
     #region ShootingLogic
     [Header("Shooting Parameters")]
@@ -274,9 +286,7 @@ public class Plane : Vehicle
 
     #endregion
 
-    #region
-
-    #endregion
+    
 
     private void OnCollisionEnter(Collision collision)
     {

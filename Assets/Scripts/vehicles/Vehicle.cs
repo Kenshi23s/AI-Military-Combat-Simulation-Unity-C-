@@ -80,12 +80,12 @@ public abstract class Vehicle : Entity,FlockableEntity
         }
     }
 
-    private void Update()
-    {
-        //si el motor esta prendido se ejecuta el evento
-        //me la estoy complicando talvez¿?
-        if (EngineOn) whileEngineOn?.Invoke();
-    }
+    //private void Update()
+    //{
+    //    //si el motor esta prendido se ejecuta el evento
+    //    //me la estoy complicando talvez¿?
+    //    if (EngineOn) whileEngineOn?.Invoke();
+    //}
     void TurnOffEngine()
     {
         EngineOn = false;

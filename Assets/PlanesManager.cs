@@ -22,7 +22,7 @@ public class PlanesManager : MonoSingleton<PlanesManager>
    
     protected override void SingletonAwake()
     {
-        throw new System.NotImplementedException();
+        
     }
 
     // Start is called before the first frame update
