@@ -6,10 +6,10 @@ using System.Collections;
 
 public enum PlaneStates
 {
-    FlyAround,
-    PursuitTarget,
-    FleeFromPursuiter,
-    Abandoned
+    FLY_AROUND,
+    PURSUIT_TARGET,
+    FLEE_FROM_PURSUITER,
+    ABANDONED
 }
 [RequireComponent(typeof(GridEntity))]
 [RequireComponent(typeof(ShootComponent))]
@@ -27,13 +27,15 @@ public class Plane : Vehicle
     Vector3 _evadingDir;
 
     [SerializeField] float _cd_OnRandomDir;
-
+    
+    
 
     public override void VehicleAwake()
     {
         _movement = GetComponent<Physics_Movement>();
         shootComponent = GetComponent<ShootComponent>();
         _planeFSM = CreateFSM();
+        health.OnKilled += () => _planeFSM.SendInput(PlaneStates.ABANDONED);
     }
     private void Update()
     {
@@ -71,6 +73,22 @@ public class Plane : Vehicle
 
     #region Useful Methods
 
+    public void SetChaser(Plane newChaser)
+    {
+        if (newChaser == null)
+        {
+            beingChasedBy = null;
+            _planeFSM.SendInput(PlaneStates.FLY_AROUND);
+        }
+        else
+        {
+            beingChasedBy = newChaser;
+            _planeFSM.SendInput(PlaneStates.FLEE_FROM_PURSUITER);
+        }
+
+      
+    }
+
     Vector3 GroundInFront()
     {
         if (Physics.Raycast(transform.position, transform.forward, 30f + _movement._velocity.magnitude, PlanesManager.instance.ground))
@@ -81,7 +99,7 @@ public class Plane : Vehicle
 
     IEnumerator RandomEvasionDir()
     {
-        while (_planeFSM.CurrentKey == PlaneStates.FleeFromPursuiter)
+        while (_planeFSM.CurrentKey == PlaneStates.FLEE_FROM_PURSUITER)
         {
             _evadingDir = Random.insideUnitSphere;
             yield return new WaitForSeconds(Random.Range(0, _cd_OnRandomDir));
@@ -94,7 +112,7 @@ public class Plane : Vehicle
     /// <returns></returns>
     IEnumerable<Plane> GetNearbyPlanes()
     {
-        return Queries.Query().Where(x => x != this).OfType<Plane>().Where(x => x._planeFSM.CurrentKey != PlaneStates.Abandoned);
+        return Queries.Query().Where(x => x != this).OfType<Plane>().Where(x => x._planeFSM.CurrentKey != PlaneStates.ABANDONED);
     }
     #endregion 
 
@@ -108,20 +126,20 @@ public class Plane : Vehicle
         var abandonPlane = AbandonPlane();
 
         StateConfigurer.Create(flyAround)
-            .SetTransition(PlaneStates.PursuitTarget, pursuitTarget)
-            .SetTransition(PlaneStates.FleeFromPursuiter, fleeDogFight)
-            .SetTransition(PlaneStates.Abandoned, abandonPlane)
+            .SetTransition(PlaneStates.PURSUIT_TARGET, pursuitTarget)
+            .SetTransition(PlaneStates.FLEE_FROM_PURSUITER, fleeDogFight)
+            .SetTransition(PlaneStates.ABANDONED, abandonPlane)
             .Done();
 
         StateConfigurer.Create(pursuitTarget)
-            .SetTransition(PlaneStates.FleeFromPursuiter, fleeDogFight)
-            .SetTransition(PlaneStates.Abandoned, abandonPlane)
-            .SetTransition(PlaneStates.FlyAround, flyAround)
+            .SetTransition(PlaneStates.FLEE_FROM_PURSUITER, fleeDogFight)
+            .SetTransition(PlaneStates.ABANDONED, abandonPlane)
+            .SetTransition(PlaneStates.FLY_AROUND, flyAround)
             .Done();
 
         StateConfigurer.Create(fleeDogFight)
-           .SetTransition(PlaneStates.Abandoned, abandonPlane)
-           .SetTransition(PlaneStates.FlyAround, flyAround)
+           .SetTransition(PlaneStates.ABANDONED, abandonPlane)
+           .SetTransition(PlaneStates.FLY_AROUND, flyAround)
            .Done();
 
         StateConfigurer.Create(abandonPlane).Done();
@@ -142,7 +160,7 @@ public class Plane : Vehicle
                 //si encuentro alguno, obtengo el mas cercano
                 targetPlane = col.Minimum((x) => Vector3.Distance(x.transform.position, transform.position));
                 //y empiezo la persecucion
-                _planeFSM.SendInput(PlaneStates.PursuitTarget);
+                _planeFSM.SendInput(PlaneStates.PURSUIT_TARGET);
             }
         };
 
@@ -180,13 +198,12 @@ public class Plane : Vehicle
         {
             if (targetPlane == null)
             {
-                _planeFSM.SendInput(PlaneStates.FlyAround);
+                _planeFSM.SendInput(PlaneStates.FLY_AROUND);
                 return;
             }
             else
             {
-                targetPlane.beingChasedBy = this;
-                targetPlane._planeFSM.SendInput(PlaneStates.FleeFromPursuiter);
+                targetPlane.SetChaser(this);
             }
         };
 
@@ -195,14 +212,14 @@ public class Plane : Vehicle
         {
             if (targetPlane == null)
             {
-                _planeFSM.SendInput(PlaneStates.FlyAround); 
+                _planeFSM.SendInput(PlaneStates.FLY_AROUND); 
                 return;
             }
 
             if (!_fov.IN_FOV(targetPlane.transform.position, _loseSightRadius))
             {
                 targetPlane.beingChasedBy = null;
-                _planeFSM.SendInput(PlaneStates.FlyAround);
+                _planeFSM.SendInput(PlaneStates.FLY_AROUND);
                 return;
             }
         };
@@ -226,8 +243,12 @@ public class Plane : Vehicle
 
         state.OnExit += (x) =>
         {
-            if (targetPlane == null)
-            targetPlane.beingChasedBy = null;
+            if (targetPlane != null)
+            {
+                targetPlane.SetChaser(null);
+                targetPlane=null;
+            }
+               
         };
 
         return state;
@@ -239,7 +260,7 @@ public class Plane : Vehicle
         state.OnEnter += (x) =>
         {
             if (beingChasedBy == null)            
-                _planeFSM.SendInput(PlaneStates.FlyAround);
+                _planeFSM.SendInput(PlaneStates.FLY_AROUND);
 
             StartCoroutine(RandomEvasionDir());
            
