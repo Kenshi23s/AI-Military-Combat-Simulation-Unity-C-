@@ -18,7 +18,8 @@ public abstract class Vehicle : Entity,FlockableEntity
 {
     [SerializeField] 
     protected FlockingParameters flockingParameters;
-
+    [SerializeField] protected float sightRadius;
+    [SerializeField] protected float _loseSightRadius;
     protected FOVAgent _fov;
     protected Physics_Movement _movement;
     public Team myTeam;
@@ -40,8 +41,6 @@ public abstract class Vehicle : Entity,FlockableEntity
         VehicleAwake();
     }
   
-
-
     /// <summary>
     /// Subirse al vehiculo, requiere que le pasen un pasajero, solo se subira si hay asientos disponibles,
     /// devuelve una booleana para chequear eso
@@ -80,6 +79,7 @@ public abstract class Vehicle : Entity,FlockableEntity
             TurnOffEngine();
         }
     }
+
     private void Update()
     {
         //si el motor esta prendido se ejecuta el evento
@@ -98,7 +98,11 @@ public abstract class Vehicle : Entity,FlockableEntity
         OnEngineTurnOn?.Invoke();
 
     }
-
+    private void OnValidate()
+    {
+        sightRadius = Mathf.Clamp(sightRadius, 0, Mathf.Infinity);
+        _loseSightRadius = Mathf.Clamp(_loseSightRadius, sightRadius, Mathf.Infinity);
+    }
     public void Initialize(Team newTeam)
     {
         myTeam = newTeam;

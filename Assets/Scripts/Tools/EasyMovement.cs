@@ -147,7 +147,15 @@ public static class EasyMovement
 
         return desired;
     }
+    public static Vector3 Evade(this FlockableEntity target)
+    {
+        Vector3 finalPos = target.GetPosition() + target.GetVelocity() * Time.deltaTime;
+        Vector3 desired = target.GetPosition() - finalPos;
+        desired.Normalize();
 
+        return desired;
+
+    }
 
 
 }

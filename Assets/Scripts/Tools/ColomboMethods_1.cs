@@ -103,11 +103,11 @@ namespace FacundoColomboMethods
             return Mathf.Max(1 - (Vector3.Distance(pos, target) / radius),0f);           
         }
 
-        public static T[] GetItemsOFTypeAround<T>(this Vector3 pos, float radius)
+        public static IEnumerable<T> GetItemsOFTypeAround<T>(this Vector3 pos, float radius)
         {
             return Physics.OverlapSphere(pos, radius)
                  .Where(x => x.TryGetComponent(out T arg))
-                 .Select(x => x.GetComponent<T>()).ToArray();
+                 .Select(x => x.GetComponent<T>());
 
         }
 
