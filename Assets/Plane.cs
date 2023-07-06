@@ -20,7 +20,6 @@ public class Plane : Vehicle
     public Plane targetPlane;
     public Plane beingChasedBy;
    
-    [SerializeField] float _spreadRadius;
     ShootComponent shootComponent;
 
     //para que el avion que es perseguido se mueva de manera "dinamica" en la dogfight
@@ -111,21 +110,25 @@ public class Plane : Vehicle
         StateConfigurer.Create(flyAround)
             .SetTransition(PlaneStates.PursuitTarget, pursuitTarget)
             .SetTransition(PlaneStates.FleeFromPursuiter, fleeDogFight)
-            .SetTransition(PlaneStates.Abandoned, abandonPlane);
+            .SetTransition(PlaneStates.Abandoned, abandonPlane)
+            .Done();
 
         StateConfigurer.Create(pursuitTarget)
             .SetTransition(PlaneStates.FleeFromPursuiter, fleeDogFight)
             .SetTransition(PlaneStates.Abandoned, abandonPlane)
-            .SetTransition(PlaneStates.FlyAround, flyAround);
+            .SetTransition(PlaneStates.FlyAround, flyAround)
+            .Done();
 
         StateConfigurer.Create(fleeDogFight)
            .SetTransition(PlaneStates.Abandoned, abandonPlane)
-           .SetTransition(PlaneStates.FlyAround, flyAround);
+           .SetTransition(PlaneStates.FlyAround, flyAround)
+           .Done();
 
+        StateConfigurer.Create(abandonPlane).Done();
 
         return new EventFSM<PlaneStates>(flyAround);
     }
-    //jocha me va a matar cuando vea este quilombo :C C:
+
     State<PlaneStates> FlyAround()
     {
         State<PlaneStates> state = new State<PlaneStates>("FlyAround");
@@ -156,6 +159,7 @@ public class Plane : Vehicle
             else if (!PlanesManager.instance.InCombatZone(this))
             {
                 //sino estoy en zona de combate me pego la vuelta
+                //NOTA: Mejor conseguir la direccion hacia el centro de la zona de combate y sumarsela
                 force += -_movement._velocity;
             }
 
@@ -191,7 +195,8 @@ public class Plane : Vehicle
         {
             if (targetPlane == null)
             {
-                _planeFSM.SendInput(PlaneStates.FlyAround); return;
+                _planeFSM.SendInput(PlaneStates.FlyAround); 
+                return;
             }
 
             if (!_fov.IN_FOV(targetPlane.transform.position, _loseSightRadius))
@@ -202,20 +207,6 @@ public class Plane : Vehicle
             }
         };
 
-        state.OnUpdate += () =>
-        {
-            if (targetPlane == null)
-            {
-                _planeFSM.SendInput(PlaneStates.FlyAround);
-                return;
-            }
-
-            if (!_fov.IN_FOV(targetPlane.transform.position, _loseSightRadius))
-            {
-                targetPlane.beingChasedBy = null;
-                _planeFSM.SendInput(PlaneStates.FlyAround);
-            }
-        };
 
         //fisica avion
         state.OnFixedUpdate += () =>
@@ -237,8 +228,8 @@ public class Plane : Vehicle
         {
             if (targetPlane == null)
             targetPlane.beingChasedBy = null;
-         
         };
+
         return state;
     }
 
