@@ -23,6 +23,12 @@ namespace FacundoColomboMethods
     public static class ColomboMethods
     {
 
+        public static T PickRandom<T>(this IEnumerable<T> col)
+        {
+           int max = col.Count();
+           return col.Skip(Random.Range(0, max)).First();
+        }
+
        public static Color SetAlpha(this Color color,float newAlpha)
        {
             return new Color(color.r, color.g, color.b, newAlpha);
