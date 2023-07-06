@@ -7,7 +7,6 @@ public class SubSceneLoader : MonoBehaviour
 {
     public int scenesCount;
     [SerializeField] string[] extras;
-    HashSet<AsyncOperation> operations;
 
     // Start is called before the first frame update
     void Start()
