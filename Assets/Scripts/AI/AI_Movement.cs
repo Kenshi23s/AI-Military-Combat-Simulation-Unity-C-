@@ -40,7 +40,7 @@ public class AI_Movement : MonoBehaviour
     public bool Flocking {get; private set;}
     FlockingParameters _flockingParameters = new FlockingParameters();
     [SerializeField]
-    IEnumerable<AI_Movement> _flockingTargets = default;
+    IEnumerable<FlockableEntity> _flockingTargets = default;
     #endregion
 
     private void Awake()
@@ -56,7 +56,7 @@ public class AI_Movement : MonoBehaviour
         _flockingParameters.viewRadius= FOV.viewRadius;
     }
 
-    public void SetTargets(IEnumerable<AI_Movement> targets)
+    public void SetTargets(IEnumerable<FlockableEntity> targets)
     {
         //_debug.Log("Targets para flocking Seteados");
         _flockingTargets = targets;

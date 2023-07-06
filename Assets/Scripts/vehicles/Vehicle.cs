@@ -2,24 +2,104 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using IA2;
+using System.Linq;
+using System;
 
 public struct Seat
 {
     public bool Available;
-    public Infantry passenger;
+    public int seatPriority;
+    public Infantry passenger;  
     public Transform seatPos;
 }
-
-[RequireComponent(typeof(LifeComponent))]
-[RequireComponent(typeof(DebugableObject))]
-public abstract class Vehicle : MonoBehaviour
+[RequireComponent(typeof(Physics_Movement))]
+[RequireComponent(typeof(FOVAgent))]
+public abstract class Vehicle : Entity,FlockableEntity
 {
+    [SerializeField] 
+    protected FlockingParameters flockingParameters;
+
+    protected FOVAgent _fov;
+    protected Physics_Movement _movement;
     public Team myTeam;
-    public List<Seat> passengers = new List<Seat>();
+    public List<Seat> vehicleSeats = new List<Seat>();
+    public event Action OnEngineTurnOff;
+    public event Action OnEngineTurnOn;
+    public event Action whileEngineOn;
+
+    public bool EngineOn;
+
+
+    protected override void EntityAwake()
+    {
+        _movement = GetComponent<Physics_Movement>();
+        _fov=GetComponent<FOVAgent>();
+        vehicleSeats = vehicleSeats.OrderBy(x => x.seatPriority).ToList();
+        VehicleAwake();
+    }
+    public abstract void VehicleAwake();
+
+    public bool GetInVehicle(Infantry NewPassenger)
+    {
+        var col = vehicleSeats.Where(x => x.Available);
+        if (!col.Any()) return false;
+      
+        var seat = col.First();
+        seat.Available = false;
+        seat.passenger = NewPassenger;
+        NewPassenger.transform.position = seat.seatPos.position;
+        NewPassenger.transform.parent = seat.seatPos;
+
+        if (!EngineOn) TurnOnEngine();
+       
+
+        return true;      
+    }
+
+    public void GetOffVehicle(Infantry removePassenger)
+    {
+        var col = vehicleSeats.Where((x) => x.passenger == removePassenger);
+        if (!col.Any()) return;       
+            
+        
+        var seat = col.First();
+        seat.Available = true;
+        seat.passenger = null;
+        removePassenger.transform.parent = null;
+        if (vehicleSeats.Where(x=>!x.Available).Any())
+        {
+            TurnOffEngine();
+        }
+    }
+    private void Update()
+    {
+        if (EngineOn) whileEngineOn?.Invoke();
+    }
+    void TurnOffEngine()
+    {
+        EngineOn = false;
+        OnEngineTurnOff?.Invoke();
+    }
+
+    void TurnOnEngine()
+    {
+        EngineOn=true;
+        OnEngineTurnOn?.Invoke();
+
+    }
 
     public void Initialize(Team newTeam)
     {
         myTeam = newTeam;
+    }
 
+    public Vector3 GetPosition()
+    {
+        return transform.position;
+    }
+
+    public Vector3 GetVelocity()
+    {
+        return _movement._velocity;
     }
 }

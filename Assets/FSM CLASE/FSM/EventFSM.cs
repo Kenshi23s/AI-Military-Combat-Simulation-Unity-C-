@@ -6,6 +6,7 @@ namespace IA2
     {
 		public State<T> Current { get { return current; } }
 		private State<T> current;
+		public T CurrentKey { get; private set; }
 
 		public EventFSM(State<T> initial)
         {
@@ -21,7 +22,8 @@ namespace IA2
             {
 				current.Exit(input);
 				current = newState;
-				current.Enter(input);
+				CurrentKey = input;
+                current.Enter(input);
 			}
 		}
 

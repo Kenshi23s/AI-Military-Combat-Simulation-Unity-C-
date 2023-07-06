@@ -20,6 +20,11 @@ public struct FlockingParameters
     [SerializeField,Range(0f,3f)]public float _cohesionForce;
 
 }
+public interface FlockableEntity
+{
+    public Vector3 GetPosition();
+    public Vector3 GetVelocity();
+}
 public static class EasyMovement 
 {
 
@@ -35,7 +40,7 @@ public static class EasyMovement
        return rb;
    }
 
-    public static Vector3 Flocking(this IEnumerable<AI_Movement> targets,FlockingParameters parameters)
+    public static Vector3 Flocking(this IEnumerable<FlockableEntity> targets,FlockingParameters parameters)
     {
         Vector3 actualforce = Vector3.zero;
 
@@ -49,13 +54,13 @@ public static class EasyMovement
     public static Vector3 CalculateSteering(this Vector3 velocity, Vector3 desired, float steeringForce) => (desired - velocity) * steeringForce;
 
     #region Flocking
-    public static Vector3 GroupAlignment(this IEnumerable<AI_Movement> targets, FlockingParameters parameters)
+    public static Vector3 GroupAlignment(this IEnumerable<FlockableEntity> targets, FlockingParameters parameters)
     {
         Vector3 desired = Vector3.zero;
         int count = 0;
         if (!targets.Any()) return desired;        
         
-        var result = targets.Where(x => Vector3.Distance(x.transform.position, parameters.myTransform.position) <= parameters.viewRadius);
+        var result = targets.Where(x => Vector3.Distance(x.GetPosition(), parameters.myTransform.position) <= parameters.viewRadius);
         if (!result.Any()) return desired;
 
        
@@ -80,18 +85,18 @@ public static class EasyMovement
         return desired;
     }
 
-    public static Vector3 Cohesion(this IEnumerable<AI_Movement> targets, FlockingParameters parameters)
+    public static Vector3 Cohesion(this IEnumerable<FlockableEntity> targets, FlockingParameters parameters)
     {
         Vector3 desired = Vector3.zero;
         int count = 0;
         Vector3 myPos= parameters.myTransform.position;
-        foreach (var item in targets.Where(x => x.transform != parameters.myTransform))
+        foreach (var item in targets)
         {
-            Vector3 dist = item.transform.position - myPos;
+            Vector3 dist = item.GetPosition() - myPos;
 
             if (dist.magnitude <= parameters.viewRadius)
             {
-                desired += item.transform.position;
+                desired += item.GetPosition();
                 count++;
             }
         }
@@ -108,12 +113,12 @@ public static class EasyMovement
         return desired*parameters._cohesionForce;
     }
 
-    public static Vector3 Separation(this IEnumerable<AI_Movement> targets,FlockingParameters parameters)
+    public static Vector3 Separation(this IEnumerable<FlockableEntity> targets,FlockingParameters parameters)
     {
         Vector3 desired = Vector3.zero;
-        foreach (var item in targets.Where(x => x.transform != parameters.myTransform))
+        foreach (var item in targets)
         {
-            Vector3 dist = item.transform.position - parameters.myTransform.position;
+            Vector3 dist = item.GetPosition() - parameters.myTransform.position;
 
             if (dist.magnitude <= parameters.viewRadius)
                 desired += dist;
