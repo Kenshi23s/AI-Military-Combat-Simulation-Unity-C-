@@ -166,13 +166,15 @@ public static class Pathfinding_Algorithm
 
             if (current == nodes.Item2)
             {
-                var path = FList.Create(nodes.Item1) + cameFrom.TakeWhile(x => x.Key != nodes.Item1).Select(x => x.Key) + nodes.Item2;             
+                var path = FList.Create(nodes.Item1) + cameFrom.TakeWhile(x => x.Key != nodes.Item1).Select(x => x.Key) + nodes.Item2;
+                #region
                 //while (current != nodes.Item1)
                 //{
                 //    path.Add(current);
                 //    current = cameFrom[current];
                 //}            
                 //path.Add(nodes.Item2);
+                #endregion
 
                 return path.ToList();
             }
