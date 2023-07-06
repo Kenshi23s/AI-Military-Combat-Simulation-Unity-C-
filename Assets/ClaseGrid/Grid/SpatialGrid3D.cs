@@ -4,26 +4,24 @@ using UnityEngine;
 using System.Linq;
 using System;
 
-public class SpatialGrid : MonoBehaviour
+public class SpatialGrid3D : MonoBehaviour
 {
     #region Variables
-    //punto de inicio de la grilla en X
-    public float x;
-    //punto de inicio de la grilla en Z
-    public float z;
-    //ancho de las celdas
-    public float cellWidth;
-    //alto de las celdas
-    public float cellHeight;
-    //cantidad de columnas (el "ancho" de la grilla)
-    public int width;
-    //cantidad de filas (el "alto" de la grilla)
-    public int height;
+
+    [SerializeField] bool takePositionFromTransform = false;
+    //puntos de inicio de la grilla
+    public float x, y, z;
+    // las dimensiones de las celdas
+    [Min(0)]
+    public float cellWidth, cellHeight, cellDepth;
+    // la cantidad de celdas
+    [Min(0)]
+    public int width, height, depth;
 
     //ultimas posiciones conocidas de los elementos, guardadas para comparación.
-    private Dictionary<GridEntity, Tuple<int, int>> lastPositions;
+    private Dictionary<GridEntity, Tuple<int, int, int>> lastPositions;
     //los "contenedores"
-    private HashSet<GridEntity>[,] buckets;
+    private HashSet<GridEntity>[,,] buckets;
 
     //el valor de posicion que tienen los elementos cuando no estan en la zona de la grilla.
     /*
@@ -31,33 +29,60 @@ public class SpatialGrid : MonoBehaviour
      const tengo que ponerle el valor apenas la declaro, readonly puedo hacerlo en el constructor.
      Const solo sirve para tipos de dato primitivos.
      */
-    readonly public Tuple<int, int> Outside = Tuple.Create(-1, -1);
+    readonly public Tuple<int, int, int> Outside = Tuple.Create(-1, -1, -1);
 
     //Una colección vacía a devolver en las queries si no hay nada que devolver
     readonly public GridEntity[] Empty = new GridEntity[0];
     #endregion
 
     #region FUNCIONES
+
+    private void OnValidate() 
+    {
+        runInEditMode = takePositionFromTransform;
+    }
+
+    void SetGridPosition()
+    {
+        x = transform.position.x;
+        y = transform.position.y;
+        z = transform.position.z;
+    }
+
     private void Awake()
     {
-        lastPositions = new Dictionary<GridEntity, Tuple<int, int>>();
-        buckets = new HashSet<GridEntity>[width, height];
-
+        lastPositions = new Dictionary<GridEntity, Tuple<int, int, int>>();
+        buckets = new HashSet<GridEntity>[width, height, depth];
+        
         //creamos todos los hashsets
         for (int i = 0; i < width; i++)
             for (int j = 0; j < height; j++)
-                buckets[i, j] = new HashSet<GridEntity>();
+                for (int k = 0; k < depth; k++)
+                {
+                    buckets[i, j, k] = new HashSet<GridEntity>();
+                }
 
         //P/alumnos: por que no usamos OfType<>() despues del RecursiveWalker() aca?
-        var ents = RecursiveWalker(transform)
-            .Select(x => x.GetComponent<GridEntity>())
-            .Where(x => x != null);
+        //var ents = RecursiveWalker(transform)
+        //    .Select(x => x.GetComponent<GridEntity>())
+        //    .Where(x => x != null);
+
+        var ents = FindObjectsOfType<GridEntity>(true);
 
         foreach (var e in ents)
         {
+            e.SetSpatialGrid(this);
             e.OnMove += UpdateEntity;
             UpdateEntity(e);
         }
+    }
+
+    public void Update() 
+    {
+        if(!Application.IsPlaying(gameObject) && takePositionFromTransform && transform.hasChanged) 
+        {
+            SetGridPosition();
+        }    
     }
 
     public void UpdateEntity(GridEntity entity)
@@ -71,29 +96,33 @@ public class SpatialGrid : MonoBehaviour
 
         //Lo "sacamos" de la posición anterior
         if (IsInsideGrid(lastPos))
-            buckets[lastPos.Item1, lastPos.Item2].Remove(entity);
+            buckets[lastPos.Item1, lastPos.Item2, lastPos.Item3].Remove(entity);
 
         //Lo "metemos" a la celda nueva, o lo sacamos si salio de la grilla
         if (IsInsideGrid(currentPos))
         {
-            buckets[currentPos.Item1, currentPos.Item2].Add(entity);
+            buckets[currentPos.Item1, currentPos.Item2, currentPos.Item3].Add(entity);
             lastPositions[entity] = currentPos;
+            entity.onGrid = true;
         }
         else
+        {
             lastPositions.Remove(entity);
+            entity.onGrid = false;
+        }
     }
 
     public IEnumerable<GridEntity> Query(Vector3 aabbFrom, Vector3 aabbTo, Func<Vector3, bool> filterByPosition)
     {
-        var from = new Vector3(Mathf.Min(aabbFrom.x, aabbTo.x), 0, Mathf.Min(aabbFrom.z, aabbTo.z));
-        var to = new Vector3(Mathf.Max(aabbFrom.x, aabbTo.x), 0, Mathf.Max(aabbFrom.z, aabbTo.z));
+        var from = new Vector3(Mathf.Min(aabbFrom.x, aabbTo.x), Mathf.Min(aabbFrom.y, aabbTo.y), Mathf.Min(aabbFrom.z, aabbTo.z));
+        var to = new Vector3(Mathf.Max(aabbFrom.x, aabbTo.x), Mathf.Min(aabbFrom.y, aabbTo.y), Mathf.Max(aabbFrom.z, aabbTo.z));
 
         var fromCoord = GetPositionInGrid(from);
         var toCoord = GetPositionInGrid(to);
 
         //¡Ojo que clampea a 0,0 el Outside! TODO: Checkear cuando descartar el query si estan del mismo lado
-        fromCoord = Tuple.Create(Utility.Clampi(fromCoord.Item1, 0, width), Utility.Clampi(fromCoord.Item2, 0, height));
-        toCoord = Tuple.Create(Utility.Clampi(toCoord.Item1, 0, width), Utility.Clampi(toCoord.Item2, 0, height));
+        fromCoord = Tuple.Create(Utility.Clampi(fromCoord.Item1, 0, width), Utility.Clampi(fromCoord.Item2, 0, height), Utility.Clampi(fromCoord.Item3, 0, depth));
+        toCoord = Tuple.Create(Utility.Clampi(toCoord.Item1, 0, width), Utility.Clampi(toCoord.Item2, 0, height), Utility.Clampi(toCoord.Item3, 0, depth));
 
         if (!IsInsideGrid(fromCoord) && !IsInsideGrid(toCoord))
             return Empty;
@@ -105,40 +134,53 @@ public class SpatialGrid : MonoBehaviour
         var rows = Generate(fromCoord.Item2, y => y + 1)
             .TakeWhile(y => y < height && y <= toCoord.Item2);
 
-        var cells = cols.SelectMany(
-            col => rows.Select(
-                row => Tuple.Create(col, row)
+        var aisles = Generate(fromCoord.Item3, z => z + 1)
+            .TakeWhile(z => z < depth && z <= toCoord.Item3);
+
+        var cells = 
+        cols.SelectMany(
+            col => rows.SelectMany(
+                row => aisles.Select(aisle => Tuple.Create(col, row, aisle))
             )
         );
 
         // Iteramos las que queden dentro del criterio
         return cells
-            .SelectMany(cell => buckets[cell.Item1, cell.Item2])
+            .SelectMany(cell => buckets[cell.Item1, cell.Item2, cell.Item3])
             .Where(e =>
                 from.x <= e.transform.position.x && e.transform.position.x <= to.x &&
+                from.y <= e.transform.position.y && e.transform.position.y <= to.y &&
                 from.z <= e.transform.position.z && e.transform.position.z <= to.z
-            ).Where(x => filterByPosition(x.transform.position));
+            ).Where(e => filterByPosition(e.transform.position));
     }
 
-    public Tuple<int, int> GetPositionInGrid(Vector3 pos)
+    public Tuple<int, int, int> GetPositionInGrid(Vector3 pos)
     {
         //quita la diferencia, divide segun las celdas y floorea
         return Tuple.Create(Mathf.FloorToInt((pos.x - x) / cellWidth),
-                            Mathf.FloorToInt((pos.z - z) / cellHeight));
+                            Mathf.FloorToInt((pos.y - y) / cellHeight),
+                            Mathf.FloorToInt((pos.z - z) / cellDepth));
     }
 
-    public bool IsInsideGrid(Tuple<int, int> position)
+    public bool IsInsideGrid(Tuple<int, int, int> position)
     {
         //si es menor a 0 o mayor a width o height, no esta dentro de la grilla
         return 0 <= position.Item1 && position.Item1 < width &&
-            0 <= position.Item2 && position.Item2 < height;
+            0 <= position.Item2 && position.Item2 < height && 
+            0 <= position.Item3 && position.Item3 < height;
     }
 
     void OnDestroy()
     {
-        var ents = RecursiveWalker(transform).Select(x => x.GetComponent<GridEntity>()).Where(x => x != null);
+        //var ents = RecursiveWalker(transform).Select(x => x.GetComponent<GridEntity>()).Where(e => e != null);
+
+        var ents = FindObjectsOfType<GridEntity>(true);
+
         foreach (var e in ents)
+        {
+            e.SetSpatialGrid(null);
             e.OnMove -= UpdateEntity;
+        }
     }
 
     #region GENERATORS
@@ -171,27 +213,32 @@ public class SpatialGrid : MonoBehaviour
     public bool showLogs = true;
     private void OnDrawGizmos()
     {
-        var rows = Generate(z, curr => curr + cellHeight)
-                .Select(row => Tuple.Create(new Vector3(x, 0, row),
-                                            new Vector3(x + cellWidth * width, 0, row)));
+        if (AreGizmosShutDown) return;
 
-        //equivalente de rows
-        /*for (int i = 0; i <= height; i++)
-        {
-            Gizmos.DrawLine(new Vector3(x, 0, z + cellHeight * i), new Vector3(x + cellWidth * width,0, z + cellHeight * i));
-        }*/
+        var rows = Generate(y, curr => curr + cellHeight).Take(height + 1)
+                .SelectMany(rowY => Generate(z, curr => curr + cellDepth).Take(depth + 1)
+                                    .Select(rowZ => Tuple.Create(   new Vector3(x, rowY, rowZ),
+                                                                    new Vector3(x + cellWidth * width, rowY, rowZ))));
 
-        var cols = Generate(x, curr => curr + cellWidth)
-                   .Select(col => Tuple.Create(new Vector3(col, 0, z), new Vector3(col, 0, z + cellHeight * height)));
+        var cols = Generate(x, curr => curr + cellWidth).Take(width + 1)
+                .SelectMany(colX => Generate(z, curr => curr + cellDepth).Take(depth + 1)
+                                    .Select(colZ => Tuple.Create(   new Vector3(colX, y, colZ),
+                                                                    new Vector3(colX, y + cellHeight * height, colZ))));
 
-        var allLines = rows.Take(width + 1).Concat(cols.Take(height + 1));
+        var aisles = Generate(x, curr => curr + cellWidth).Take(width + 1)
+                .SelectMany(aisleX => Generate(y, curr => curr + cellHeight).Take(height + 1)
+                                    .Select(aisleY => Tuple.Create( new Vector3(aisleX, aisleY, z),
+                                                                    new Vector3(aisleX, aisleY, z + cellDepth * depth))));
+                                                                    
+        var allLines = rows.Concat(cols).Concat(aisles);
+        Gizmos.color = new Color(1, 1, 1, 0.1f);
 
         foreach (var elem in allLines)
         {
             Gizmos.DrawLine(elem.Item1, elem.Item2);
         }
 
-        if (buckets == null || AreGizmosShutDown) return;
+        if (buckets == null) return;
 
         var originalCol = GUI.color;
         GUI.color = Color.red;

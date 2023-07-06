@@ -112,7 +112,7 @@ public class Plane : Vehicle
     /// <returns></returns>
     IEnumerable<Plane> GetNearbyPlanes()
     {
-        return Queries.Query().Where(x => x != this).OfType<Plane>().Where(x => x._planeFSM.CurrentKey != PlaneStates.ABANDONED);
+        return gridEntity.GetEntitiesInRange(_fov.viewRadius).Where(x => x != this).OfType<Plane>().Where(x => x._planeFSM.CurrentKey != PlaneStates.ABANDONED);
     }
     #endregion 
 
