@@ -8,20 +8,23 @@ using UnityEngine;
 [System.Serializable]
 public struct FlockingParameters
 {
+    //parametros para el flocking, rellenar en el awake
     [NonSerialized] 
     public Transform myTransform;
     [NonSerialized]
     public float maxForce;
     [NonSerialized]
     public float viewRadius;
-
+    //estas se pueden rellenar desde editor
     [SerializeField,Range(0f,3f)]public float AlignmentForce;
     [SerializeField,Range(0f,3f)]public float _separationForce;
     [SerializeField,Range(0f,3f)]public float _cohesionForce;
 
 }
+//si se quiere hacer flocking con algo, debe tener esta interfaz
 public interface FlockableEntity
 {
+    
     public Vector3 GetPosition();
     public Vector3 GetVelocity();
 }
@@ -135,6 +138,15 @@ public static class EasyMovement
         return desired*parameters._separationForce;
     }
     #endregion
+
+    public static Vector3 Pursuit(this FlockableEntity target)
+    {
+        Vector3 finalPos = target.GetPosition() + target.GetVelocity() * Time.deltaTime;
+        Vector3 desired = finalPos - target.GetPosition();
+        desired.Normalize();
+
+        return desired;
+    }
 
 
 

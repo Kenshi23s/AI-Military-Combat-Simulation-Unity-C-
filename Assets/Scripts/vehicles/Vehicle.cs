@@ -4,7 +4,7 @@ using UnityEngine;
 using IA2;
 using System.Linq;
 using System;
-
+[System.Serializable]
 public struct Seat
 {
     public bool Available;
@@ -23,12 +23,14 @@ public abstract class Vehicle : Entity,FlockableEntity
     protected Physics_Movement _movement;
     public Team myTeam;
     public List<Seat> vehicleSeats = new List<Seat>();
+
     public event Action OnEngineTurnOff;
     public event Action OnEngineTurnOn;
     public event Action whileEngineOn;
 
     public bool EngineOn;
 
+    public abstract void VehicleAwake();
 
     protected override void EntityAwake()
     {
@@ -37,14 +39,21 @@ public abstract class Vehicle : Entity,FlockableEntity
         vehicleSeats = vehicleSeats.OrderBy(x => x.seatPriority).ToList();
         VehicleAwake();
     }
-    public abstract void VehicleAwake();
+  
 
+
+    /// <summary>
+    /// Subirse al vehiculo, requiere que le pasen un pasajero, solo se subira si hay asientos disponibles,
+    /// devuelve una booleana para chequear eso
+    /// </summary>
+    /// <param name="NewPassenger"></param>
+    /// <returns></returns>
     public bool GetInVehicle(Infantry NewPassenger)
     {
         var col = vehicleSeats.Where(x => x.Available);
         if (!col.Any()) return false;
       
-        var seat = col.First();
+        var seat = col.Maximum(x=>x.seatPriority);
         seat.Available = false;
         seat.passenger = NewPassenger;
         NewPassenger.transform.position = seat.seatPos.position;
@@ -55,7 +64,7 @@ public abstract class Vehicle : Entity,FlockableEntity
 
         return true;      
     }
-
+  
     public void GetOffVehicle(Infantry removePassenger)
     {
         var col = vehicleSeats.Where((x) => x.passenger == removePassenger);
@@ -73,6 +82,8 @@ public abstract class Vehicle : Entity,FlockableEntity
     }
     private void Update()
     {
+        //si el motor esta prendido se ejecuta el evento
+        //me la estoy complicando talvez¿?
         if (EngineOn) whileEngineOn?.Invoke();
     }
     void TurnOffEngine()

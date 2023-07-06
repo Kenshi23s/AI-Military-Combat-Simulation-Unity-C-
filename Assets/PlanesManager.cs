@@ -36,7 +36,7 @@ public class PlanesManager : MonoSingleton<PlanesManager>
     {
         
     }
-    public bool InCombatZone() { return true; }
+    public bool InCombatZone(Plane plane) { return true; }
 
     private void OnDrawGizmos()
     {
