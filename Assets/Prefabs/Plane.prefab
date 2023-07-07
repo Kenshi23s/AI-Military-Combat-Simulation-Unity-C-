@@ -135,6 +135,7 @@ Transform:
   m_Children:
   - {fileID: 6565769873805720238}
   - {fileID: 6565769872636725928}
+  - {fileID: 9083171063329367226}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -151,7 +152,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   velocity: {x: 0, y: 0, z: 0}
-  onGrid: 0
+  onGrid: 1
 --- !u!114 &6565769872705145539
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -213,8 +214,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec6d4fd71b2a4a048aa5980a3725bb66, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxForce: 7.9
-  _maxSpeed: 24
+  _maxForce: 24
+  _maxSpeed: 51.2
   _steeringForce: 0
 --- !u!114 &6565769872705145567
 MonoBehaviour:
@@ -228,7 +229,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5747d27ef88acac41acc7cc0ef883ab2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _viewRadius: 25
+  _viewRadius: 45
   viewAngle: 150
 --- !u!114 &6565769872705145560
 MonoBehaviour:
@@ -267,7 +268,7 @@ MonoBehaviour:
     _cohesionForce: 1.44
   sightRadius: 30
   _loseSightRadius: 32.83
-  myTeam: 0
+  myTeam: 1
   vehicleSeats: []
   EngineOn: 1
   targetPlane: {fileID: 0}
@@ -277,7 +278,7 @@ MonoBehaviour:
   bulletsPerBurst: 0
   burstCD: 3
   BulletCD: 0.3
-  shootPos: {fileID: 0}
+  shootPos: {fileID: 9083171063329367226}
 --- !u!1 &6565769873805720239
 GameObject:
   m_ObjectHideFlags: 0
@@ -375,3 +376,34 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &8780625543234975819
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9083171063329367226}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9083171063329367226
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8780625543234975819}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 1.6}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6565769872705145537}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

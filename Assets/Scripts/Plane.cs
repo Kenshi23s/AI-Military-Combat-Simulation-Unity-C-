@@ -171,6 +171,7 @@ public class Plane : Vehicle
             var col = GetNearbyPlanes().Where(x => x.myTeam != myTeam).Where(x => _fov.IN_FOV(x.transform.position));
             if (col.Any())
             {
+                _debug.Log($"Aviones enemigos a la vista, elijo el mas cercano de{col.Count()}");
                 //si encuentro alguno, obtengo el mas cercano
                 targetPlane = col.Minimum((x) => Vector3.Distance(x.transform.position, transform.position));
                 //y empiezo la persecucion
@@ -197,8 +198,8 @@ public class Plane : Vehicle
             {
                 //sino estoy en zona de combate me pego la vuelta
                 //NOTA: Mejor conseguir la direccion hacia el centro de la zona de combate y sumarsela
-                Vector3 dir = gridEntity._spatialGrid.transform.position - transform.position;
-                _debug.Log(gridEntity._spatialGrid.transform.position.ToString());
+                Vector3 dir = gridEntity._spatialGrid.GetMidleOfGrid() - transform.position;
+             
                 _debug.Log("No estoy en la grilla, me pego la vuelta hacia alla");
                 force += dir.normalized;
             }
@@ -256,8 +257,12 @@ public class Plane : Vehicle
 
             force += targetPlane.Pursuit();
 
-            if (!PlanesManager.instance.InCombatZone(this))
-                force += -_movement._velocity;
+            if (!gridEntity.onGrid)
+            {
+                Vector3 dir = gridEntity._spatialGrid.GetMidleOfGrid() - transform.position;
+                force += dir.normalized;
+            }
+               
             //despues tener una variable para la "distancia del suelo"
 
             force += GroundInFront();

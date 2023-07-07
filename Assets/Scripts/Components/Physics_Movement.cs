@@ -73,7 +73,7 @@ public class Physics_Movement : MonoBehaviour
 
     public void AddForce(Vector3 force)
     {
-        force = CalculateSteering(force);//estara bien asi?
+       force = force.normalized*maxForce;
         _velocity = Vector3.ClampMagnitude(_rb.velocity + force * Time.fixedDeltaTime, _maxSpeed);
         _rb.velocity = _velocity;
         transform.forward=_rb.velocity;

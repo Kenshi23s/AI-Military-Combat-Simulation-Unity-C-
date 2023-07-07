@@ -73,7 +73,7 @@ public class SpatialGrid3D : MonoBehaviour
         {
             e.SetSpatialGrid(this);
             e.OnMove += UpdateEntity;
-            Debug.Log(e.ToString());
+         
             UpdateEntity(e);
         }
     }
@@ -104,10 +104,12 @@ public class SpatialGrid3D : MonoBehaviour
         {
             buckets[currentPos.Item1, currentPos.Item2, currentPos.Item3].Add(entity);
             lastPositions[entity] = currentPos;
+          
             entity.onGrid = true;
         }
         else
         {
+          
             lastPositions.Remove(entity);
             entity.onGrid = false;
         }
@@ -168,7 +170,7 @@ public class SpatialGrid3D : MonoBehaviour
         //si es menor a 0 o mayor a width o height, no esta dentro de la grilla
         return 0 <= position.Item1 && position.Item1 < width &&
             0 <= position.Item2 && position.Item2 < height && 
-            0 <= position.Item3 && position.Item3 < height;
+            0 <= position.Item3 && position.Item3 < depth;
     }
 
     void OnDestroy()

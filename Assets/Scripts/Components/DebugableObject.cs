@@ -49,4 +49,7 @@ public class DebugableObject : MonoBehaviour
     {
         OnDrawGizmos();
     }
+
+   
 }
+
