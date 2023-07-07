@@ -73,6 +73,7 @@ public class SpatialGrid3D : MonoBehaviour
         {
             e.SetSpatialGrid(this);
             e.OnMove += UpdateEntity;
+            Debug.Log(e.ToString());
             UpdateEntity(e);
         }
     }
@@ -206,15 +207,27 @@ public class SpatialGrid3D : MonoBehaviour
     #endregion
 
     #endregion
-
+    public Vector3 GetMidleOfGrid()
+    {
+        Vector3 scale = new Vector3(width, height, depth);
+        Vector3 mid = (scale-transform.position).normalized * scale.magnitude;
+        return mid;
+    }
     #region GRAPHIC REPRESENTATION
     public bool AreGizmosShutDown;
     public bool activatedGrid;
     public bool showLogs = true;
     private void OnDrawGizmos()
     {
+
+        Gizmos.color = Color.red;
+
+        Vector3 scale = new Vector3(width, height, depth);
+        Vector3 mid = (transform.position-scale).normalized * scale.magnitude;
+        Gizmos.DrawWireSphere(mid, 50f);
         if (AreGizmosShutDown) return;
 
+        Gizmos.color = Color.white;
         var rows = Generate(y, curr => curr + cellHeight).Take(height + 1)
                 .SelectMany(rowY => Generate(z, curr => curr + cellDepth).Take(depth + 1)
                                     .Select(rowZ => Tuple.Create(   new Vector3(x, rowY, rowZ),
@@ -279,7 +292,7 @@ public class SpatialGrid3D : MonoBehaviour
                 }
             }
         }
-
+        
         GUI.color = originalCol;
         showLogs = false;
     }

@@ -9,7 +9,7 @@ public class GridEntity : MonoBehaviour
 	public Vector3 velocity = new Vector3(0, 0, 0);
     public bool onGrid;
     Renderer _rend;
-    SpatialGrid3D _spatialGrid;
+    public SpatialGrid3D _spatialGrid { get; private set; }
 
     private void Awake()
     {
