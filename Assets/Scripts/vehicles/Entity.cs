@@ -8,7 +8,7 @@ using UnityEngine;
 [RequireComponent(typeof(GridEntity))]
 public abstract class Entity : MonoBehaviour
 {
-
+    public Team myTeam { get; protected set; }
     public LifeComponent health { get; private set; }
     protected DebugableObject _debug;
     public GridEntity gridEntity { get; private set; }
