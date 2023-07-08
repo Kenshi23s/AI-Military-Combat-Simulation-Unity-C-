@@ -234,7 +234,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1513543971
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -247,7 +247,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c795b9bbc53bf0a4696d1aae8618b54c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scenesCount: 2
+  scenesCount: 3
   extras: []
 --- !u!4 &1513543972
 Transform:
@@ -330,6 +330,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: FreeLookCamera
+      objectReference: {fileID: 0}
+    - target: {fileID: 2676888503668039826, guid: 443819306a4cd5f48afa961854302735,
+        type: 3}
+      propertyPath: m_TagString
+      value: MainCamera
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 443819306a4cd5f48afa961854302735, type: 3}
