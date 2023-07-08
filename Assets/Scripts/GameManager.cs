@@ -6,12 +6,13 @@ using UnityEngine;
 
 public class GameManager : MonoSingleton<GameManager>
 {
-    List<Bunker> _bunkers;
-    public ReadOnlyCollection<List<Bunker>> bunkers;
+    List<Bunker> _bunkers=new List<Bunker>();
+    public ReadOnlyCollection<Bunker> bunkers;
     protected override void SingletonAwake()
     {
+        bunkers = new ReadOnlyCollection<Bunker>(_bunkers);
 
-      
+
     }
 
     public void AddBunker(Bunker newBunker)
