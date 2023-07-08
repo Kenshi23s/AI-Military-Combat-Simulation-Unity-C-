@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using System;
+using System.Collections;
 //Todos los algoritmos de pathfinding visto en la materia de IA 1
 //los nodos deben tener de nombre de clase "Node" y las siguientes variables con los siguientes nombres:
 
@@ -241,6 +242,55 @@ public static class Pathfinding_Algorithm
         }
 
         return groundedPositions;
+    }
+
+
+    public static IEnumerator CalculateThetaStar(this Tuple<Node, Node> nodes,Action<Vector3> returnNode ,LayerMask wallMask, Vector3 endpos = default)
+    {
+        List<Node> pathList = CalculateAStar(nodes);
+
+        //if (endpos != Vector3.zero) _pathList.Add(endpos);
+
+        int current = 0;
+
+        while (current + 2 < pathList.Count)
+        {
+            if (InLineOffSight(pathList[current].transform.position, pathList[current + 2].transform.position, wallMask))
+                pathList.RemoveAt(current + 1);
+            else
+            {
+                current++;
+                returnNode(pathList[current].groundPosition);
+            }
+               
+            yield return null;
+        }
+        if (endpos!=default)
+        {
+            returnNode(endpos);
+        }
+        
+
+        //// Conseguir las posiciones en el piso
+        //List<Vector3> groundedPositions = pathList.Select(node => node.groundPosition).ToList();
+
+        //// Chequear si la posicion final es la default.
+        //// Para saber esto en realidad se podria hacer una sobrecarga del metodo
+        //if (endpos == Vector3.zero)
+        //    return groundedPositions;
+
+        //// Si la posicion final se puede pegar al piso, hacerle theta star y agregarla
+
+        //if (Physics.Raycast(endpos, Vector3.down, out RaycastHit hitInfo, 10f, wallMask))
+        //{
+        //    if (pathList.Count > 1)
+        //        if (InLineOffSight(pathList[pathList.Count - 2].transform.position, endpos, wallMask))
+        //            pathList.RemoveAt(pathList.Count - 1);
+
+        //    groundedPositions.Add(hitInfo.point);
+        //}
+
+        //return groundedPositions;
     }
 
     public static bool InLineOffSight(Vector3 InitialPos, Vector3 finalPos, LayerMask maskWall)

@@ -20,6 +20,7 @@ public class Civilian : Entity
     protected override void EntityAwake()
     {
         civilian_AI = GetComponent<AI_Movement>();
+       
     }
 
     private void Start()
@@ -30,7 +31,7 @@ public class Civilian : Entity
         var idle = Idle();
         StateConfigurer.Create(idle)
             .SetTransition(CivilianStates.LookForRefugee, run)
-            .SetTransition(CivilianStates.Die,die)
+            .SetTransition(CivilianStates.Die, die)
             .Done();
 
         StateConfigurer.Create(run)
@@ -39,9 +40,11 @@ public class Civilian : Entity
           .Done();
 
         StateConfigurer.Create(pray)
-            .SetTransition(CivilianStates.Die,die)
+            .SetTransition(CivilianStates.Die, die)
             .Done();
         StateConfigurer.Create(die).Done();
+
+        civilianFSM = new EventFSM<CivilianStates>(run);
 
     }
 

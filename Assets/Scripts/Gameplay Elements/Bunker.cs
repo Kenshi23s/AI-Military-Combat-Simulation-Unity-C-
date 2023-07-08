@@ -5,14 +5,13 @@ using UnityEngine;
 [RequireComponent(typeof(LifeComponent))]
 public class Bunker : MonoBehaviour
 {
-    Civilian[] Refugees;
+    Civilian[] _refugees;
     [SerializeField,Range(1,30)]int _bunkerCapacity;
     public event Action onBunkerDestroyed;
-    [SerializeField] float life;
 
     private void Awake()
     {
-        Refugees = new Civilian[_bunkerCapacity];
+        _refugees = new Civilian[_bunkerCapacity];
         var health = GetComponent<LifeComponent>();
         health.OnKilled += () =>
         {
@@ -21,14 +20,17 @@ public class Bunker : MonoBehaviour
         };
     }
 
-
+    private void Start()
+    {
+        GameManager.instance.AddBunker(this);
+    }
     public bool EnterBunker(Civilian civilian)
     {
-        for (int i = 0; i < Refugees.Length; i++)
+        for (int i = 0; i < _refugees.Length; i++)
         {
-            if (Refugees[i] != null) continue;
+            if (_refugees[i] != null) continue;
 
-            Refugees[i]=civilian;
+            _refugees[i]=civilian;
             return true;
         }
         return false;

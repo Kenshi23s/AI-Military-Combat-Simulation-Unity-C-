@@ -29,7 +29,7 @@ public class Node : MonoBehaviour
         LayerMask wallMask = AI_Manager.instance.wall_Mask;
 
         Neighbors = AI_Manager.instance.nodes.GetWhichAreOnSight(transform.position, wallMask, RaycastType.Sphere, 1f)
-                    .Where(x=> x!=this).Where(x=>Vector3.Distance(x.transform.position,transform.position)<100f).ToList();
+                    .Where(x=> x!=this).Where(x=>Vector3.Distance(x.transform.position,transform.position)<25f).ToList();
 
         GetComponent<DebugableObject>().AddGizmoAction(NodeGizmo);
         GetComponent<MeshRenderer>().enabled = false;

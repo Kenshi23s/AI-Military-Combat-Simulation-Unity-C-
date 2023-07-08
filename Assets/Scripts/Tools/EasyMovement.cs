@@ -46,9 +46,9 @@ public static class EasyMovement
     {
         Vector3 actualforce = Vector3.zero;
 
-        actualforce += targets.GroupAlignment(parameters);
-        actualforce += targets.Cohesion(parameters);
-        actualforce += targets.Separation(parameters);
+        actualforce += targets.GroupAlignment(parameters)*parameters.AlignmentForce;
+        actualforce += targets.Cohesion(parameters)*parameters._cohesionForce;
+        actualforce += targets.Separation(parameters)*parameters._separationForce;
 
         return actualforce;
     }
@@ -59,27 +59,28 @@ public static class EasyMovement
     public static Vector3 GroupAlignment(this IEnumerable<FlockableEntity> targets, FlockingParameters parameters)
     {
         Vector3 desired = Vector3.zero;
-        int count = 0;
-        if (!targets.Any()) return desired;        
-        
+        //int count = 0;
+        if (!targets.Any()) return desired;
+
         var result = targets.Where(x => Vector3.Distance(x.GetPosition(), parameters.myTransform.position) <= parameters.viewRadius);
         if (!result.Any()) return desired;
 
-       
+
         //todo lo de flocking se podria resumir mas con Flist y Linq
         //por el momento quedara asi pq hay otras cosas mas importantes que optimizar
-        
-        
-        foreach (var item in result)
-        {                     
-             desired += item.GetVelocity();
-             count++;           
-        }
 
-        if (count <= 0)
-            return desired;
+        desired = result.Aggregate(Vector3.zero, (x, y) => x + y.GetVelocity())/result.Count();
+       
+        //foreach (var item in result)
+        //{                     
+        //     desired += item.GetVelocity();
+        //     count++;           
+        //}
 
-        desired /= count;
+        //if (count <= 0)
+        //    return desired;
+
+        //desired /= count;
 
         desired.Normalize();
    
@@ -112,7 +113,7 @@ public static class EasyMovement
         desired.Normalize();
        
 
-        return desired*parameters._cohesionForce;
+        return desired;
     }
 
     public static Vector3 Separation(this IEnumerable<FlockableEntity> targets,FlockingParameters parameters)
@@ -134,7 +135,7 @@ public static class EasyMovement
         desired.Normalize();
      
 
-        return desired*parameters._separationForce;
+        return desired;
     }
     #endregion
 
