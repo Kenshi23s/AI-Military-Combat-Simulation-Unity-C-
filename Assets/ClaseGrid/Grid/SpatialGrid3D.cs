@@ -40,6 +40,8 @@ public class SpatialGrid3D : MonoBehaviour
     private void OnValidate() 
     {
         runInEditMode = takePositionFromTransform;
+
+        CalculateGridCenter();
     }
 
     void SetGridPosition()
@@ -47,10 +49,21 @@ public class SpatialGrid3D : MonoBehaviour
         x = transform.position.x;
         y = transform.position.y;
         z = transform.position.z;
+
+        CalculateGridCenter();
+    }
+
+    void CalculateGridCenter() 
+    {
+        Vector3 dimensions = new Vector3(width * cellWidth, height * cellHeight, depth * cellDepth);
+        Vector3 center = new Vector3(x, y, z) + dimensions / 2;
+        _gridCenter = center;
     }
 
     private void Awake()
     {
+        CalculateGridCenter();
+
         lastPositions = new Dictionary<GridEntity, Tuple<int, int, int>>();
         buckets = new HashSet<GridEntity>[width, height, depth];
         
@@ -118,7 +131,7 @@ public class SpatialGrid3D : MonoBehaviour
     public IEnumerable<GridEntity> Query(Vector3 aabbFrom, Vector3 aabbTo, Func<Vector3, bool> filterByPosition)
     {
         var from = new Vector3(Mathf.Min(aabbFrom.x, aabbTo.x), Mathf.Min(aabbFrom.y, aabbTo.y), Mathf.Min(aabbFrom.z, aabbTo.z));
-        var to = new Vector3(Mathf.Max(aabbFrom.x, aabbTo.x), Mathf.Min(aabbFrom.y, aabbTo.y), Mathf.Max(aabbFrom.z, aabbTo.z));
+        var to = new Vector3(Mathf.Max(aabbFrom.x, aabbTo.x), Mathf.Max(aabbFrom.y, aabbTo.y), Mathf.Max(aabbFrom.z, aabbTo.z));
 
         var fromCoord = GetPositionInGrid(from);
         var toCoord = GetPositionInGrid(to);
@@ -209,11 +222,11 @@ public class SpatialGrid3D : MonoBehaviour
     #endregion
 
     #endregion
+
+    Vector3 _gridCenter;
     public Vector3 GetMidleOfGrid()
     {
-        Vector3 scale = new Vector3(width, height, depth);
-        Vector3 mid = (scale-transform.position).normalized * scale.magnitude;
-        return mid;
+        return _gridCenter;
     }
     #region GRAPHIC REPRESENTATION
     public bool AreGizmosShutDown;
@@ -222,12 +235,13 @@ public class SpatialGrid3D : MonoBehaviour
     private void OnDrawGizmos()
     {
 
-        Gizmos.color = Color.red;
 
-        Vector3 scale = new Vector3(width, height, depth);
-        Vector3 mid = (transform.position-scale).normalized * scale.magnitude;
-        Gizmos.DrawWireSphere(mid, 50f);
         if (AreGizmosShutDown) return;
+
+        // Dibujamos el centro de la grilla
+        Gizmos.color = Color.red;
+        Gizmos.DrawSphere(_gridCenter, 50f);
+        //
 
         Gizmos.color = Color.white;
         var rows = Generate(y, curr => curr + cellHeight).Take(height + 1)

@@ -121,7 +121,7 @@ public class Plane : Vehicle
     /// </summary>
     /// <returns></returns>
     IEnumerable<Plane> GetNearbyPlanes()
-    {
+    {        
         return gridEntity.GetEntitiesInRange(_fov.viewRadius).Where(x => x != this).OfType<Plane>().Where(x => x._planeFSM.CurrentKey != PlaneStates.ABANDONED);
     }
     #endregion 
@@ -196,11 +196,12 @@ public class Plane : Vehicle
                 
             else if (!gridEntity.onGrid)
             {
+                _debug.Log("No estoy en la grilla, me pego la vuelta hacia alla");
+
                 //sino estoy en zona de combate me pego la vuelta
                 //NOTA: Mejor conseguir la direccion hacia el centro de la zona de combate y sumarsela
-                Vector3 dir = gridEntity._spatialGrid.GetMidleOfGrid() - transform.position;
-             
-                _debug.Log("No estoy en la grilla, me pego la vuelta hacia alla");
+                Vector3 dir = gridEntity.SpatialGrid.GetMidleOfGrid() - transform.position;
+                dir.y = 0; // Pegar la vuelta sin afectar la altura
                 force += dir.normalized;
             }
 
@@ -259,7 +260,7 @@ public class Plane : Vehicle
 
             if (!gridEntity.onGrid)
             {
-                Vector3 dir = gridEntity._spatialGrid.GetMidleOfGrid() - transform.position;
+                Vector3 dir = gridEntity.SpatialGrid.GetMidleOfGrid() - transform.position;
                 force += dir.normalized;
             }
                
