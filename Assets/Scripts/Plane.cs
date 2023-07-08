@@ -11,7 +11,7 @@ public enum PlaneStates
     FLEE_FROM_PURSUITER,
     ABANDONED
 }
-[RequireComponent(typeof(GridEntity))]
+
 [RequireComponent(typeof(ShootComponent))]
 public class Plane : Vehicle
 {
@@ -53,7 +53,7 @@ public class Plane : Vehicle
     private void FixedUpdate()
     {
         _planeFSM.FixedUpdate();
-        gridEntity.Moved();
+        Moved();
     }
 
     #region ShootingLogic
@@ -122,12 +122,10 @@ public class Plane : Vehicle
     /// <returns></returns>
     IEnumerable<Plane> GetNearbyPlanes()
     {
-        var z = gridEntity.GetEntitiesInRange(_fov.viewRadius)
+        var z = GetEntitiesInRange(_fov.viewRadius)
+            .OfType<Plane>()
             .Where(x => x != this)
-            .Select(x=>x.GetComponent<Plane>())
-            .Where(x=>x!=null)
-            .Where(x=>x._planeFSM.CurrentKey!=PlaneStates.ABANDONED);
-
+            .Where(x => x._planeFSM.CurrentKey != PlaneStates.ABANDONED);
         
         return z;
     }
@@ -196,35 +194,32 @@ public class Plane : Vehicle
 
         state.OnFixedUpdate += () =>
         {
-            Vector3 force = transform.forward;
-
+            Vector3 desired = Vector3.zero;
             //agarro los aviones mas cercanos de mi equipo
             var col = GetNearbyPlanes().Where(x => x.myTeam == myTeam).Where(x=>x!=this);
 
             //si hay alguno y estoy en zona de combate, hago flocking
-            if (col.Any() && gridEntity.onGrid)
+            if (col.Any() && onGrid)
             {
                 var EndPromise = col.ToArray();
-                force += EndPromise.Flocking(flockingParameters);
+                desired += EndPromise.Flocking(flockingParameters);
                 _debug.Log($"hago flocking con {EndPromise.Length} aviones aliados");
             }
                 
-            else if (!gridEntity.onGrid)
+            else if (!onGrid)
             {
                 _debug.Log("No estoy en la grilla, me pego la vuelta hacia alla");
 
                 //sino estoy en zona de combate me pego la vuelta
-                //NOTA: Mejor conseguir la direccion hacia el centro de la zona de combate y sumarsela
-                Vector3 dir = gridEntity.SpatialGrid.GetMidleOfGrid() - transform.position;
-                dir.y = 0; // Pegar la vuelta sin afectar la altura
-                force += dir.normalized;
+                Vector3 dirToCenter = SpatialGrid.GetMidleOfGrid() - transform.position;
+                dirToCenter.y = 0; // Pegar la vuelta sin afectar la altura
+                desired += dirToCenter.normalized;
             }
 
             //si estoy cerca del suelo levanto hacia arriba
-            force += GroundInFront();
+            desired += GroundInFront();
 
-            //sumo estas fuerzas C:
-            _movement.AddForce(force);
+            _movement.AddDir(desired);
         };
         return state;
     }
@@ -257,7 +252,7 @@ public class Plane : Vehicle
                 return;
             }
 
-            if (!_fov.IN_FOV(targetPlane.transform.position, _loseSightRadius,PlanesManager.instance.groundMask))
+            if (!_fov.IN_FOV(targetPlane.transform.position, _loseSightRadius, PlanesManager.instance.groundMask))
             {
                 targetPlane.beingChasedBy = null;
                 _planeFSM.SendInput(PlaneStates.FLY_AROUND);
@@ -269,16 +264,17 @@ public class Plane : Vehicle
         //fisica avion
         state.OnFixedUpdate += () =>
         {
-            Vector3 force = transform.forward;
 
-            Vector3 pursuit = targetPlane.transform.position - targetPlane.transform.forward * 30;
+            Vector3 targetPos = targetPlane.transform.position - targetPlane.transform.forward * 30;
+            targetPos.y = targetPlane.transform.position.y;
 
             //units behind plane?
-            force += pursuit.normalized;
+            Vector3 force = transform.forward;
+            force += (targetPos - transform.position).normalized;
 
-            if (!gridEntity.onGrid)
+            if (!onGrid)
             {
-                Vector3 dir = gridEntity.SpatialGrid.GetMidleOfGrid() - transform.position;
+                Vector3 dir = SpatialGrid.GetMidleOfGrid() - transform.position;
                 Debug.Log("no estoy en la grilla, voy hacia ella");
                 force += dir.normalized;
             }
@@ -287,7 +283,7 @@ public class Plane : Vehicle
 
             force += GroundInFront();
 
-            _movement.AddForce(force);
+            _movement.AddDir(force);
         };
 
         state.OnExit += (x) =>
@@ -321,10 +317,19 @@ public class Plane : Vehicle
             Vector3 force = transform.forward;
             force += beingChasedBy.Evade();
             force += _evadingDir;
-            if (!PlanesManager.instance.InCombatZone(this))
-                force += -_movement._velocity;
-            force += GroundInFront();
 
+            if (!onGrid)
+            {
+                _debug.Log("No estoy en la grilla, me pego la vuelta hacia alla");
+
+                //sino estoy en zona de combate me pego la vuelta
+                Vector3 dir = SpatialGrid.GetMidleOfGrid() - transform.position;
+                dir.y = 0; // Pegar la vuelta sin afectar la altura
+                force += dir.normalized;
+            }
+
+            force += GroundInFront();
+            _movement.AddDir(force);
         };
 
         state.OnExit += (x) =>
@@ -367,9 +372,12 @@ public class Plane : Vehicle
         {
             Gizmos.color = Color.red;
             Vector3 dir = targetPlane.transform.position - transform.position;
-            DrawArrow.ForGizmo(transform.position, dir.normalized,Color.red,2);
-            Vector3 pursuit = targetPlane.transform.position - targetPlane.transform.forward * 30;
-            Gizmos.DrawWireSphere(pursuit, 3f);
+            DrawArrow.ForGizmo(transform.position, dir.normalized, Color.red, 2);
+
+            Vector3 pursuitTargetPos = targetPlane.transform.position - targetPlane.transform.forward * 30;
+            pursuitTargetPos.y = targetPlane.transform.position.y;
+
+            Gizmos.DrawWireSphere(pursuitTargetPos, 3f);
         }
     }
 

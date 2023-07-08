@@ -106,7 +106,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6565769872705145537}
-  - component: {fileID: 6565769872705145538}
   - component: {fileID: 6565769872705145539}
   - component: {fileID: 6565769872705145564}
   - component: {fileID: 6565769872705145565}
@@ -139,21 +138,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6565769872705145538
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6565769872705145562}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ac49b2b6d50c7a749bea4d8294713dac, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  velocity: {x: 0, y: 0, z: 0}
-  onGrid: 1
-  _spatialGrid: {fileID: 0}
 --- !u!114 &6565769872705145539
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -263,6 +247,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9fbd691dbdc1a14e940b0d8a717d5ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  velocity: {x: 0, y: 0, z: 0}
+  onGrid: 0
+  _spatialGrid: {fileID: 0}
   flockingParameters:
     AlignmentForce: 1.29
     _separationForce: 1.39

@@ -80,7 +80,7 @@ public class SpatialGrid3D : MonoBehaviour
         //    .Select(x => x.GetComponent<GridEntity>())
         //    .Where(x => x != null);
 
-        var ents = FindObjectsOfType<GridEntity>(true);
+        var ents = FindObjectsOfType<GridEntity>(false);
 
         foreach (var e in ents)
         {
@@ -190,7 +190,7 @@ public class SpatialGrid3D : MonoBehaviour
     {
         //var ents = RecursiveWalker(transform).Select(x => x.GetComponent<GridEntity>()).Where(e => e != null);
 
-        var ents = FindObjectsOfType<GridEntity>(true);
+        var ents = FindObjectsOfType<GridEntity>(false);
 
         foreach (var e in ents)
         {

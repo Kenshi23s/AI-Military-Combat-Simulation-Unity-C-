@@ -14,7 +14,7 @@ public struct Seat
 }
 [RequireComponent(typeof(Physics_Movement))]
 [RequireComponent(typeof(FOVAgent))]
-public abstract class Vehicle : Entity,FlockableEntity
+public abstract class Vehicle : GridEntity, FlockableEntity
 {
     [SerializeField] 
     protected FlockingParameters flockingParameters;
@@ -36,9 +36,9 @@ public abstract class Vehicle : Entity,FlockableEntity
     protected override void EntityAwake()
     {
         _movement = GetComponent<Physics_Movement>();
-        _fov=GetComponent<FOVAgent>();
+        _fov = GetComponent<FOVAgent>();
         vehicleSeats = vehicleSeats.OrderBy(x => x.seatPriority).ToList();
-        flockingParameters.myTransform= transform;
+        flockingParameters.myTransform = transform;
         VehicleAwake();
     }
   
@@ -53,16 +53,16 @@ public abstract class Vehicle : Entity,FlockableEntity
         var col = vehicleSeats.Where(x => x.Available);
         if (!col.Any()) return false;
       
-        var seat = col.Maximum(x=>x.seatPriority);
+        var seat = col.Maximum(x => x.seatPriority);
         seat.Available = false;
         seat.passenger = NewPassenger;
         NewPassenger.transform.position = seat.seatPos.position;
         NewPassenger.transform.parent = seat.seatPos;
 
         if (!EngineOn) TurnOnEngine();
-       
 
-        return true;      
+
+        return true;
     }
   
     public void GetOffVehicle(Infantry removePassenger)
@@ -70,12 +70,11 @@ public abstract class Vehicle : Entity,FlockableEntity
         var col = vehicleSeats.Where((x) => x.passenger == removePassenger);
         if (!col.Any()) return;       
             
-        
         var seat = col.First();
         seat.Available = true;
         seat.passenger = null;
         removePassenger.transform.parent = null;
-        if (vehicleSeats.Where(x=>!x.Available).Any())
+        if (vehicleSeats.Where(x => !x.Available).Any())
         {
             TurnOffEngine();
         }
@@ -87,6 +86,7 @@ public abstract class Vehicle : Entity,FlockableEntity
     //    //me la estoy complicando talvez¿?
     //    if (EngineOn) whileEngineOn?.Invoke();
     //}
+
     void TurnOffEngine()
     {
         EngineOn = false;

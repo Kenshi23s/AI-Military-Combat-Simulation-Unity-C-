@@ -71,12 +71,12 @@ public class Physics_Movement : MonoBehaviour
         _debug.Log("Se removieron todas las fuerzas");
     }
 
-    public void AddForce(Vector3 force)
+    public void AddDir(Vector3 desired)
     {
-         force = force.normalized*maxForce;
-        _velocity = Vector3.ClampMagnitude(_rb.velocity + force * Time.fixedDeltaTime, _maxSpeed);
+        desired = desired.normalized * maxForce;
+        _velocity = CalculateSteering(desired);;
         _rb.velocity = _velocity;
-        transform.forward=_rb.velocity;
+        transform.forward = _rb.velocity;
     }
 
     public void LookTowardsVelocity() 
@@ -102,11 +102,6 @@ public class Physics_Movement : MonoBehaviour
         if (_debug != null) { _debug.Log(msg); }
         _debug.Log($"MAXSPEED cambio de {this._maxSpeed} a {_maxSpeed}");
     }
-
- 
-
-   
-
   
     void MovementGizmos()
     {     
@@ -137,5 +132,5 @@ public class Physics_Movement : MonoBehaviour
         _maxForce = Mathf.Min(_maxForce, _maxSpeed);
     }
 
-    public Vector3 CalculateSteering(Vector3 desired) => Vector3.ClampMagnitude(desired - _velocity * steeringForce, maxSpeed);
+    public Vector3 CalculateSteering(Vector3 desired) => Vector3.ClampMagnitude(desired * steeringForce - _velocity, maxSpeed);
 }

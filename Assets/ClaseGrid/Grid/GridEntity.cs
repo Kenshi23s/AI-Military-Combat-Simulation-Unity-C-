@@ -3,19 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 
 //[ExecuteInEditMode]
-public class GridEntity : MonoBehaviour
+public class GridEntity : Entity
 {
 	public event Action<GridEntity> OnMove = delegate {};
 	public Vector3 velocity = new Vector3(0, 0, 0);
     public bool onGrid;
-    Renderer _rend;
+
     public SpatialGrid3D _spatialGrid;
     public SpatialGrid3D SpatialGrid => _spatialGrid;
 
-    private void Awake()
-    {
-        _rend = GetComponent<Renderer>();
-    }
 
     public IEnumerable<GridEntity> GetEntitiesInRange(float range) 
     {
@@ -38,7 +34,7 @@ public class GridEntity : MonoBehaviour
     /// <summary>
     /// Llama al evento OnMove().
     /// </summary>
-    public void Moved() 
+    protected void Moved() 
     {
         OnMove(this);
     }

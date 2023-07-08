@@ -181,7 +181,7 @@ public class AI_Movement : MonoBehaviour
         actualForce += ObstacleAvoidance(transform);
         actualForce = ProjectAlongSlope(actualForce);
         
-        Movement.AddForce(Velocity.CalculateSteering(actualForce, Movement.maxSpeed));
+        Movement.AddDir(Velocity.CalculateSteering(actualForce, Movement.maxSpeed));
         Movement.LookTowardsVelocity();
     }
 

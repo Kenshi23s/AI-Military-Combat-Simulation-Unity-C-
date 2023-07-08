@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 [RequireComponent(typeof(AI_Movement))]
 [RequireComponent(typeof(FOVAgent))]
-public abstract class Infantry : Entity 
+public abstract class Infantry : GridEntity 
 { 
 
 
@@ -73,7 +73,7 @@ public abstract class Infantry : Entity
 
     IEnumerable<Entity> GetEntitiesAround()
     {
-        var z = gridEntity.GetEntitiesInRange(_fov.viewRadius)
+        var z = GetEntitiesInRange(_fov.viewRadius)
          .Where(x => x != this)
          .OfType<Entity>()
          .Where(x => x.GetType() != typeof(Civilian));
