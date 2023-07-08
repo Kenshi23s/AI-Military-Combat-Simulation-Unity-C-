@@ -9,6 +9,7 @@ public enum PlaneStates
     FLY_AROUND,
     PURSUIT_TARGET,
     FLEE_FROM_PURSUITER,
+    AIRSTRIKE,
     ABANDONED
 }
 
@@ -17,8 +18,11 @@ public class Plane : Vehicle
 {
 
     EventFSM<PlaneStates> _planeFSM;
+    public PlaneStates actualState => _planeFSM.CurrentKey; 
     public Plane targetPlane;
     public Plane beingChasedBy;
+
+   
    
     ShootComponent shootComponent;
 
@@ -31,12 +35,20 @@ public class Plane : Vehicle
     [SerializeField, Min(0)] float _unitsBehindPlane = 30f;
     [SerializeField, Min(0)] float _collisionCheckDistance = 30f;
 
+    Vector3 airStrikePosition;
+    [SerializeField] float minimumDistanceForStrike;
 
     public override void VehicleAwake()
     {
         shootComponent = GetComponent<ShootComponent>();
         _debug.AddGizmoAction(DrawTowardsTarget);
         health.OnKilled += () => _planeFSM.SendInput(PlaneStates.ABANDONED);
+    }
+
+    public void CallAirStrike(Vector3 new_airStrikePosition)
+    {
+        airStrikePosition = new_airStrikePosition;
+        _planeFSM.SendInput(PlaneStates.AIRSTRIKE);
     }
 
     private void Start()
@@ -67,14 +79,18 @@ public class Plane : Vehicle
 
     IEnumerator ShootCoroutine()
     {
-        isShooting = true;
-        for (int i = 0; i < bulletsPerBurst; i++)
+        while (true)
         {
-            shootComponent.Shoot(shootPos);
-            yield return new WaitForSeconds(BulletCD);
+          
+            for (int i = 0; i < bulletsPerBurst; i++)
+            {
+                shootComponent.Shoot(shootPos);
+                yield return new WaitForSeconds(BulletCD);
+            }
+            yield return new WaitForSeconds(burstCD);
+         
         }
-        yield return new WaitForSeconds(burstCD);
-        isShooting = false;
+        
     }
     #endregion
 
@@ -197,14 +213,15 @@ public class Plane : Vehicle
         {
             Vector3 dir = Vector3.zero;
             //agarro los aviones mas cercanos de mi equipo
-            var col = GetNearbyPlanes().Where(x => x.myTeam == myTeam).Where(x=>x!=this);
+            var col = GetNearbyPlanes().Where(x => x.myTeam == myTeam).Where(x => x != this);
 
             //si hay alguno y estoy en zona de combate, hago flocking
             if (col.Any() && onGrid)
             {
-                var EndPromise = col.ToArray();
-                dir += EndPromise.Flocking(flockingParameters);
-                _debug.Log($"hago flocking con {EndPromise.Length} aviones aliados");
+                var endPromise = col.ToArray();
+                dir += endPromise.Flocking(flockingParameters);
+                
+                _debug.Log($"hago flocking con {endPromise.Length} aviones aliados");
             }
                 
             else if (!onGrid)
@@ -221,7 +238,7 @@ public class Plane : Vehicle
 
             if (dir == Vector3.zero)
             {
-                dir = _movement.Velocity;
+                dir = _movement.Velocity != Vector3.zero ? _movement.Forward : transform.forward;
                 dir.y = 0;
             }
 
@@ -246,6 +263,7 @@ public class Plane : Vehicle
             else
             {
                 _debug.Log("Hay Blanco, Le digo que lo voy a seguir");
+                StartCoroutine(ShootCoroutine());
                 targetPlane.SetChaser(this);
             }
         };
@@ -259,7 +277,8 @@ public class Plane : Vehicle
                 return;
             }
 
-            if (!_fov.IN_FOV(targetPlane.transform.position, _loseSightRadius, PlanesManager.instance.groundMask))
+
+            if (Vector3.Distance(transform.position,targetPlane.transform.position) > _loseSightRadius)
             {
                 targetPlane.beingChasedBy = null;
                 _planeFSM.SendInput(PlaneStates.FLY_AROUND);
@@ -291,7 +310,7 @@ public class Plane : Vehicle
 
             if (dir == Vector3.zero)
             {
-                dir = _movement.Velocity;
+                dir = _movement.Velocity != Vector3.zero ? _movement.Forward : transform.forward;
                 dir.y = 0;
             }
 
@@ -305,7 +324,8 @@ public class Plane : Vehicle
                 targetPlane.SetChaser(null);
                 targetPlane = null;
             }
-               
+            StopCoroutine(ShootCoroutine());
+
         };
 
         return state;
@@ -319,9 +339,7 @@ public class Plane : Vehicle
             if (beingChasedBy == null)            
                 _planeFSM.SendInput(PlaneStates.FLY_AROUND);
 
-            StartCoroutine(RandomEvasionDir());
-           
-           
+            StartCoroutine(RandomEvasionDir());        
         };
 
         state.OnFixedUpdate += () =>
@@ -344,7 +362,7 @@ public class Plane : Vehicle
 
             if (dir == Vector3.zero)
             {
-                dir = _movement.Velocity;
+                dir = _movement.Velocity !=Vector3.zero ? _movement.Forward : transform.forward;
                 dir.y = 0;
             }
 
@@ -361,11 +379,33 @@ public class Plane : Vehicle
 
     State<PlaneStates> AbandonPlane()
     {
-        State<PlaneStates> state = new State<PlaneStates>("FleeFromFight");
+        State<PlaneStates> state = new State<PlaneStates>("Die");
         state.OnEnter += (x) =>
         {
            _movement.UseGravity(true);
+           _movement.AccelerateTowards(Vector3.down);
         };
+
+        return state;
+    }
+
+    State<PlaneStates> AirStrike()
+    {
+        State<PlaneStates> state = new State<PlaneStates>("AirStrike");
+
+
+        state.OnUpdate += () =>
+        {
+            if (Vector3.Distance(transform.position,airStrikePosition) < minimumDistanceForStrike)
+            {
+
+            }
+        };
+        state.OnFixedUpdate += () =>
+        {
+            _movement.AccelerateTowardsTarget(airStrikePosition);
+        };
+
 
         return state;
     }
@@ -401,4 +441,13 @@ public class Plane : Vehicle
         }
     }
 
+
+    void DrawAirstrikeZone()
+    {
+        if (airStrikePosition == Vector3.zero) return;
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(airStrikePosition, 3f);
+        Gizmos.DrawLine(airStrikePosition, airStrikePosition+Vector3.up*10f);
+        
+    }
 }

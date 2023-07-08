@@ -22,6 +22,7 @@ public class ShootComponent : MonoBehaviour
             if (hit.transform.TryGetComponent(out IDamagable victim))
             {
                 victim.TakeDamage(_bulletdamage);
+                Debug.Log($"Hit! le hice daño a{victim}");
                 onHit?.Invoke(victim);
             }
                 

@@ -32,7 +32,9 @@ public class NewPhysicsMovement : MonoBehaviour
     }
 
     float _radiansRotSpeed;
-
+    public Vector3 Forward => Rotation * Vector3.forward;
+    public Vector3 Right => Rotation * Vector3.right;
+    public Vector3 Up => Rotation * Vector3.up;
     private void OnValidate()
     {
         _radiansRotSpeed = _rotationSpeed * Mathf.Deg2Rad;
@@ -51,7 +53,7 @@ public class NewPhysicsMovement : MonoBehaviour
         _currentSpeed = Mathf.MoveTowards(rb.velocity.magnitude, _maxSpeed, _acceleration * Time.fixedDeltaTime);
 
         // Rotar hacia la direccion
-        dir = Vector3.RotateTowards(rb.velocity, dir, _radiansRotSpeed * Time.fixedDeltaTime, 1000f);
+        dir = Vector3.RotateTowards(Velocity != Vector3.zero ? Forward : transform.forward, dir, _radiansRotSpeed * Time.fixedDeltaTime, 1000f);
 
         rb.velocity = dir.normalized * _currentSpeed;
 
