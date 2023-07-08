@@ -13,41 +13,44 @@ public class Physics_Movement : MonoBehaviour
     public Rigidbody _rb { get; private set; }
     DebugableObject _debug;
 
-   public bool isFalling => _rb.velocity.y <= 0; 
+   public bool isFalling => _rb.velocity.y <= 0;
 
+    [SerializeField, Range(0, 25f)]
+    float _acceleration = 5f;
    
     public Vector3 _velocity { get; private set; }
 
-    [SerializeField,Range(1,100)]
-    float _maxForce;
-    public float maxForce
-    {
-        get => _maxForce;
-        set
-        {
-            float aux = _maxForce;
-            _maxForce =  Mathf.Clamp(value, 0, maxSpeed);
-            TryDebug($"MAX FORCE cambio de {aux} a {_maxForce}");
-        }
-    } 
+    //[SerializeField,Range(0,100f)]
+    //float _maxForce;
+    //public float maxForce
+    //{
+    //    get => _maxForce;
+    //    set
+    //    {
+    //        float aux = _maxForce;
+    //        _maxForce =  Mathf.Clamp(value, 0, MaxSpeed);
+    //        TryDebug($"MAX FORCE cambio de {aux} a {_maxForce}");
+    //    }
+    //} 
 
-    [SerializeField,Range(1,100)]
+    [SerializeField,Range(0,100)]
     float _maxSpeed;
-    public float maxSpeed 
+    public float MaxSpeed 
     {
         get => _maxSpeed;
 
         set
         {
+            float aux = _maxSpeed;
             _maxSpeed = Mathf.Max(0, value);
-            TryDebug($"MAXSPEED cambio de {this._maxSpeed} a {_maxSpeed}");
-            maxForce = maxForce;
+            TryDebug($"MAXSPEED cambio de {aux} a {_maxSpeed}");
+            //maxForce = maxForce;
         }
     }
 
-    [SerializeField, Range(0f, 200)]
+    [SerializeField, Range(0f, 100f)]
     float _steeringForce;
-    public float steeringForce
+    public float SteeringForce
     {
         get => _steeringForce;
         set 
@@ -71,12 +74,12 @@ public class Physics_Movement : MonoBehaviour
         _debug.Log("Se removieron todas las fuerzas");
     }
 
-    public void AddDir(Vector3 desired)
+    public void SteerTowards(Vector3 desired)
     {
-        desired = desired.normalized * maxForce;
-        _velocity = CalculateSteering(desired);;
+        desired = desired.normalized * _maxSpeed;
+        _velocity = Vector3.ClampMagnitude(_rb.velocity + CalculateSteering(desired) * SteeringForce, _maxSpeed);
         _rb.velocity = _velocity;
-        transform.forward = _rb.velocity;
+        _rb.rotation = Quaternion.LookRotation(transform.forward);
     }
 
     public void LookTowardsVelocity() 
@@ -99,8 +102,8 @@ public class Physics_Movement : MonoBehaviour
         
     void TryDebug(string msg)
     {
-        if (_debug != null) { _debug.Log(msg); }
-        _debug.Log($"MAXSPEED cambio de {this._maxSpeed} a {_maxSpeed}");
+        if (_debug != null) 
+            _debug.Log(msg);
     }
   
     void MovementGizmos()
@@ -112,7 +115,8 @@ public class Physics_Movement : MonoBehaviour
     {
         Vector3 desired = targetSeek - transform.position;
         desired.Normalize();
-        return desired * maxForce;
+        //return desired * maxForce;
+        return desired * _maxSpeed;
     }
 
 
@@ -122,15 +126,15 @@ public class Physics_Movement : MonoBehaviour
         float dist = desired.magnitude;
         desired.Normalize();
         if (dist <= arriveRadius)
-            desired *= maxSpeed * (dist / arriveRadius);
+            desired *= MaxSpeed * (dist / arriveRadius);
         else
-            desired *= maxSpeed;
+            desired *= MaxSpeed;
         return desired;
     }
-    private void OnValidate()
-    {
-        _maxForce = Mathf.Min(_maxForce, _maxSpeed);
-    }
+    //private void OnValidate()
+    //{
+    //    _maxForce = Mathf.Min(_maxForce, _maxSpeed);
+    //}
 
-    public Vector3 CalculateSteering(Vector3 desired) => Vector3.ClampMagnitude(desired * steeringForce - _velocity, maxSpeed);
+    public Vector3 CalculateSteering(Vector3 desired) => desired - _velocity;
 }

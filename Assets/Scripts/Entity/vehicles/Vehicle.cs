@@ -12,7 +12,8 @@ public struct Seat
     public Infantry passenger;  
     public Transform seatPos;
 }
-[RequireComponent(typeof(Physics_Movement))]
+
+[RequireComponent(typeof(NewPhysicsMovement))]
 [RequireComponent(typeof(FOVAgent))]
 public abstract class Vehicle : GridEntity, FlockableEntity
 {
@@ -21,7 +22,7 @@ public abstract class Vehicle : GridEntity, FlockableEntity
     [SerializeField] protected float sightRadius;
     [SerializeField] protected float _loseSightRadius;
     protected FOVAgent _fov;
-    protected Physics_Movement _movement;
+    protected NewPhysicsMovement _movement;
     public Team myTeam;
     public List<Seat> vehicleSeats = new List<Seat>();
 
@@ -35,7 +36,7 @@ public abstract class Vehicle : GridEntity, FlockableEntity
 
     protected override void EntityAwake()
     {
-        _movement = GetComponent<Physics_Movement>();
+        _movement = GetComponent<NewPhysicsMovement>();
         _fov = GetComponent<FOVAgent>();
         vehicleSeats = vehicleSeats.OrderBy(x => x.seatPriority).ToList();
         flockingParameters.myTransform = transform;
@@ -118,6 +119,6 @@ public abstract class Vehicle : GridEntity, FlockableEntity
 
     public Vector3 GetVelocity()
     {
-        return _movement._velocity;
+        return _movement.Velocity;
     }
 }

@@ -27,12 +27,13 @@ public class Plane : Vehicle
     Vector3 _evadingDir;
 
     [SerializeField] float _cd_OnRandomDir;
-    
-    
+
+    [SerializeField, Min(0)] float _unitsBehindPlane = 30f;
+    [SerializeField, Min(0)] float _collisionCheckDistance = 30f;
+
 
     public override void VehicleAwake()
     {
-        _movement = GetComponent<Physics_Movement>();
         shootComponent = GetComponent<ShootComponent>();
         _debug.AddGizmoAction(DrawTowardsTarget);
         health.OnKilled += () => _planeFSM.SendInput(PlaneStates.ABANDONED);
@@ -99,7 +100,7 @@ public class Plane : Vehicle
 
     Vector3 GroundInFront()
     {
-        if (Physics.Raycast(transform.position, transform.forward, 30f + _movement._velocity.magnitude, PlanesManager.instance.groundMask))
+        if (Physics.Raycast(transform.position, transform.forward, _collisionCheckDistance + _movement.CurrentSpeed, PlanesManager.instance.groundMask))
         {
             _debug.Log("Tengo piso adelante, levanto vuelo");
             return Vector3.up;
@@ -194,7 +195,7 @@ public class Plane : Vehicle
 
         state.OnFixedUpdate += () =>
         {
-            Vector3 desired = Vector3.zero;
+            Vector3 dir = Vector3.zero;
             //agarro los aviones mas cercanos de mi equipo
             var col = GetNearbyPlanes().Where(x => x.myTeam == myTeam).Where(x=>x!=this);
 
@@ -202,7 +203,7 @@ public class Plane : Vehicle
             if (col.Any() && onGrid)
             {
                 var EndPromise = col.ToArray();
-                desired += EndPromise.Flocking(flockingParameters);
+                dir += EndPromise.Flocking(flockingParameters);
                 _debug.Log($"hago flocking con {EndPromise.Length} aviones aliados");
             }
                 
@@ -212,15 +213,21 @@ public class Plane : Vehicle
 
                 //sino estoy en zona de combate me pego la vuelta
                 Vector3 dirToCenter = SpatialGrid.GetMidleOfGrid() - transform.position;
-                dirToCenter.y = 0; // Pegar la vuelta sin afectar la altura
-                desired += dirToCenter.normalized;
+                dir += dirToCenter.normalized;
             }
 
             //si estoy cerca del suelo levanto hacia arriba
-            desired += GroundInFront();
+            dir += GroundInFront();
 
-            _movement.AddDir(desired);
+            if (dir == Vector3.zero)
+            {
+                dir = _movement.Velocity;
+                dir.y = 0;
+            }
+
+            _movement.AccelerateTowards(dir);
         };
+
         return state;
     }
 
@@ -264,26 +271,31 @@ public class Plane : Vehicle
         //fisica avion
         state.OnFixedUpdate += () =>
         {
+            Vector3 dir = Vector3.zero;
 
-            Vector3 targetPos = targetPlane.transform.position - targetPlane.transform.forward * 30;
-            targetPos.y = targetPlane.transform.position.y;
+            Vector3 awayDir = new Vector3(-targetPlane.transform.forward.x, 0, -targetPlane.transform.forward.z);
+            Vector3 targetPos = targetPlane.transform.position + awayDir * _unitsBehindPlane;
 
-            //units behind plane?
-            Vector3 force = transform.forward;
-            force += (targetPos - transform.position).normalized;
+            dir += (targetPos - transform.position).normalized;
 
             if (!onGrid)
             {
-                Vector3 dir = SpatialGrid.GetMidleOfGrid() - transform.position;
+                Vector3 dirToCenter = SpatialGrid.GetMidleOfGrid() - transform.position;
                 Debug.Log("no estoy en la grilla, voy hacia ella");
-                force += dir.normalized;
+                dir += dirToCenter.normalized;
             }
                
             //despues tener una variable para la "distancia del suelo"
 
-            force += GroundInFront();
+            dir += GroundInFront();
 
-            _movement.AddDir(force);
+            if (dir == Vector3.zero)
+            {
+                dir = _movement.Velocity;
+                dir.y = 0;
+            }
+
+            _movement.AccelerateTowards(dir);
         };
 
         state.OnExit += (x) =>
@@ -291,7 +303,7 @@ public class Plane : Vehicle
             if (targetPlane != null)
             {
                 targetPlane.SetChaser(null);
-                targetPlane=null;
+                targetPlane = null;
             }
                
         };
@@ -314,22 +326,29 @@ public class Plane : Vehicle
 
         state.OnFixedUpdate += () =>
         {
-            Vector3 force = transform.forward;
-            force += beingChasedBy.Evade();
-            force += _evadingDir;
+            Vector3 dir = Vector3.zero;
+
+            dir += beingChasedBy.Evade();
+            dir += _evadingDir;
 
             if (!onGrid)
             {
                 _debug.Log("No estoy en la grilla, me pego la vuelta hacia alla");
 
                 //sino estoy en zona de combate me pego la vuelta
-                Vector3 dir = SpatialGrid.GetMidleOfGrid() - transform.position;
-                dir.y = 0; // Pegar la vuelta sin afectar la altura
-                force += dir.normalized;
+                Vector3 dirToCenter = SpatialGrid.GetMidleOfGrid() - transform.position;
+                dir += dirToCenter.normalized;
             }
 
-            force += GroundInFront();
-            _movement.AddDir(force);
+            dir += GroundInFront();
+
+            if (dir == Vector3.zero)
+            {
+                dir = _movement.Velocity;
+                dir.y = 0;
+            }
+
+            _movement.AccelerateTowards(dir);
         };
 
         state.OnExit += (x) =>
@@ -345,8 +364,9 @@ public class Plane : Vehicle
         State<PlaneStates> state = new State<PlaneStates>("FleeFromFight");
         state.OnEnter += (x) =>
         {
-           _movement._rb.useGravity = true;
+           _movement.UseGravity(true);
         };
+
         return state;
     }
 
@@ -374,8 +394,8 @@ public class Plane : Vehicle
             Vector3 dir = targetPlane.transform.position - transform.position;
             DrawArrow.ForGizmo(transform.position, dir.normalized, Color.red, 2);
 
-            Vector3 pursuitTargetPos = targetPlane.transform.position - targetPlane.transform.forward * 30;
-            pursuitTargetPos.y = targetPlane.transform.position.y;
+            Vector3 awayDir = new Vector3(-targetPlane.transform.forward.x, 0, -targetPlane.transform.forward.z);
+            Vector3 pursuitTargetPos = targetPlane.transform.position + awayDir * _unitsBehindPlane;
 
             Gizmos.DrawWireSphere(pursuitTargetPos, 3f);
         }

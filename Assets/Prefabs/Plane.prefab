@@ -108,8 +108,8 @@ GameObject:
   - component: {fileID: 6565769872705145537}
   - component: {fileID: 6565769872705145539}
   - component: {fileID: 6565769872705145564}
+  - component: {fileID: 3069880918001107556}
   - component: {fileID: 6565769872705145565}
-  - component: {fileID: 6565769872705145566}
   - component: {fileID: 6565769872705145567}
   - component: {fileID: 6565769872705145560}
   - component: {fileID: 6565769872705145561}
@@ -171,6 +171,22 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &3069880918001107556
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6565769872705145562}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb77a9c1f3fcd634392a1fb3dd310371, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _acceleration: 25
+  _maxSpeed: 35
+  FreezeYRotation: 0
+  _rotationSpeed: 30
 --- !u!114 &6565769872705145565
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -187,21 +203,6 @@ MonoBehaviour:
   gizmoDraw:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &6565769872705145566
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6565769872705145562}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec6d4fd71b2a4a048aa5980a3725bb66, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _maxForce: 24
-  _maxSpeed: 51.2
-  _steeringForce: 0
 --- !u!114 &6565769872705145567
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -262,6 +263,8 @@ MonoBehaviour:
   targetPlane: {fileID: 0}
   beingChasedBy: {fileID: 0}
   _cd_OnRandomDir: 4
+  _unitsBehindPlane: 30
+  _collisionCheckDistance: 30
   isShooting: 0
   bulletsPerBurst: 0
   burstCD: 3

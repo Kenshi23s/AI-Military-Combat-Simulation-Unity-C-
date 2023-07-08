@@ -63,7 +63,7 @@ public class AI_Movement : MonoBehaviour
 
     private void FixedUpdate() => _fixedUpdate?.Invoke();
 
-    public void SetMaxSpeed(float newSpeed) =>  Movement.maxSpeed = newSpeed;
+    public void SetMaxSpeed(float newSpeed) =>  Movement.MaxSpeed = newSpeed;
       
     #region Pathfinding Methods
     /// <summary>
@@ -181,7 +181,7 @@ public class AI_Movement : MonoBehaviour
         actualForce += ObstacleAvoidance(transform);
         actualForce = ProjectAlongSlope(actualForce);
         
-        Movement.AddDir(Velocity.CalculateSteering(actualForce, Movement.maxSpeed));
+        Movement.SteerTowards(Velocity.CalculateSteering(actualForce, Movement.MaxSpeed));
         Movement.LookTowardsVelocity();
     }
 
@@ -292,7 +292,7 @@ public class AI_Movement : MonoBehaviour
 
             Vector3 desired = angleInBetween >= 0 ? -transform.right : transform.right;
 
-            return Velocity.CalculateSteering(desired,Movement.maxSpeed);
+            return Velocity.CalculateSteering(desired,Movement.MaxSpeed);
         }
 
         return Vector3.zero;
