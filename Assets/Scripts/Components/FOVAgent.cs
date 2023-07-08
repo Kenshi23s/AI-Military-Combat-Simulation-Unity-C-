@@ -12,6 +12,11 @@ public class FOVAgent : MonoBehaviour
     float _sqrViewRadius;
     [SerializeField,Range(0,360)]float viewAngle;
 
+
+    public void SetFov(float newRadius)
+    {
+        _viewRadius = newRadius;
+    }
     private void Awake()
     {
         GetComponent<DebugableObject>().AddGizmoAction(FovGizmos);
@@ -24,6 +29,30 @@ public class FOVAgent : MonoBehaviour
         {
             if (Vector3.Angle(transform.forward, dir) <= viewAngle / 2)                     
                 return ColomboMethods.InLineOffSight(transform.position, target, AI_Manager.instance.wall_Mask);      
+        }
+        return false;
+    }
+
+    public bool IN_FOV(Vector3 target,LayerMask mask)
+    {
+        Vector3 dir = target - transform.position;
+
+        if (dir.magnitude <= _viewRadius)
+        {
+            if (Vector3.Angle(transform.forward, dir) <= viewAngle / 2)
+                return ColomboMethods.InLineOffSight(transform.position, target, mask);
+        }
+        return false;
+    }
+
+    public bool IN_FOV(Vector3 target, float viewRadius,LayerMask mask)
+    {
+        Vector3 dir = target - transform.position;
+
+        if (dir.magnitude <= _viewRadius)
+        {
+            if (Vector3.Angle(transform.forward, dir) <= viewAngle / 2)
+                return ColomboMethods.InLineOffSight(transform.position, target, mask);
         }
         return false;
     }

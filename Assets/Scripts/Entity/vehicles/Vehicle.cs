@@ -38,6 +38,7 @@ public abstract class Vehicle : Entity,FlockableEntity
         _movement = GetComponent<Physics_Movement>();
         _fov=GetComponent<FOVAgent>();
         vehicleSeats = vehicleSeats.OrderBy(x => x.seatPriority).ToList();
+        flockingParameters.myTransform= transform;
         VehicleAwake();
     }
   
@@ -102,6 +103,8 @@ public abstract class Vehicle : Entity,FlockableEntity
     {
         sightRadius = Mathf.Clamp(sightRadius, 0, Mathf.Infinity);
         _loseSightRadius = Mathf.Clamp(_loseSightRadius, sightRadius, Mathf.Infinity);
+        GetComponent<FOVAgent>().SetFov(sightRadius);
+    
     }
     public void Initialize(Team newTeam)
     {

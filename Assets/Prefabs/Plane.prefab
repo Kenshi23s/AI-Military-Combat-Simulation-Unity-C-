@@ -153,6 +153,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   velocity: {x: 0, y: 0, z: 0}
   onGrid: 1
+  _spatialGrid: {fileID: 0}
 --- !u!114 &6565769872705145539
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -229,8 +230,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5747d27ef88acac41acc7cc0ef883ab2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _viewRadius: 45
-  viewAngle: 150
+  _viewRadius: 80
+  viewAngle: 157
 --- !u!114 &6565769872705145560
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -266,14 +267,14 @@ MonoBehaviour:
     AlignmentForce: 1.29
     _separationForce: 1.39
     _cohesionForce: 1.44
-  sightRadius: 30
-  _loseSightRadius: 32.83
+  sightRadius: 80
+  _loseSightRadius: 100.3
   myTeam: 1
   vehicleSeats: []
   EngineOn: 1
   targetPlane: {fileID: 0}
   beingChasedBy: {fileID: 0}
-  _cd_OnRandomDir: 0
+  _cd_OnRandomDir: 4
   isShooting: 0
   bulletsPerBurst: 0
   burstCD: 3
@@ -386,7 +387,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9083171063329367226}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: ShootPos
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

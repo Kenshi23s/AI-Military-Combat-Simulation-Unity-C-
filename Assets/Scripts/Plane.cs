@@ -34,7 +34,7 @@ public class Plane : Vehicle
     {
         _movement = GetComponent<Physics_Movement>();
         shootComponent = GetComponent<ShootComponent>();
-       
+        _debug.AddGizmoAction(DrawTowardsTarget);
         health.OnKilled += () => _planeFSM.SendInput(PlaneStates.ABANDONED);
     }
 
@@ -99,7 +99,7 @@ public class Plane : Vehicle
 
     Vector3 GroundInFront()
     {
-        if (Physics.Raycast(transform.position, transform.forward, 30f + _movement._velocity.magnitude, PlanesManager.instance.ground))
+        if (Physics.Raycast(transform.position, transform.forward, 30f + _movement._velocity.magnitude, PlanesManager.instance.groundMask))
         {
             _debug.Log("Tengo piso adelante, levanto vuelo");
             return Vector3.up;
@@ -121,8 +121,15 @@ public class Plane : Vehicle
     /// </summary>
     /// <returns></returns>
     IEnumerable<Plane> GetNearbyPlanes()
-    {        
-        return gridEntity.GetEntitiesInRange(_fov.viewRadius).Where(x => x != this).OfType<Plane>().Where(x => x._planeFSM.CurrentKey != PlaneStates.ABANDONED);
+    {
+        var z = gridEntity.GetEntitiesInRange(_fov.viewRadius)
+            .Where(x => x != this)
+            .Select(x=>x.GetComponent<Plane>())
+            .Where(x=>x!=null)
+            .Where(x=>x._planeFSM.CurrentKey!=PlaneStates.ABANDONED);
+
+        
+        return z;
     }
     #endregion 
 
@@ -168,7 +175,15 @@ public class Plane : Vehicle
         state.OnUpdate += () =>
         {
             //obtengo los aviones cercanos que no sean de mi equipo y esten en mi fov
-            var col = GetNearbyPlanes().Where(x => x.myTeam != myTeam).Where(x => _fov.IN_FOV(x.transform.position));
+            var col = GetNearbyPlanes()
+            .Where(x => x != this)
+            .Where(x => 
+            {
+                Debug.Log(x);
+                return _fov.IN_FOV(x.transform.position,PlanesManager.instance.groundMask);
+
+            })
+            .Where(x => x.myTeam != myTeam);
             if (col.Any())
             {
                 _debug.Log($"Aviones enemigos a la vista, elijo el mas cercano de{col.Count()}");
@@ -184,7 +199,7 @@ public class Plane : Vehicle
             Vector3 force = transform.forward;
 
             //agarro los aviones mas cercanos de mi equipo
-            var col = GetNearbyPlanes().Where(x => x.myTeam == myTeam);
+            var col = GetNearbyPlanes().Where(x => x.myTeam == myTeam).Where(x=>x!=this);
 
             //si hay alguno y estoy en zona de combate, hago flocking
             if (col.Any() && gridEntity.onGrid)
@@ -242,7 +257,7 @@ public class Plane : Vehicle
                 return;
             }
 
-            if (!_fov.IN_FOV(targetPlane.transform.position, _loseSightRadius))
+            if (!_fov.IN_FOV(targetPlane.transform.position, _loseSightRadius,PlanesManager.instance.groundMask))
             {
                 targetPlane.beingChasedBy = null;
                 _planeFSM.SendInput(PlaneStates.FLY_AROUND);
@@ -256,11 +271,15 @@ public class Plane : Vehicle
         {
             Vector3 force = transform.forward;
 
-            force += targetPlane.Pursuit();
+            Vector3 pursuit = targetPlane.transform.position - targetPlane.transform.forward * 30;
+
+            //units behind plane?
+            force += pursuit.normalized;
 
             if (!gridEntity.onGrid)
             {
                 Vector3 dir = gridEntity.SpatialGrid.GetMidleOfGrid() - transform.position;
+                Debug.Log("no estoy en la grilla, voy hacia ella");
                 force += dir.normalized;
             }
                
@@ -340,12 +359,17 @@ public class Plane : Vehicle
       
     }
 
+
+    
     void DrawTowardsTarget()
     {
         if (targetPlane!=null)
         {
+            Gizmos.color = Color.red;
             Vector3 dir = targetPlane.transform.position - transform.position;
-            DrawArrow.ForGizmo(transform.position, dir.normalized);
+            DrawArrow.ForGizmo(transform.position, dir.normalized,Color.red,2);
+            Vector3 pursuit = targetPlane.transform.position - targetPlane.transform.forward * 30;
+            Gizmos.DrawWireSphere(pursuit, 3f);
         }
     }
 

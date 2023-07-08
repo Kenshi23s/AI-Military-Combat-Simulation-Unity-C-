@@ -12,7 +12,7 @@ public class PlanesManager : MonoSingleton<PlanesManager>
 
     public float maxUpwardsAngleOnTakeOff;
 
-    public LayerMask ground;
+    public LayerMask groundMask;
 
     public bool inOptimalHeight(Vector3 Position)
     {

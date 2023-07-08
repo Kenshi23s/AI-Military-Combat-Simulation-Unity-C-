@@ -11,8 +11,7 @@ public struct FlockingParameters
     //parametros para el flocking, rellenar en el awake
     [NonSerialized] 
     public Transform myTransform;
-    [NonSerialized]
-    public float maxForce;
+   
     [NonSerialized]
     public float viewRadius;
     //estas se pueden rellenar desde editor
@@ -71,9 +70,9 @@ public static class EasyMovement
         //por el momento quedara asi pq hay otras cosas mas importantes que optimizar
         
         
-        foreach (AI_Movement item in result)
+        foreach (var item in result)
         {                     
-             desired += item.Velocity;
+             desired += item.GetVelocity();
              count++;           
         }
 
@@ -83,7 +82,7 @@ public static class EasyMovement
         desired /= count;
 
         desired.Normalize();
-        desired *= parameters.maxForce;
+   
 
         return desired;
     }
@@ -111,7 +110,7 @@ public static class EasyMovement
         desired -= myPos;
 
         desired.Normalize();
-        desired *= parameters.maxForce;
+       
 
         return desired*parameters._cohesionForce;
     }
@@ -133,7 +132,7 @@ public static class EasyMovement
         desired = -desired;
 
         desired.Normalize();
-        desired *= parameters.maxForce;
+     
 
         return desired*parameters._separationForce;
     }

@@ -73,7 +73,7 @@ public class Physics_Movement : MonoBehaviour
 
     public void AddForce(Vector3 force)
     {
-       force = force.normalized*maxForce;
+         force = force.normalized*maxForce;
         _velocity = Vector3.ClampMagnitude(_rb.velocity + force * Time.fixedDeltaTime, _maxSpeed);
         _rb.velocity = _velocity;
         transform.forward=_rb.velocity;
@@ -109,9 +109,8 @@ public class Physics_Movement : MonoBehaviour
 
   
     void MovementGizmos()
-    {
-        Gizmos.color = Color.green;
-        Gizmos.DrawLine(_rb.position, _rb.position + _velocity);
+    {     
+        DrawArrow.ForGizmo(_rb.position, _velocity, Color.green,2);      
     }
 
     public Vector3 Seek(Vector3 targetSeek)

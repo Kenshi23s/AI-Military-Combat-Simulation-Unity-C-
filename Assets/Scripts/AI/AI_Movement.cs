@@ -52,7 +52,6 @@ public class AI_Movement : MonoBehaviour
        
        
         _flockingParameters.myTransform = transform;
-        _flockingParameters.maxForce = Movement.maxForce;
         _flockingParameters.viewRadius= FOV.viewRadius;
     }
 
