@@ -211,10 +211,10 @@ public static class Pathfinding_Algorithm
         List<Vector3> myPathList = x;
     }
 
-    public static IEnumerator CalculateLazyAStar(this Tuple<Node, Node> nodes, List<Node> path, Action onFinish, int iterationPerFrame = 30)
+    public static IEnumerator CalculateLazyAStar(this Tuple<Node, Node> nodes, Action<List<Node>> onFinish, int StepsPerFrame = 30)
     {
         //el vecino del nodo
-        path.Clear();
+    
         PriorityQueue<Node> frontier = new PriorityQueue<Node>();
         frontier.Enqueue(nodes.Item1, 0f);
         int count=0;
@@ -241,8 +241,8 @@ public static class Pathfinding_Algorithm
                 var makePath = FList.Create(nodes.Item1) + auxPath + nodes.Item2;
                
                 Debug.Log(makePath.Count());
-                path = makePath.ToList();
-                onFinish();
+               
+                onFinish(makePath.ToList());
                 PathMade = true;
                 break;
                 #region
@@ -274,7 +274,7 @@ public static class Pathfinding_Algorithm
 
             }
             count++;
-            if (count >= 10)
+            if (count >= StepsPerFrame)
             {
                 Debug.LogWarning("Espero 1 frame");
                 yield return new WaitForEndOfFrame();
@@ -288,32 +288,32 @@ public static class Pathfinding_Algorithm
        
     }
 
-    public static IEnumerator CalculateLazyThetaStar(this Tuple<Node, Node> nodes, LayerMask wallMask, List<Vector3> path, Action onFinish, Vector3 endpos = default, int iterationPerFrame = 30)
+    public static IEnumerator CalculateLazyThetaStar(this Tuple<Node, Node> nodes, LayerMask wallMask, Action<List<Vector3>> onFinish, Vector3 endpos = default, int iterationPerFrame = 30)
     {
-        List<Node> pathList = new List<Node>();
+        
 
-        Action CutNodes = () =>
+        Action<List<Node>> CutNodes = (pathToCut) =>
         {
             int current = 0;
-            Debug.Log(pathList.Count());
-            while (current + 2 < pathList.Count)
+            Debug.Log(pathToCut.Count());
+            while (current + 2 < pathToCut.Count)
             {
-                if (InLineOffSight(pathList[current].transform.position, pathList[current + 2].transform.position, wallMask))
-                    pathList.RemoveAt(current + 1);
+                if (InLineOffSight(pathToCut[current].transform.position, pathToCut[current + 2].transform.position, wallMask))
+                    pathToCut.RemoveAt(current + 1);
                 else
                     current++;
             }
             // Conseguir las posiciones en el piso
 
-            Debug.Log(pathList.Count());
-            path = pathList.Select(node => node.groundPosition).ToList();
-            if (endpos != default)           
-                path.Add(endpos);
+            Debug.Log(pathToCut.Count());
+            List<Vector3> select = pathToCut.Select(node => node.groundPosition).ToList();
+            if (endpos != default)
+                select.Add(endpos);
             
-            onFinish();
+            onFinish(select);
         };
 
-        return nodes.CalculateLazyAStar(pathList, CutNodes, iterationPerFrame);
+        return nodes.CalculateLazyAStar(CutNodes, iterationPerFrame);
 
         //if (endpos != Vector3.zero) _pathList.Add(endpos);
 

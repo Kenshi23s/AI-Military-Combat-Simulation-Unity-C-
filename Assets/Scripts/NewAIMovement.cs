@@ -79,14 +79,17 @@ public class NewAIMovement : MonoBehaviour
         Tuple<Node, Node> keyNodes = Tuple.Create(I.GetNearestNode(transform.position), I.GetNearestNode(newDestination));
 
         if (keyNodes.Item1 != null && keyNodes.Item2 != null)
-            StartCoroutine(keyNodes.CalculateLazyThetaStar(I.wall_Mask, _path, OnFinishCalculatingPath, destination));
+            StartCoroutine(keyNodes.CalculateLazyThetaStar(I.wall_Mask, OnFinishCalculatingPath, destination));
         else
             _debug.Log("El nodo Inicial"+keyNodes.Item1 != null ? "No es null" : "Es null" + "y el final es "+ keyNodes.Item2 != null ? "No es null" : " Es null");
     }
 
-    void OnFinishCalculatingPath()
+    void OnFinishCalculatingPath(List<Vector3> newPath)
     {
-        if (!_path.Any()) { _debug.Log("No se pudo armar el camino"); return; }
+        if (!newPath.Any()) { _debug.Log("No se pudo armar el camino"); return; }
+
+
+        _path = newPath;
 
         _debug.Log("Arme el camino!, lo reproduzo ");
         _fixedUpdate = PlayPath;     
