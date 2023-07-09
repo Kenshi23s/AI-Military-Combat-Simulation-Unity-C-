@@ -4,6 +4,7 @@ using UnityEngine;
 
 // Todos los metodos de esta clase se deberian llamar dentro del FixedUpdate
 [RequireComponent(typeof(Rigidbody))]
+[DisallowMultipleComponent]
 public class NewPhysicsMovement : MonoBehaviour
 {
     public Vector3 Velocity => rb.velocity;

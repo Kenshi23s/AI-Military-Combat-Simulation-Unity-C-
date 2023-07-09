@@ -206,6 +206,142 @@ public static class Pathfinding_Algorithm
         return new List<Node>();
     }
 
+    public static void AddNodes(List<Vector3> x)
+    {
+        List<Vector3> myPathList = x;
+    }
+
+    public static IEnumerator CalculateLazyAStar(this Tuple<Node, Node> nodes, List<Node> path, Action onFinish, int iterationPerFrame = 30)
+    {
+        //el vecino del nodo
+        path.Clear();
+        PriorityQueue<Node> frontier = new PriorityQueue<Node>();
+        frontier.Enqueue(nodes.Item1, 0f);
+        int count=0;
+        //de donde vino, mi key es el nodo siguiente y el value es el nodo actual
+        bool PathMade = false;
+        Dictionary<Node, Node> cameFrom = new Dictionary<Node, Node>();
+        cameFrom.Add(nodes.Item1, null);
+        //el costo de cada nodo y cuanto costo lleva acumulando el camino
+        Dictionary<Node, float> costSoFar = new Dictionary<Node, float>();
+        costSoFar.Add(nodes.Item1, 0f);
+
+        while (frontier.Count > 0)
+        {
+            Node current = frontier.Dequeue();
+
+            if (current == nodes.Item2)
+            {
+                List<Node> auxPath = new List<Node>();          
+                while (current != nodes.Item1)
+                {
+                    auxPath.Add(current);
+                    current = cameFrom[current];
+                }
+                var makePath = FList.Create(nodes.Item1) + auxPath + nodes.Item2;
+               
+                Debug.Log(makePath.Count());
+                path = makePath.ToList();
+                onFinish();
+                PathMade = true;
+                break;
+                #region
+               
+                #endregion
+
+
+            }
+
+            foreach (Node next in current.Neighbors)
+            {
+
+                float newCost = costSoFar[current] + next.cost;
+                float priority = newCost + Vector3.Distance(next.transform.position, nodes.Item2.transform.position);
+
+                if (!costSoFar.ContainsKey(next))
+                {
+                    frontier.Enqueue(next, priority);
+                    cameFrom.Add(next, current);
+                    costSoFar.Add(next, newCost);
+                }
+
+                else if (costSoFar[next] > newCost)
+                {
+                    frontier.Enqueue(next, priority);
+                    cameFrom[next] = current;
+                    costSoFar[next] = newCost;
+                }
+
+            }
+            count++;
+            if (count >= 10)
+            {
+                Debug.LogWarning("Espero 1 frame");
+                yield return new WaitForEndOfFrame();
+                count = 0;
+            }
+        }
+        if (!PathMade)
+        {
+            Debug.LogWarning("No se pudo hacer el camino en Lazy A STAR");
+        }
+       
+    }
+
+    public static IEnumerator CalculateLazyThetaStar(this Tuple<Node, Node> nodes, LayerMask wallMask, List<Vector3> path, Action onFinish, Vector3 endpos = default, int iterationPerFrame = 30)
+    {
+        List<Node> pathList = new List<Node>();
+
+        Action CutNodes = () =>
+        {
+            int current = 0;
+            Debug.Log(pathList.Count());
+            while (current + 2 < pathList.Count)
+            {
+                if (InLineOffSight(pathList[current].transform.position, pathList[current + 2].transform.position, wallMask))
+                    pathList.RemoveAt(current + 1);
+                else
+                    current++;
+            }
+            // Conseguir las posiciones en el piso
+
+            Debug.Log(pathList.Count());
+            path = pathList.Select(node => node.groundPosition).ToList();
+            if (endpos != default)           
+                path.Add(endpos);
+            
+            onFinish();
+        };
+
+        return nodes.CalculateLazyAStar(pathList, CutNodes, iterationPerFrame);
+
+        //if (endpos != Vector3.zero) _pathList.Add(endpos);
+
+      
+        
+        #region Leer despues
+        //// Chequear si la posicion final es la default.
+        //// Para saber esto en realidad se podria hacer una sobrecarga del metodo
+        //if (endpos == Vector3.zero)
+        //    return groundedPositions;
+
+        //// Si la posicion final se puede pegar al piso, hacerle theta star y agregarla
+
+        //if (Physics.Raycast(endpos, Vector3.down, out RaycastHit hitInfo, 10f, wallMask))
+        //{
+        //    if (pathList.Count > 1)
+        //        if (InLineOffSight(pathList[pathList.Count - 2].transform.position, endpos, wallMask))
+        //            pathList.RemoveAt(pathList.Count - 1);
+
+        //    groundedPositions.Add(hitInfo.point);
+        //}
+
+        //return groundedPositions;
+        #endregion
+    }
+
+   
+
     public static List<Vector3> CalculateThetaStar(this Tuple<Node, Node> nodes, LayerMask wallMask,Vector3 endpos=default)
     {
         List<Node> pathList = CalculateAStar(nodes);
@@ -245,53 +381,53 @@ public static class Pathfinding_Algorithm
     }
 
 
-    public static IEnumerator CalculateThetaStar(this Tuple<Node, Node> nodes,Action<Vector3> returnNode ,LayerMask wallMask, Vector3 endpos = default)
-    {
-        List<Node> pathList = CalculateAStar(nodes);
+    //public static IEnumerator CalculateThetaStar(this Tuple<Node, Node> nodes,Action<Vector3> returnNode ,LayerMask wallMask, Vector3 endpos = default)
+    //{
+    //    List<Node> pathList = CalculateAStar(nodes);
 
-        //if (endpos != Vector3.zero) _pathList.Add(endpos);
+    //    //if (endpos != Vector3.zero) _pathList.Add(endpos);
 
-        int current = 0;
+    //    int current = 0;
 
-        while (current + 2 < pathList.Count)
-        {
-            if (InLineOffSight(pathList[current].transform.position, pathList[current + 2].transform.position, wallMask))
-                pathList.RemoveAt(current + 1);
-            else
-            {
-                current++;
-                returnNode(pathList[current].groundPosition);
-            }
+    //    while (current + 2 < pathList.Count)
+    //    {
+    //        if (InLineOffSight(pathList[current].transform.position, pathList[current + 2].transform.position, wallMask))
+    //            pathList.RemoveAt(current + 1);
+    //        else
+    //        {
+    //            current++;
+    //            returnNode(pathList[current].groundPosition);
+    //        }
                
-            yield return null;
-        }
-        if (endpos!=default)
-        {
-            returnNode(endpos);
-        }
+    //        yield return null;
+    //    }
+    //    if (endpos!=default)
+    //    {
+    //        returnNode(endpos);
+    //    }
         
 
-        //// Conseguir las posiciones en el piso
-        //List<Vector3> groundedPositions = pathList.Select(node => node.groundPosition).ToList();
+    //    //// Conseguir las posiciones en el piso
+    //    //List<Vector3> groundedPositions = pathList.Select(node => node.groundPosition).ToList();
 
-        //// Chequear si la posicion final es la default.
-        //// Para saber esto en realidad se podria hacer una sobrecarga del metodo
-        //if (endpos == Vector3.zero)
-        //    return groundedPositions;
+    //    //// Chequear si la posicion final es la default.
+    //    //// Para saber esto en realidad se podria hacer una sobrecarga del metodo
+    //    //if (endpos == Vector3.zero)
+    //    //    return groundedPositions;
 
-        //// Si la posicion final se puede pegar al piso, hacerle theta star y agregarla
+    //    //// Si la posicion final se puede pegar al piso, hacerle theta star y agregarla
 
-        //if (Physics.Raycast(endpos, Vector3.down, out RaycastHit hitInfo, 10f, wallMask))
-        //{
-        //    if (pathList.Count > 1)
-        //        if (InLineOffSight(pathList[pathList.Count - 2].transform.position, endpos, wallMask))
-        //            pathList.RemoveAt(pathList.Count - 1);
+    //    //if (Physics.Raycast(endpos, Vector3.down, out RaycastHit hitInfo, 10f, wallMask))
+    //    //{
+    //    //    if (pathList.Count > 1)
+    //    //        if (InLineOffSight(pathList[pathList.Count - 2].transform.position, endpos, wallMask))
+    //    //            pathList.RemoveAt(pathList.Count - 1);
 
-        //    groundedPositions.Add(hitInfo.point);
-        //}
+    //    //    groundedPositions.Add(hitInfo.point);
+    //    //}
 
-        //return groundedPositions;
-    }
+    //    //return groundedPositions;
+    //}
 
     public static bool InLineOffSight(Vector3 InitialPos, Vector3 finalPos, LayerMask maskWall)
     {

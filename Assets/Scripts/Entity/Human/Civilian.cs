@@ -2,7 +2,7 @@ using IA2;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-[RequireComponent(typeof(AI_Movement))]
+[RequireComponent(typeof(NewAIMovement))]
 public class Civilian : Entity
 {
     Animator anim;
@@ -13,13 +13,13 @@ public class Civilian : Entity
         LookForRefugee,
         Die
     }
-    AI_Movement civilian_AI;
+    NewAIMovement civilian_AI;
     Bunker nearestBunker;
 
     EventFSM<CivilianStates> civilianFSM;
     protected override void EntityAwake()
     {
-        civilian_AI = GetComponent<AI_Movement>();
+        civilian_AI = GetComponent<NewAIMovement>();
        
     }
 
@@ -62,7 +62,8 @@ public class Civilian : Entity
         {
             nearestBunker = GameManager.instance.bunkers.Minimum(x => Vector3.Distance(x.transform.position,transform.position));
             civilian_AI.SetDestination(nearestBunker.transform.position);
-            civilian_AI.OnDestinationReached += TryEnterBunker;          
+            civilian_AI.OnDestinationReached += TryEnterBunker;
+            _debug.Log("Corro hacia el refugio");
         };
 
 
@@ -74,6 +75,9 @@ public class Civilian : Entity
     {
         State<CivilianStates> pray = new State<CivilianStates>("Pray");
 
+        pray.OnEnter += (x) => { _debug.Log("A rezar C:"); };
+        
+       
         //me imagino q aca se harian cosas del animator
 
         return pray;
@@ -85,6 +89,7 @@ public class Civilian : Entity
 
         die.OnEnter += (x) =>
         {
+            _debug.Log("ha muerto");
             Destroy(GetComponent<BoxCollider>());
             Destroy(health);
             anim.SetTrigger("Die");
@@ -101,6 +106,7 @@ public class Civilian : Entity
 
         nearestBunker.onBunkerDestroyed += () =>
         {
+            _debug.Log("El bunker en el que estaba fue destruido");
             gameObject.SetActive(true);
             civilianFSM.SendInput(CivilianStates.Pray);
         };

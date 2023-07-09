@@ -1,16 +1,17 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 [RequireComponent(typeof(LifeComponent))]
+[RequireComponent(typeof(DebugableObject))]
 public class Bunker : MonoBehaviour
 {
     Civilian[] _refugees;
     [SerializeField,Range(1,30)]int _bunkerCapacity;
+    DebugableObject _debug;
     public event Action onBunkerDestroyed;
 
     private void Awake()
     {
+        _debug = GetComponent<DebugableObject>();
         _refugees = new Civilian[_bunkerCapacity];
         var health = GetComponent<LifeComponent>();
         health.OnKilled += () =>
@@ -31,8 +32,10 @@ public class Bunker : MonoBehaviour
             if (_refugees[i] != null) continue;
 
             _refugees[i]=civilian;
+            _debug.Log($"El civil {civilian} puede entrar al bunker, quedan {_refugees.Length - i} espacios disponibles ");
             return true;
         }
+        _debug.Log($"El civil {civilian} no puede entrar al bunker ");
         return false;
     }
 
