@@ -15,7 +15,7 @@ public class NewPhysicsMovement : MonoBehaviour
     [SerializeField, Min(0)] float _maxSpeed = 5f;
     float _currentSpeed;
 
-    public bool FreezeYRotation = false;
+    public bool FreezeXZRotation = false;
 
     [SerializeField, Min(0), Tooltip("La velocidad de rotacion en angulos por segundo")] 
     float _rotationSpeed = 180f;
@@ -58,7 +58,7 @@ public class NewPhysicsMovement : MonoBehaviour
 
         rb.velocity = dir.normalized * _currentSpeed;
 
-        if (FreezeYRotation)
+        if (FreezeXZRotation)
         {
             rb.rotation = Quaternion.LookRotation(new Vector3(rb.velocity.x, 0f, rb.velocity.z));
             return;
