@@ -4,9 +4,9 @@ using UnityEngine;
 using IA2;
 using System;
 
-[RequireComponent(typeof(AI_Movement))]
+[RequireComponent(typeof(NewAIMovement))]
 [RequireComponent(typeof(FOVAgent))]
-public class Medic : Infantry
+public class Medic : GridEntity
 {
     public enum MedicInputs
     {
@@ -17,7 +17,7 @@ public class Medic : Infantry
         DIE
     }
 
-    AI_Movement _ai;
+    NewAIMovement _ai;
     FOVAgent _fov;
     Fireteam _fireteam;
     public EventFSM<MedicInputs> _fsm;
@@ -29,11 +29,14 @@ public class Medic : Infantry
     Vector3 runToTarget;
     Action onTargetReached = delegate { };
 
+    Animator _anim;
 
     State<MedicInputs> idle, followLeader, runTo, shootTarget, die;
 
     private void Awake()
     {
+        _anim = GetComponent<Animator>();
+
         idle = CreateIdleState();
         followLeader = CreateFollowLeaderState();
         runTo = CreateRunToState();
@@ -51,9 +54,9 @@ public class Medic : Infantry
 
         idle.OnEnter += _ => 
         {
-            // Dejar de moverse
+            _anim.SetBool("Idle", true);
 
-            // Cambiar a animacion de idle.
+            // Dejar de moverse
         };
 
         return idle;
@@ -66,8 +69,14 @@ public class Medic : Infantry
         followLeader.OnEnter += _ =>
         {
             // Pasar a animacion de correr
+            _anim.SetBool("Running", true);
 
             // Empezar corutina para calcular camino hacia el lider cada X cantidad de segundos 
+        };
+
+        followLeader.OnExit += _ =>
+        {
+            _anim.SetBool("Running", false);
         };
 
         return followLeader;
@@ -77,16 +86,23 @@ public class Medic : Infantry
     {
         var runTo = new State<MedicInputs>("RUN_TO");
 
-        followLeader.OnEnter += _ =>
+        runTo.OnEnter += _ =>
         {
             // Empezar a calcular camino hacia posicion, y cuando se haya calculado
             // empezar a moverse y pasar a animacion de correr.
+
+            _anim.SetBool("Running", true);
         };
 
-        followLeader.OnUpdate += () =>
+        runTo.OnUpdate += () =>
         {
             // Avisar que nos movimos.
             Moved();
+        };
+
+        runTo.OnExit += _ =>
+        {
+            _anim.SetBool("Running", false);
         };
 
         return runTo;
@@ -98,14 +114,20 @@ public class Medic : Infantry
 
         shootTarget.OnEnter += _ => 
         {
-            // Dejar de moverse
-
             // Pasar a animacion de disparar
+            _anim.SetBool("Shooting", true);
+
+            // Dejar de moverse
         };
 
         shootTarget.OnUpdate += () =>
         {
             // Logica de disparo y recarga
+        };
+
+        shootTarget.OnExit += _ => 
+        {
+            _anim.SetBool("Shooting", false);
         };
 
         return shootTarget;
@@ -117,9 +139,10 @@ public class Medic : Infantry
 
         die.OnEnter += _ =>
         {
-            // Dejar de moverse
-
             // Pasar a animacion de morir
+            _anim.SetTrigger("Die");
+
+            // Dejar de moverse
         };
 
         die.OnUpdate += () =>

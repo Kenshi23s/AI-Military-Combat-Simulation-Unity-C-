@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-[RequireComponent(typeof(AI_Movement))]
+[RequireComponent(typeof(NewAIMovement))]
 [RequireComponent(typeof(FOVAgent))]
 public abstract class Infantry : GridEntity 
 { 
@@ -18,7 +18,7 @@ public abstract class Infantry : GridEntity
         FireAtWill
     }
    
-    AI_Movement _infantry_AI;
+    NewAIMovement _infantry_AI;
     FOVAgent _fov;
     Fireteam myFireteam;
     public EventFSM<INFANTRY_STATES> infantry_FSM;
@@ -26,7 +26,7 @@ public abstract class Infantry : GridEntity
     public Entity actualTarget;
     protected override void EntityAwake()
     {
-        _infantry_AI = GetComponent<AI_Movement>();
+        _infantry_AI = GetComponent<NewAIMovement>();
         _fov = GetComponent<FOVAgent>();
     }
 
