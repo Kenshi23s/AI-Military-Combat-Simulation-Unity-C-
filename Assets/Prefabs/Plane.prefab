@@ -88,7 +88,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _acceleration: 25
   _maxSpeed: 35
-  FreezeYRotation: 0
+  _freezeXZRotation: 0
   _rotationSpeed: 30
 --- !u!114 &6565769872705145565
 MonoBehaviour:
@@ -168,6 +168,7 @@ MonoBehaviour:
   _cd_OnRandomDir: 4
   _unitsBehindPlane: 30
   _collisionCheckDistance: 30
+  minimumDistanceForStrike: 0
   isShooting: 0
   bulletsPerBurst: 3
   burstCD: 3

@@ -18,7 +18,17 @@ public class NewPhysicsMovement : MonoBehaviour
     [SerializeField, Min(0)] float _maxSpeed = 5f;
     float _currentSpeed;
 
-    public bool FreezeXZRotation = false;
+    [SerializeField] bool _freezeXZRotation = true;
+    public bool FreezeXZRotation { get
+        {
+            return _freezeXZRotation;
+        }
+        set 
+        {
+            _freezeXZRotation = value;
+            FreezeXZRotationChanged(value);
+        }
+    }
 
     [SerializeField, Min(0), Tooltip("La velocidad de rotacion en angulos por segundo")] 
     float _rotationSpeed = 180f;
@@ -43,7 +53,9 @@ public class NewPhysicsMovement : MonoBehaviour
     public Vector3 Up => Rotation * Vector3.up;
     private void OnValidate()
     {
+        rb = GetComponent<Rigidbody>();
         _radiansRotSpeed = _rotationSpeed * Mathf.Deg2Rad;
+        FreezeXZRotationChanged(_freezeXZRotation);
     }
 
     Rigidbody rb;
@@ -52,6 +64,8 @@ public class NewPhysicsMovement : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        FreezeXZRotationChanged(_freezeXZRotation);
+
         _debug = GetComponent<DebugableObject>();
         _debug.AddGizmoAction(DrawSpeedArrow);
     }
@@ -66,7 +80,7 @@ public class NewPhysicsMovement : MonoBehaviour
 
         rb.velocity = dir.normalized * _currentSpeed;
 
-        if (FreezeXZRotation)
+        if (_freezeXZRotation)
         {
             rb.rotation = Quaternion.LookRotation(new Vector3(rb.velocity.x, 0f, rb.velocity.z));
             return;
@@ -80,6 +94,15 @@ public class NewPhysicsMovement : MonoBehaviour
     public void AccelerateTowardsTarget(Vector3 destination) => AccelerateTowards(destination - rb.position);
 
     public void UseGravity(bool value) => rb.useGravity = value;
+
+    void FreezeXZRotationChanged(bool freeze) 
+    {
+        _freezeXZRotation = freeze;
+        if (freeze)
+            rb.constraints |= RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        else
+            rb.constraints &= ~(RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ);
+    }
 
     void DrawSpeedArrow()
     {
