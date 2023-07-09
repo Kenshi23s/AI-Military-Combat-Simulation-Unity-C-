@@ -295,7 +295,7 @@ public static class Pathfinding_Algorithm
         Action<List<Node>> CutNodes = (pathToCut) =>
         {
             int current = 0;
-            Debug.Log(pathToCut.Count());
+   
             while (current + 2 < pathToCut.Count)
             {
                 if (InLineOffSight(pathToCut[current].transform.position, pathToCut[current + 2].transform.position, wallMask))
@@ -305,7 +305,7 @@ public static class Pathfinding_Algorithm
             }
             // Conseguir las posiciones en el piso
 
-            Debug.Log(pathToCut.Count());
+          
             List<Vector3> select = pathToCut.Select(node => node.groundPosition).ToList();
             if (endpos != default)
                 select.Add(endpos);

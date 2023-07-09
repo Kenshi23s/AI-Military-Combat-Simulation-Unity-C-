@@ -428,8 +428,8 @@ public class Plane : Vehicle
     
     void DrawTowardsTarget()
     {
-        if (targetPlane!=null)
-        {
+        if (targetPlane == null) return;
+        
             Gizmos.color = Color.red;
             Vector3 dir = targetPlane.transform.position - transform.position;
             DrawArrow.ForGizmo(transform.position, dir.normalized, Color.red, 2);
@@ -438,7 +438,7 @@ public class Plane : Vehicle
             Vector3 pursuitTargetPos = targetPlane.transform.position + awayDir * _unitsBehindPlane;
 
             Gizmos.DrawWireSphere(pursuitTargetPos, 3f);
-        }
+        
     }
 
 

@@ -31,6 +31,7 @@ public class NewAIMovement : MonoBehaviour
         ManualMovement = GetComponent<NewPhysicsMovement>();
         owner = GetComponent<GridEntity>();
         _debug= GetComponent<DebugableObject>();
+        _debug.AddGizmoAction(DrawPath);
     }
 
     public void SetDestination(Vector3 newDestination)
@@ -45,7 +46,7 @@ public class NewAIMovement : MonoBehaviour
         }
         else
         {
-            _debug.Log("No veo el destino, calculo el camino.");
+           
 
             CalculatePath(newDestination);
         }
@@ -73,13 +74,15 @@ public class NewAIMovement : MonoBehaviour
     }
 
     void CalculatePath(Vector3 newDestination)
-    {      
+    {
+        _debug.Log("No veo el destino, calculo el camino.");
+
         AI_Manager I = AI_Manager.instance;
 
         Tuple<Node, Node> keyNodes = Tuple.Create(I.GetNearestNode(transform.position), I.GetNearestNode(newDestination));
 
         if (keyNodes.Item1 != null && keyNodes.Item2 != null)
-            StartCoroutine(keyNodes.CalculateLazyThetaStar(I.wall_Mask, OnFinishCalculatingPath, destination));
+            StartCoroutine(keyNodes.CalculateLazyThetaStar(I.wall_Mask, OnFinishCalculatingPath, destination,200));
         else
             _debug.Log("El nodo Inicial"+keyNodes.Item1 != null ? "No es null" : "Es null" + "y el final es "+ keyNodes.Item2 != null ? "No es null" : " Es null");
     }
@@ -107,9 +110,9 @@ public class NewAIMovement : MonoBehaviour
 
         _debug.Log("Se mueve hacia el siguiente nodo, me faltan " + _path.Count);
 
-        ManualMovement.AccelerateTowardsTarget(_path.First());
+        ManualMovement.AccelerateTowardsTarget(_path[0]);
 
-        if (Vector3.Distance(_path.First(), transform.position) < destinationArriveDistance)
+        if (Vector3.Distance(_path[0], transform.position) < destinationArriveDistance)
             _path.RemoveAt(0);
     }
 
@@ -126,6 +129,11 @@ public class NewAIMovement : MonoBehaviour
     }
 
     private void FixedUpdate() => _fixedUpdate?.Invoke();
+
+    void DrawPath()
+    {
+       
+    }
 
     Vector3 ObstacleAvoidance()
     {

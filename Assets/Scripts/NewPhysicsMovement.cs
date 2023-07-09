@@ -4,9 +4,12 @@ using UnityEngine;
 
 // Todos los metodos de esta clase se deberian llamar dentro del FixedUpdate
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(DebugableObject))]
 [DisallowMultipleComponent]
 public class NewPhysicsMovement : MonoBehaviour
 {
+   
+
     public Vector3 Velocity => rb.velocity;
     public Quaternion Rotation => rb.rotation;
     public float CurrentSpeed => rb.velocity.magnitude;
@@ -19,6 +22,8 @@ public class NewPhysicsMovement : MonoBehaviour
 
     [SerializeField, Min(0), Tooltip("La velocidad de rotacion en angulos por segundo")] 
     float _rotationSpeed = 180f;
+
+
 
     public float RotationSpeed {
         get 
@@ -42,10 +47,13 @@ public class NewPhysicsMovement : MonoBehaviour
     }
 
     Rigidbody rb;
+    DebugableObject _debug;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        _debug = GetComponent<DebugableObject>();
+        _debug.AddGizmoAction(DrawSpeedArrow);
     }
 
     public void AccelerateTowards(Vector3 dir) 
@@ -72,5 +80,10 @@ public class NewPhysicsMovement : MonoBehaviour
     public void AccelerateTowardsTarget(Vector3 destination) => AccelerateTowards(destination - rb.position);
 
     public void UseGravity(bool value) => rb.useGravity = value;
+
+    void DrawSpeedArrow()
+    {
+        DrawArrow.ForGizmo(transform.position, Velocity , Color.green , 2f);
+    }
 
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using FacundoColomboMethods;
 using System.Linq;
+using System;
 
 public class AI_Manager : MonoSingleton<AI_Manager>
 {
@@ -14,9 +15,11 @@ public class AI_Manager : MonoSingleton<AI_Manager>
     public List<AI_Movement> flockingTargets => _flockingTargets; 
     private List<AI_Movement> _flockingTargets = new List<AI_Movement>();
 
+    public float MaxDistanceBetweenNodes;
+
     [SerializeField] bool debugNodeConnections;
 
-    public List<Node> nodes;
+    [NonSerialized]public List<Node> nodes;
 
     public void AddToFlockingTargets(AI_Movement a) => _flockingTargets.Add(a);
 

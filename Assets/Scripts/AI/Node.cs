@@ -20,16 +20,17 @@ public class Node : MonoBehaviour
    
     public void IntializeNode()
     {
-        if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hitInfo, 5f, AI_Manager.instance.wall_Mask))
+        if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hitInfo, Mathf.Infinity, AI_Manager.instance.wall_Mask))
             groundPosition = hitInfo.point;
         else
             groundPosition = transform.position;
         
    
         LayerMask wallMask = AI_Manager.instance.wall_Mask;
+        AI_Manager I = AI_Manager.instance;
 
-        Neighbors = AI_Manager.instance.nodes.GetWhichAreOnSight(transform.position, wallMask, RaycastType.Sphere, 1f)
-                    .Where(x=> x!=this).Where(x=>Vector3.Distance(x.transform.position,transform.position)<25f).ToList();
+        Neighbors = I.nodes.GetWhichAreOnSight(transform.position, wallMask, RaycastType.Sphere, 1f)
+                    .Where(x => x != this).Where(x => Vector3.Distance(x.transform.position,transform.position) < I.MaxDistanceBetweenNodes).ToList();
 
         GetComponent<DebugableObject>().AddGizmoAction(NodeGizmo);
         GetComponent<MeshRenderer>().enabled = false;
@@ -53,7 +54,7 @@ public class Node : MonoBehaviour
     }
     private void OnDrawGizmos()
     {
-        
+        Gizmos.DrawWireSphere(groundPosition,1f);
     }
 
 }
