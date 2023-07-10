@@ -75,6 +75,10 @@ public class LifeComponent : MonoBehaviour, IDamagable, IHealable
     public bool isCrit;
     public void ShowDamageNumber(int x)
     {
+        if (FloatingTextManager.instance==null)
+        {
+            Debug.Log("es Null");
+        }
         
         FloatingTextManager.instance.PopUpText(x.ToString(), hitPos != Vector3.zero? hitPos : transform.position, isCrit);
         hitPos = Vector3.zero;
@@ -88,8 +92,7 @@ public class LifeComponent : MonoBehaviour, IDamagable, IHealable
 
     public void Initialize()
     {
-        _life = _maxLife;
-       
+        _life = _maxLife;       
     }
 
     #region DamageSide

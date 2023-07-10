@@ -16,6 +16,8 @@ public class GridEntity : Entity
     public IEnumerable<GridEntity> GetEntitiesInRange(float range) 
     {
         //creo una "caja" con las dimensiones deseadas, y luego filtro segun distancia para formar el círculo
+        if (!onGrid) return new List<GridEntity>();
+       
         float sqrDistance = range * range;
         return _spatialGrid.Query(
             transform.position + new Vector3(-range, -range, -range),

@@ -35,8 +35,6 @@ public class FloatingTextManager : MonoSingleton<FloatingTextManager>
             if (isCrit)
                 t.InitializeText(text, pos, _parameters, Color.yellow);
             else
-                t.InitializeText(text, pos, _parameters);
-
-        
+                t.InitializeText(text, pos, _parameters);    
     }
 }

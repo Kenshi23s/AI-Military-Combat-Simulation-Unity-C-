@@ -60,6 +60,7 @@ public class Plane : Vehicle
         shootComponent = GetComponent<ShootComponent>();
         _debug.AddGizmoAction(DrawTowardsTarget); _debug.AddGizmoAction(DrawAirstrikeZone);
         health.OnKilled += () => _planeFSM.SendInput(PlaneStates.ABANDONED);
+        _movement.GroundedMovement = false;
         misileStats.owner = gameObject;
     }
 
@@ -278,6 +279,7 @@ public class Plane : Vehicle
 
         state.OnEnter += (x) =>
         {
+            StopAllCoroutines();
             if (targetPlane == null)
             {
                 _debug.Log("No hay blanco de disparo, paso de nuevo a FLY_AROUND");
@@ -350,8 +352,9 @@ public class Plane : Vehicle
                 targetPlane.SetChaser(null);
                 targetPlane = null;
             }
-            StopCoroutine(ShootBullets());
-            StopCoroutine(ShootMisiles());
+            StopAllCoroutines();
+            //StopCoroutine(ShootBullets());
+            //StopCoroutine(ShootMisiles());
 
         };
 
@@ -449,7 +452,7 @@ public class Plane : Vehicle
     void ShootMisile(Transform target)
     {
         Misile z = Instantiate(PlanesManager.instance.MisilePrefab, misilePos.PickRandom().transform.position, Quaternion.identity);
-
+        misileStats.initialVelocity = _movement.Velocity;
         z.ShootMisile(misileStats, target);
     }
     

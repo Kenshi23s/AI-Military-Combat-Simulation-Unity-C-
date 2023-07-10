@@ -24,17 +24,14 @@ public class ShootComponent : MonoBehaviour
             if (hit.transform.TryGetComponent(out IDamagable victim))
             {
                 victim.TakeDamage(_bulletdamage);
-                Debug.Log($"Hit! le hice daño a{victim}");
+                Debug.Log($"Hit! le hice daño a {victim}");
                 onHit?.Invoke(victim);
             }
             finalTrailPos = hit.point;
-
-
         }
-        if (finalTrailPos==Vector3.zero)
-        {
-            finalTrailPos = dir.normalized * 100;
-        }
+
+        if (finalTrailPos==Vector3.zero) finalTrailPos = dir.normalized * 100;
+
         StartCoroutine(SpawnTrail(Instantiate(trailSample,_shootPos.position,Quaternion.identity), finalTrailPos));
     }
 

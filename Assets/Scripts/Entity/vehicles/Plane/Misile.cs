@@ -26,20 +26,32 @@ public class Misile : GridEntity
         public float timeBeforeExplosion;
         public int damage;
         public float explosionRadius;
+        public Vector3 initialVelocity;
     }
 
     private void Awake()
     {
         _movement = GetComponent<NewPhysicsMovement>();
+        _movement.GroundedMovement = false;
         GetComponent<Collider>().isTrigger = true;
         enabled = false;
        
     }
 
-    public void ShootMisile(MisileStats newStats, Transform target)
+    private void Start()
+    {
+        
+    }
+    private void LateUpdate()
+    {
+        _movement.MaxSpeed += Time.deltaTime;
+    }
+    public void ShootMisile(MisileStats newStats, Transform newTarget)
     {
         myStats = newStats;
         SetMovementStats();
+        StartCoroutine(CountdownForExplosion());
+        target = newTarget;
         transform.parent = null;
         enabled = true;
     }
@@ -49,6 +61,7 @@ public class Misile : GridEntity
         _movement.Acceleration = myStats.acceleration;
         _movement.MaxSpeed = myStats.maxSpeed;
         _movement.RotationSpeed = myStats.rotationSpeed;
+        _movement.Velocity = myStats.initialVelocity;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -77,16 +90,24 @@ public class Misile : GridEntity
         Explosion();
     }
     private void OnDestroy()
-    {     
-        SpatialGrid.RemoveEntity(this);
+    {
+        if (SpatialGrid!=null)
+        {
+            SpatialGrid.RemoveEntity(this);
+        }
+    
     }
 
     private void FixedUpdate()
     {
-        Vector3 dirToGo = target != null 
-            ? target.transform.position - transform.position 
-            : _movement.Forward;
-        _movement.AccelerateTowards(dirToGo);
+        if (target==null)
+        {
+            _movement.AccelerateTowards(_movement.Forward);
+        }
+        else
+        {
+            _movement.AccelerateTowardsTarget(target.transform.position);
+        }     
     }
 
     private void OnDrawGizmos()
