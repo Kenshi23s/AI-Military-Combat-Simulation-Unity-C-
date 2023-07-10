@@ -8,14 +8,27 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class NewPhysicsMovement : MonoBehaviour
 {
-   
+
 
     public Vector3 Velocity => rb.velocity;
     public Quaternion Rotation => rb.rotation;
     public float CurrentSpeed => rb.velocity.magnitude;
 
     [SerializeField, Min(0)] float _acceleration = 5f;
+
+    public float Acceleration 
+    {
+        get => _acceleration;
+        set => _acceleration = Mathf.Max(0,value);
+    }
     [SerializeField, Min(0)] float _maxSpeed = 5f;
+
+    public float MaxSpeed
+    {
+        get => _maxSpeed;
+        set => _maxSpeed = Mathf.Max(0, value);
+    }
+
     float _currentSpeed;
 
     [SerializeField] bool _freezeXZRotation = true;
@@ -33,8 +46,6 @@ public class NewPhysicsMovement : MonoBehaviour
     [SerializeField, Min(0), Tooltip("La velocidad de rotacion en angulos por segundo")] 
     float _rotationSpeed = 180f;
 
-
-
     public float RotationSpeed {
         get 
         { 
@@ -48,9 +59,16 @@ public class NewPhysicsMovement : MonoBehaviour
     }
 
     float _radiansRotSpeed;
+    #region ShortCuts
     public Vector3 Forward => Rotation * Vector3.forward;
     public Vector3 Right => Rotation * Vector3.right;
     public Vector3 Up => Rotation * Vector3.up;
+    #endregion
+
+    Rigidbody rb;
+    DebugableObject _debug;
+
+
     private void OnValidate()
     {
         rb = GetComponent<Rigidbody>();
@@ -58,8 +76,6 @@ public class NewPhysicsMovement : MonoBehaviour
         FreezeXZRotationChanged(_freezeXZRotation);
     }
 
-    Rigidbody rb;
-    DebugableObject _debug;
 
     private void Awake()
     {
