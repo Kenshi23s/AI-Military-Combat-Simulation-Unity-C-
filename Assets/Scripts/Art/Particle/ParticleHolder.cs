@@ -1,10 +1,14 @@
 using System;
 using System.Collections;
 using UnityEngine;
-public class ParticleHolder : MonoBehaviour
+[System.Serializable]
+public struct ParticleHold
 {
-
-   
+    public ParticleHolder particle;
+    [NonSerialized]public int key;
+}
+public class ParticleHolder : MonoBehaviour
+{  
     [SerializeField, Range(0, 10)] float _totalDuration;
     Action<ParticleHolder,int> _returnToPool;
     public event Action OnFinish;

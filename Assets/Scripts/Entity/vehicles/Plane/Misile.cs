@@ -8,10 +8,12 @@ using System;
 [RequireComponent(typeof(NewPhysicsMovement))]
 public class Misile : GridEntity
 {
+    
     NewPhysicsMovement _movement;
 
     public Transform target { get; private set; }
 
+    [SerializeField] ParticleHold explosionParticle;
  
     
     public MisileStats myStats;
@@ -38,13 +40,10 @@ public class Misile : GridEntity
        
     }
 
-    private void Start()
-    {
-        
-    }
     private void LateUpdate()
     {
         _movement.MaxSpeed += Time.deltaTime;
+        _movement.Acceleration += Time.deltaTime/2;
     }
     public void ShootMisile(MisileStats newStats, Transform newTarget)
     {
