@@ -1,11 +1,11 @@
 fileFormatVersion: 2
-guid: 09fe41e868764be4c846d012a4a4f1ad
+guid: c94674379d51c6d499608bddf20a513a
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable:
   - first:
       74: -203655887218126122
-    second: AimWithWeapon
+    second: Heal
   externalObjects: {}
   materials:
     materialImportMode: 0
@@ -36,11 +36,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: AimWithWeapon
+      name: Heal
       takeName: mixamo.com
       internalID: 0
       firstFrame: 0
-      lastFrame: 93
+      lastFrame: 120
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
