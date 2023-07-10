@@ -1,5 +1,67 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2179569238841715754
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3355421752814213245}
+  m_Layer: 8
+  m_Name: MisilePos
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &3355421752814213245
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2179569238841715754}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1.351, y: -0.72, z: -1.165}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6565769872705145537}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4918638885820261782
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5285789855417990210}
+  m_Layer: 8
+  m_Name: MisilePos
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &5285789855417990210
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4918638885820261782}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -1.366, y: -0.72, z: -1.165}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6565769872705145537}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6565769872705145562
 GameObject:
   m_ObjectHideFlags: 0
@@ -23,7 +85,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6565769872705145537
 Transform:
   m_ObjectHideFlags: 0
@@ -38,6 +100,8 @@ Transform:
   m_Children:
   - {fileID: 9083171063329367226}
   - {fileID: 2981361346413041499}
+  - {fileID: 5285789855417990210}
+  - {fileID: 3355421752814213245}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -153,16 +217,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9fbd691dbdc1a14e940b0d8a717d5ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  velocity: {x: 0, y: 0, z: 0}
+  <MyTeam>k__BackingField: 0
   onGrid: 1
-  _spatialGrid: {fileID: 0}
   flockingParameters:
     AlignmentForce: 1.29
     _separationForce: 1.39
     _cohesionForce: 1.44
   sightRadius: 80
   _loseSightRadius: 100.3
-  myTeam: 1
   vehicleSeats: []
   EngineOn: 1
   targetPlane: {fileID: 0}
@@ -170,10 +232,20 @@ MonoBehaviour:
   _cd_OnRandomDir: 4
   _unitsBehindPlane: 30
   _collisionCheckDistance: 30
-  minimumDistanceForStrike: 0
-  isShooting: 0
+  misilePos:
+  - {fileID: 5285789855417990210}
+  - {fileID: 3355421752814213245}
+  misileStats:
+    acceleration: 2
+    maxSpeed: 3
+    rotationSpeed: 180
+    timeBeforeExplosion: 20
+    damage: 15
+    explosionRadius: 12
+  misileCD: 0
+  minimumDistanceForStrike: 23
   bulletsPerBurst: 3
-  burstCD: 3
+  burstCD: 1.5
   BulletCD: 0.3
   shootPos: {fileID: 9083171063329367226}
 --- !u!65 &3740303564570812394
@@ -204,7 +276,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &9083171063329367226
 Transform:
   m_ObjectHideFlags: 0
@@ -465,12 +537,17 @@ PrefabInstance:
     - target: {fileID: 4155046195482119558, guid: 05868fab2d415b84abdc41e4d376b804,
         type: 3}
       propertyPath: m_Name
-      value: Rafale
+      value: View
       objectReference: {fileID: 0}
     - target: {fileID: 4155046195482119558, guid: 05868fab2d415b84abdc41e4d376b804,
         type: 3}
       propertyPath: m_Layer
       value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4155046195482119558, guid: 05868fab2d415b84abdc41e4d376b804,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 05868fab2d415b84abdc41e4d376b804, type: 3}

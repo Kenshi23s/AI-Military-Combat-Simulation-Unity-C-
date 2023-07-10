@@ -7,7 +7,8 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public abstract class Entity : MonoBehaviour
 {
-    public Team myTeam { get; protected set; }
+
+    [field:SerializeField] public Team MyTeam { get; protected set; }
     public LifeComponent health { get; private set; }
     protected DebugableObject _debug;
 

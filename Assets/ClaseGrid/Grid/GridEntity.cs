@@ -6,10 +6,10 @@ using UnityEngine;
 public class GridEntity : Entity
 {
 	public event Action<GridEntity> OnMove = delegate {};
-	public Vector3 velocity = new Vector3(0, 0, 0);
+	[NonSerialized]public Vector3 velocity = new Vector3(0, 0, 0);
     public bool onGrid;
 
-    public SpatialGrid3D _spatialGrid;
+    SpatialGrid3D _spatialGrid;
     public SpatialGrid3D SpatialGrid => _spatialGrid;
 
 

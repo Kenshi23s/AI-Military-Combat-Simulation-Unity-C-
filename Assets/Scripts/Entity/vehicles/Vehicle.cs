@@ -17,13 +17,13 @@ public struct Seat
 [RequireComponent(typeof(FOVAgent))]
 public abstract class Vehicle : GridEntity, FlockableEntity
 {
-    [SerializeField] 
+
+    [SerializeField,Header("Vehicle Variables")] 
     protected FlockingParameters flockingParameters;
     [SerializeField] protected float sightRadius;
     [SerializeField] protected float _loseSightRadius;
     protected FOVAgent _fov;
     protected NewPhysicsMovement _movement;
-    public Team myTeam;
     public List<Seat> vehicleSeats = new List<Seat>();
 
     public event Action OnEngineTurnOff;
@@ -109,7 +109,7 @@ public abstract class Vehicle : GridEntity, FlockableEntity
     }
     public void Initialize(Team newTeam)
     {
-        myTeam = newTeam;
+        MyTeam = newTeam;
     }
 
     public Vector3 GetPosition()

@@ -84,11 +84,23 @@ public class SpatialGrid3D : MonoBehaviour
 
         foreach (var e in ents)
         {
-            e.SetSpatialGrid(this);
-            e.OnMove += UpdateEntity;
-         
-            UpdateEntity(e);
+            AddEntity(e);
         }
+    }
+
+    public void AddEntity(GridEntity entity)
+    {
+        entity.SetSpatialGrid(this);
+        entity.OnMove += UpdateEntity;
+
+        UpdateEntity(entity);
+    }
+
+    public void RemoveEntity(GridEntity entity)
+    {
+        
+        entity.SetSpatialGrid(null);
+        entity.OnMove -= UpdateEntity;   
     }
 
     public void Update() 

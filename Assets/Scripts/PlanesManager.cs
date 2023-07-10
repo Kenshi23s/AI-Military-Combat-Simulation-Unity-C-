@@ -10,7 +10,8 @@ public class PlanesManager : MonoSingleton<PlanesManager>
     public float maxDistanceZ;
     public float Scale;
 
-    public float maxUpwardsAngleOnTakeOff;
+    [field:SerializeField]public Misile MisilePrefab { get; private set; }
+ 
 
     public LayerMask groundMask;
 
@@ -25,17 +26,7 @@ public class PlanesManager : MonoSingleton<PlanesManager>
         
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+ 
     public bool InCombatZone(Plane plane) { return true; }
 
     private void OnDrawGizmos()

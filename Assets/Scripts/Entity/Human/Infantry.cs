@@ -60,7 +60,7 @@ public abstract class Infantry : GridEntity
         while (true)
         {
             var z = GetEntitiesAround()                               
-           .Where(x => x.myTeam != myTeam)
+           .Where(x => x.MyTeam != MyTeam)
            .Where(x => _fov.IN_FOV(x.transform.position));
 
             if (z.Any()) infantry_FSM.SendInput(INFANTRY_STATES.FireAtWill);

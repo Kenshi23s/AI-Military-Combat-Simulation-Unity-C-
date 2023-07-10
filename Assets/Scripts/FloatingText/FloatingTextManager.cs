@@ -29,14 +29,14 @@ public class FloatingTextManager : MonoSingleton<FloatingTextManager>
      
         FloatingText t = pool.GetHolder();
 
-        if (t != null)
-        {                         
+        if (t == null) return;
+                                
             _parameters.IncreaseSortingOrder();
             if (isCrit)
                 t.InitializeText(text, pos, _parameters, Color.yellow);
             else
                 t.InitializeText(text, pos, _parameters);
 
-        }
+        
     }
 }
