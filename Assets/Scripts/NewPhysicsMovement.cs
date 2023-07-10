@@ -10,7 +10,11 @@ public class NewPhysicsMovement : MonoBehaviour
 {
 
 
-    public Vector3 Velocity => rb.velocity;
+    public Vector3 Velocity { 
+        get => rb.velocity;
+        set => rb.velocity = value;
+    }
+
     public Quaternion Rotation => rb.rotation;
     public float CurrentSpeed => rb.velocity.magnitude;
 
@@ -31,15 +35,12 @@ public class NewPhysicsMovement : MonoBehaviour
 
     float _currentSpeed;
 
-    [SerializeField] bool _freezeXZRotation = true;
-    public bool FreezeXZRotation { get
-        {
-            return _freezeXZRotation;
-        }
-        set 
-        {
-            _freezeXZRotation = value;
-            FreezeXZRotationChanged(value);
+    [SerializeField] bool _groundedMovement = true;
+    public bool GroundedMovement {
+        get => _groundedMovement;
+        set {
+            _groundedMovement = value;
+            OnGroundedMovementChanged(value);
         }
     }
 
@@ -47,10 +48,7 @@ public class NewPhysicsMovement : MonoBehaviour
     float _rotationSpeed = 180f;
 
     public float RotationSpeed {
-        get 
-        { 
-            return _rotationSpeed; 
-        }
+        get => _rotationSpeed;
         set 
         { 
             _rotationSpeed = value;
@@ -60,62 +58,95 @@ public class NewPhysicsMovement : MonoBehaviour
 
     float _radiansRotSpeed;
     #region ShortCuts
-    public Vector3 Forward => Rotation * Vector3.forward;
-    public Vector3 Right => Rotation * Vector3.right;
-    public Vector3 Up => Rotation * Vector3.up;
+    public Vector3 Right => rb.rotation * Vector3.right;
+    public Vector3 Up => rb.rotation * Vector3.up;
+    public Vector3 Forward => rb.rotation * Vector3.forward;
     #endregion
 
     Rigidbody rb;
     DebugableObject _debug;
 
-
     private void OnValidate()
     {
         rb = GetComponent<Rigidbody>();
         _radiansRotSpeed = _rotationSpeed * Mathf.Deg2Rad;
-        FreezeXZRotationChanged(_freezeXZRotation);
+        OnGroundedMovementChanged(_groundedMovement);
     }
 
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        FreezeXZRotationChanged(_freezeXZRotation);
+        OnGroundedMovementChanged(_groundedMovement);
 
         _debug = GetComponent<DebugableObject>();
         _debug.AddGizmoAction(DrawSpeedArrow);
     }
 
-    public void AccelerateTowards(Vector3 dir) 
+    Vector3 velocity;
+    Quaternion rotation;
+
+    public void AccelerateTowards(Vector3 desiredDir) 
     {
-        if (dir == Vector3.zero)
-            return;
-
-        dir.Normalize();
-        if (FreezeXZRotation)
+        if (desiredDir == Vector3.zero)
         {
-            // Acelerar hacia maxSpeed
-            _currentSpeed = Mathf.MoveTowards(Vector3.Dot(rb.velocity, dir), _maxSpeed, _acceleration * Time.fixedDeltaTime);
+            Debug.Log("[Custom Msg] desiredDir can't be Vector3.zero");
+            return;
         }
+
+        desiredDir.Normalize();
+
+        velocity = rb.velocity;
+        rotation = rb.rotation;
+
+        if (GroundedMovement)
+            GroundedAccelerate(desiredDir);
         else
-        {
-            _currentSpeed = Mathf.MoveTowards(rb.velocity.magnitude, _maxSpeed, _acceleration * Time.fixedDeltaTime);
-        }
+            PlaneAccelerate(desiredDir);
 
-        // Rotar hacia la direccion
-        dir = Vector3.RotateTowards(Velocity != Vector3.zero ? Forward : transform.forward, dir, _radiansRotSpeed * Time.fixedDeltaTime, 1000f);
-
-        rb.velocity = dir.normalized * _currentSpeed;
-
-        if (_freezeXZRotation)
-        {
-            rb.rotation = Quaternion.LookRotation(new Vector3(rb.velocity.x, 0f, rb.velocity.z));
-            return;
-        }
-
-        rb.rotation = Quaternion.LookRotation(rb.velocity);
+        rb.velocity = velocity;
+        rb.rotation = rotation;
     }
 
+    void GroundedAccelerate(Vector3 desiredDir) 
+    {
+        // Aplanar la direccion
+        Vector3 desiredLookDir = new Vector3(desiredDir.x, 0, desiredDir.z).normalized;
+
+        // Rotar hacia la direccion
+        float maxRotSpeed = _radiansRotSpeed * Time.fixedDeltaTime;        
+        Vector3 lookDir = Vector3.RotateTowards(transform.forward, desiredLookDir, maxRotSpeed, 0f);
+
+        // Aca falta proyectar la direccion hacia la normal de contacto
+        Vector3 moveDir = lookDir;
+        Vector3 desiredVelocity = moveDir * MaxSpeed;
+        desiredVelocity.y = velocity.y;
+
+        float maxSpeedChange = _acceleration * Time.fixedDeltaTime;
+
+        velocity = Vector3.MoveTowards(velocity, desiredVelocity, maxSpeedChange);
+
+        rotation = Quaternion.LookRotation(lookDir);
+    }
+
+    void PlaneAccelerate(Vector3 desiredDir) 
+    {
+        // Rotar hacia la direccion
+        float maxRotSpeed = _radiansRotSpeed * Time.fixedDeltaTime;
+        Vector3 dir = Vector3.RotateTowards(transform.forward, desiredDir, maxRotSpeed, 0f);
+
+        float maxSpeedChange = _acceleration * Time.fixedDeltaTime;
+        float currentSpeed = Mathf.MoveTowards(velocity.magnitude, MaxSpeed, maxSpeedChange); 
+        velocity = dir * currentSpeed;
+
+        rotation = Quaternion.LookRotation(dir);
+    }
+
+
+    public void SetVelocity() 
+    {
+        rb.velocity = velocity;
+    }
     public void ClearForces() => rb.velocity = Vector3.zero;
 
     public void AccelerateTowardsTarget(Vector3 destination) => AccelerateTowards(destination - rb.position);
@@ -127,9 +158,9 @@ public class NewPhysicsMovement : MonoBehaviour
         rb.velocity += force;
     }
 
-    void FreezeXZRotationChanged(bool freeze) 
+    void OnGroundedMovementChanged(bool freeze) 
     {
-        _freezeXZRotation = freeze;
+        _groundedMovement = freeze;
         if (freeze)
             rb.constraints |= RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         else

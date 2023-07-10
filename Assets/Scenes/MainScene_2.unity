@@ -3238,7 +3238,7 @@ MonoBehaviour:
   _walls:
     serializedVersion: 2
     m_Bits: 64
-  MaxDistanceBetweenNodes: 0
+  MaxDistanceBetweenNodes: 25
   debugNodeConnections: 1
 --- !u!1001 &1172106375
 PrefabInstance:
@@ -5664,7 +5664,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _acceleration: 5
   _maxSpeed: 5
-  _freezeXZRotation: 1
+  _groundedMovement: 1
   _rotationSpeed: 180
 --- !u!54 &1974584318
 Rigidbody:
