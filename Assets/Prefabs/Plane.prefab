@@ -58,6 +58,8 @@ MonoBehaviour:
   shootableLayers:
     serializedVersion: 2
     m_Bits: 448
+  trailSample: {fileID: 2610780281482316935, guid: ece5188b7e398c345a64fc3091428e05,
+    type: 3}
 --- !u!54 &6565769872705145564
 Rigidbody:
   m_ObjectHideFlags: 0

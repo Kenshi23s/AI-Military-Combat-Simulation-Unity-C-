@@ -19,7 +19,7 @@ public class AI_Manager : MonoSingleton<AI_Manager>
 
     [SerializeField] bool debugNodeConnections;
 
-    [NonSerialized]public List<Node> nodes;
+    [NonSerialized] public List<Node> nodes;
 
     public void AddToFlockingTargets(AI_Movement a) => _flockingTargets.Add(a);
 
