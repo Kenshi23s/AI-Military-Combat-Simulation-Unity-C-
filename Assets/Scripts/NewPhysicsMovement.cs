@@ -88,8 +88,19 @@ public class NewPhysicsMovement : MonoBehaviour
 
     public void AccelerateTowards(Vector3 dir) 
     {
-        // Acelerar hacia maxSpeed
-        _currentSpeed = Mathf.MoveTowards(rb.velocity.magnitude, _maxSpeed, _acceleration * Time.fixedDeltaTime);
+        if (dir == Vector3.zero)
+            return;
+
+        dir.Normalize();
+        if (FreezeXZRotation)
+        {
+            // Acelerar hacia maxSpeed
+            _currentSpeed = Mathf.MoveTowards(Vector3.Dot(rb.velocity, dir), _maxSpeed, _acceleration * Time.fixedDeltaTime);
+        }
+        else
+        {
+            _currentSpeed = Mathf.MoveTowards(rb.velocity.magnitude, _maxSpeed, _acceleration * Time.fixedDeltaTime);
+        }
 
         // Rotar hacia la direccion
         dir = Vector3.RotateTowards(Velocity != Vector3.zero ? Forward : transform.forward, dir, _radiansRotSpeed * Time.fixedDeltaTime, 1000f);
@@ -110,6 +121,11 @@ public class NewPhysicsMovement : MonoBehaviour
     public void AccelerateTowardsTarget(Vector3 destination) => AccelerateTowards(destination - rb.position);
 
     public void UseGravity(bool value) => rb.useGravity = value;
+
+    public void AddImpulse(Vector3 force) 
+    {
+        rb.velocity += force;
+    }
 
     void FreezeXZRotationChanged(bool freeze) 
     {

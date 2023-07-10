@@ -132,7 +132,13 @@ public class NewAIMovement : MonoBehaviour
 
     void DrawPath()
     {
-       
+        if (_path.Any())
+            Gizmos.DrawLine(transform.position, _path[0]);
+
+        for (int i = 0; i < _path.Count - 1; i++)
+        {
+            Gizmos.DrawLine(_path[i], _path[i + 1]);
+        }
     }
 
     Vector3 ObstacleAvoidance()
@@ -154,4 +160,5 @@ public class NewAIMovement : MonoBehaviour
 
         return Vector3.zero;
     }
+
 }

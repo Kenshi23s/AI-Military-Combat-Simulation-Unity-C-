@@ -167,17 +167,16 @@ public static class Pathfinding_Algorithm
 
             if (current == nodes.Item2)
             {
-                var path = FList.Create(nodes.Item1) + cameFrom.TakeWhile(x => x.Key != nodes.Item1).Select(x => x.Key) + nodes.Item2;
-                #region
-                //while (current != nodes.Item1)
-                //{
-                //    path.Add(current);
-                //    current = cameFrom[current];
-                //}            
-                //path.Add(nodes.Item2);
-                #endregion
+                var path = new List<Node>();
+                while (current != nodes.Item1)
+                {
+                    path.Add(current);
+                    current = cameFrom[current];
+                }
+                path.Add(nodes.Item1);
+                path.Reverse();
 
-                return path.ToList();
+                return path;
             }
 
             foreach (Node next in current.Neighbors)
@@ -211,17 +210,19 @@ public static class Pathfinding_Algorithm
         List<Vector3> myPathList = x;
     }
 
-    public static IEnumerator CalculateLazyAStar(this Tuple<Node, Node> nodes, Action<List<Node>> onFinish, int StepsPerFrame = 30)
+    public static IEnumerator CalculateLazyAStar(this Tuple<Node, Node> nodes, Action<List<Node>> onFinish, int stepsPerFrame = 30)
     {
-        //el vecino del nodo
-    
+        int stepCount = 0;
+        bool pathMade = false;
+
+        //el vecino del nodo    
         PriorityQueue<Node> frontier = new PriorityQueue<Node>();
         frontier.Enqueue(nodes.Item1, 0f);
-        int count=0;
+
         //de donde vino, mi key es el nodo siguiente y el value es el nodo actual
-        bool PathMade = false;
         Dictionary<Node, Node> cameFrom = new Dictionary<Node, Node>();
         cameFrom.Add(nodes.Item1, null);
+
         //el costo de cada nodo y cuanto costo lleva acumulando el camino
         Dictionary<Node, float> costSoFar = new Dictionary<Node, float>();
         costSoFar.Add(nodes.Item1, 0f);
@@ -232,24 +233,20 @@ public static class Pathfinding_Algorithm
 
             if (current == nodes.Item2)
             {
-                List<Node> auxPath = new List<Node>();          
+                var path = new List<Node>();          
                 while (current != nodes.Item1)
                 {
-                    auxPath.Add(current);
+                    path.Add(current);
                     current = cameFrom[current];
                 }
-                var makePath = FList.Create(nodes.Item1) + auxPath + nodes.Item2;
+                path.Add(nodes.Item1);
+                path.Reverse();
+
+                Debug.Log(path.Count());
                
-                Debug.Log(makePath.Count());
-               
-                onFinish(makePath.ToList());
-                PathMade = true;
+                onFinish(path);
+                pathMade = true;
                 break;
-                #region
-               
-                #endregion
-
-
             }
 
             foreach (Node next in current.Neighbors)
@@ -273,15 +270,17 @@ public static class Pathfinding_Algorithm
                 }
 
             }
-            count++;
-            if (count >= StepsPerFrame)
+
+            stepCount++;
+            if (stepCount >= stepsPerFrame)
             {
                 Debug.LogWarning("Espero 1 frame");
-                yield return new WaitForEndOfFrame();
-                count = 0;
+                yield return null;
+                stepCount = 0;
             }
         }
-        if (!PathMade)
+
+        if (!pathMade)
         {
             Debug.LogWarning("No se pudo hacer el camino en Lazy A STAR");
         }
@@ -294,21 +293,21 @@ public static class Pathfinding_Algorithm
 
         Action<List<Node>> CutNodes = (pathToCut) =>
         {
-            int current = 0;
+            //int current = 0;
    
-            while (current + 2 < pathToCut.Count)
-            {
-                if (InLineOffSight(pathToCut[current].transform.position, pathToCut[current + 2].transform.position, wallMask))
-                    pathToCut.RemoveAt(current + 1);
-                else
-                    current++;
-            }
-            // Conseguir las posiciones en el piso
+            //while (current + 2 < pathToCut.Count)
+            //{
+            //    if (InLineOffSight(pathToCut[current].transform.position, pathToCut[current + 2].transform.position, wallMask))
+            //        pathToCut.RemoveAt(current + 1);
+            //    else
+            //        current++;
+            //}
+            //// Conseguir las posiciones en el piso
 
           
             List<Vector3> select = pathToCut.Select(node => node.groundPosition).ToList();
-            if (endpos != default)
-                select.Add(endpos);
+            //if (endpos != default)
+            //    select.Add(endpos);
             
             onFinish(select);
         };

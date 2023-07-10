@@ -284,7 +284,7 @@ GameObject:
   - component: {fileID: 36408509}
   - component: {fileID: 36408510}
   m_Layer: 0
-  m_Name: Center
+  m_Name: Movement Collider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
