@@ -79,6 +79,7 @@ public class Misile : GridEntity
        ParticleHolder x = ParticlePool.instance.GetVFX(particleToSpawn.key);
 
         x.transform.localScale = myStats.explosionRadius.ToVector();
+        x.transform.position=transform.position;
         Explosion();
     }
 
@@ -100,6 +101,7 @@ public class Misile : GridEntity
     IEnumerator CountdownForExplosion()
     {
         yield return new WaitForSeconds(myStats.timeBeforeExplosion);
+        ParticleHolder x = ParticlePool.instance.GetVFX(explosionParticle.key);
         Explosion();
     }
     private void OnDestroy()

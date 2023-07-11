@@ -236,12 +236,12 @@ MonoBehaviour:
   - {fileID: 5285789855417990210}
   - {fileID: 3355421752814213245}
   misileStats:
-    acceleration: 2
-    maxSpeed: 3
+    acceleration: 25
+    maxSpeed: 50
     rotationSpeed: 180
     timeBeforeExplosion: 20
     damage: 15
-    explosionRadius: 12
+    explosionRadius: 30
     initialVelocity: {x: 0, y: 0, z: 0}
   misileCD: 2
   minimumDistanceForStrike: 23
