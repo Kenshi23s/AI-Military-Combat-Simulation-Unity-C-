@@ -22,7 +22,10 @@ namespace FacundoColomboMethods
 
     public static class ColomboMethods
     {
-
+        public static Vector3 ToVector(this float value)
+        {
+            return new Vector3(value, value, value);
+        }
         public static T PickRandom<T>(this IEnumerable<T> col)
         {
            int max = col.Count();

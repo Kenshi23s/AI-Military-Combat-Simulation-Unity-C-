@@ -204,7 +204,11 @@ MonoBehaviour:
   <MyTeam>k__BackingField: 0
   onGrid: 0
   explosionParticle:
-    particle: {fileID: 0}
+    particle: {fileID: 2592738608535527766, guid: 92774f5bcd4f0954b84016e50e182d31,
+      type: 3}
+  explosionParticleonGround:
+    particle: {fileID: 6741098953864279398, guid: accd383182f6c59448a24e78b34fa338,
+      type: 3}
   myStats:
     acceleration: 0
     maxSpeed: 0
@@ -221,7 +225,7 @@ BoxCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7282944069579428831}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 0.50492096, y: 0.45716858, z: 2.1449013}

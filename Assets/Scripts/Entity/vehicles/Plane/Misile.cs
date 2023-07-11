@@ -7,16 +7,15 @@ using System;
 
 [RequireComponent(typeof(NewPhysicsMovement))]
 public class Misile : GridEntity
-{
-    
+{  
     NewPhysicsMovement _movement;
 
     public Transform target { get; private set; }
 
     [SerializeField] ParticleHold explosionParticle;
- 
-    
-    public MisileStats myStats;
+    [SerializeField] ParticleHold explosionParticleonGround;
+
+    [NonSerialized] public MisileStats myStats;
     [System.Serializable]
     public struct MisileStats
     {
@@ -40,10 +39,16 @@ public class Misile : GridEntity
        
     }
 
+    private void Start()
+    {
+        explosionParticle.key = ParticlePool.instance.CreateVFXPool(explosionParticle.particle);
+        explosionParticleonGround.key = ParticlePool.instance.CreateVFXPool(explosionParticleonGround.particle);
+    }
+
     private void LateUpdate()
     {
         _movement.MaxSpeed += Time.deltaTime;
-        _movement.Acceleration += Time.deltaTime/2;
+        _movement.Acceleration += Time.deltaTime / 2;
     }
     public void ShootMisile(MisileStats newStats, Transform newTarget)
     {
@@ -66,6 +71,14 @@ public class Misile : GridEntity
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject == myStats.owner) return;
+
+        ParticleHold particleToSpawn = explosionParticle;
+        if (other.gameObject.layer == PlanesManager.instance.groundMask)       
+            particleToSpawn = explosionParticleonGround;
+
+       ParticleHolder x = ParticlePool.instance.GetVFX(particleToSpawn.key);
+
+        x.transform.localScale = myStats.explosionRadius.ToVector();
         Explosion();
     }
 
@@ -75,6 +88,7 @@ public class Misile : GridEntity
             .OfType<Entity>()
             .Select(x => x.GetComponent<IDamagable>())
             .Where(x  => x != null);
+
 
         foreach (var entity in damagables) 
             entity.TakeDamage(myStats.damage);
