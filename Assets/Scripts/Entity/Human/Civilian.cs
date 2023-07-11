@@ -2,6 +2,8 @@ using IA2;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
+[SelectionBase]
 [RequireComponent(typeof(NewAIMovement))]
 public class Civilian : Entity
 {
