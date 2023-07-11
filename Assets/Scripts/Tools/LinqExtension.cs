@@ -39,11 +39,11 @@ public static class LinqExtension
         return returnItem;
     }
 
-    public static IEnumerable<T> NotOfType<T,K>(this IEnumerable<T> col)
+    public static IEnumerable<T>NotOfType<T,K>(this IEnumerable<T> col)
     {
         foreach (var item in col)
         {
-            if (!(item.GetType()==typeof(K)))           
+            if (item.GetType() != typeof(K))          
                 yield return item;            
         }
     }

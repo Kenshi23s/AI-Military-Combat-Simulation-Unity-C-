@@ -7,7 +7,7 @@ using UnityEngine;
 public enum Team
 {
     Red,
-    Green,
+    Blue,
     None
 }
 public interface InitializeUnit
