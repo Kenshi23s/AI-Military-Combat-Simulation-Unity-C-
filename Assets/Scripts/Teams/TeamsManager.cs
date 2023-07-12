@@ -87,36 +87,68 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     protected override void SingletonAwake()
     {
         //inicializo las listas del diccionario
-        foreach (Team item in Enum.GetValues(typeof(Team)))
+        foreach (Team key in Enum.GetValues(typeof(Team)))
         {
-            _teams.Add(item, new List<Entity>());
-        }
-        
+            _teams.Add(key, new List<Entity>());
+            SpawnFireteams(key, MatchParameters[key]);
+            SpawnPlanes(key, MatchParameters[key]);
+        }       
     }
 
 
-    void SpawnUnits()
+    void SpawnFireteams(Team team,TeamParameters param)
     {
-        foreach (var team in MatchParameters.Keys)
+        List<Fireteam> fireteams = new List<Fireteam>(); 
+        for (int i = 0; i < param.FireteamQuantity; i++)
         {
+            var newFT = Instantiate(new Fireteam());
 
+            for (int j = 0; j < param.membersPerFireteam; j++)
+            {
+                Vector3 pos = GetRandomFreePosOnGround(param);
+                newFT.AddMember(Instantiate(infantryPrefab, pos, Quaternion.identity));
+            }
+
+            fireteams.Add(newFT);       
         }
     }
 
-    //void SpawnPlanes(Team team,TeamParameters parameters)
-    //{
-    //    for (int i = 0; i < parameters.planesQuantity; i++)
-    //    {
-    //        GetRandomFreePos(new Vector3(parameters.width, parameters.height, parameters.Depth));
-    //         var aux = Instantiate(planePrefab);
-    //    }
-    //}
+    void SpawnPlanes(Team team, TeamParameters parameters)
+    {
+        for (int i = 0; i < parameters.planesQuantity; i++)
+        {
+            GetRandomFreePosOnAir(parameters);
+            var x = Instantiate(planePrefab);
+            _teams[team].Add(x);
+        }
+    }
 
     /// <summary>
     /// obtiene una posicion random en la que no haya ninguna grid entity cerca
     /// </summary>
     /// <param name="parameters"></param>
     /// <returns></returns>
+    /// 
+
+    Vector3 GetRandomFreePosOnAir(TeamParameters parameters)
+    {
+        float width = parameters.width;
+        float height = parameters.height;
+        Vector3 randomPos = parameters.SpawnArea.transform.position + new Vector3(Random.Range(-width, width), 0, Random.Range(-width, width));
+
+        
+            //si no hay ninguna grid entity cerca,devuelvo la posicion
+            bool entityNearby = Physics.OverlapSphere(randomPos, separationRadiusBetweenUnits, NotSpawnable)
+                .Where(x => x != this).Where(x => x.TryGetComponent(out GridEntity aux)).Any();
+
+            //esto es pesadisimo, pero como solo se haria en el awake...
+            if (!entityNearby) return randomPos;
+        
+
+
+        return GetRandomFreePosOnGround(parameters);
+    }
+
     Vector3 GetRandomFreePosOnGround(TeamParameters parameters)
     {
         float width = parameters.width;

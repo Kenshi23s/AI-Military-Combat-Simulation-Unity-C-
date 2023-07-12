@@ -4,12 +4,16 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEngine;
 using static Infantry;
-
+[RequireComponent(typeof(DebugableObject))]
 public class Fireteam : MonoBehaviour
 {
     List<Infantry> _fireteamMembers = new List<Infantry>();
+
     public ReadOnlyCollection<Infantry> fireteamMembers;
+
     public Infantry Leader { get; private set; }
+
+    public DebugableObject _debug { get; private set; }
 
     public Team myTeam { get; private set; }
 
@@ -42,13 +46,24 @@ public class Fireteam : MonoBehaviour
     }
     #endregion
 
+    private void Awake()
+    {
+        _debug = GetComponent<DebugableObject>();
+    }
     private void Start()
     {
-        if (Leader==null)
+        if (Leader == null)
         {
             Leader = _fireteamMembers.PickRandom();
             fireteamMembers = _fireteamMembers.AsReadOnly();
         }
+    }
+
+    public void Initialize(Team newTeam)
+    {
+        myTeam = newTeam;
+        foreach (var item in _fireteamMembers) item.InitializeUnit(myTeam);
+
     }
 
     public Vector3 LookForNearestZone()
@@ -152,6 +167,6 @@ public class Fireteam : MonoBehaviour
     {
         Leader.MoveTowardsTransition(EnemyPos);
     }
-
+    
    
 }

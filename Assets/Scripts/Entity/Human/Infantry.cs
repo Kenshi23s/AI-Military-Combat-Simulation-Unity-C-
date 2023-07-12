@@ -6,7 +6,7 @@ using UnityEngine;
 [RequireComponent(typeof(NewAIMovement))]
 [RequireComponent(typeof(FOVAgent))]
 [RequireComponent(typeof(ShootComponent))]
-public class Infantry : GridEntity 
+public class Infantry : GridEntity,InitializeUnit
 {
     public enum INFANTRY_STATES
     {
@@ -34,6 +34,13 @@ public class Infantry : GridEntity
     public Entity actualTarget { get; private set; }
 
     public Vector3 Destination { get; private set; }
+
+
+    public void InitializeUnit(Team newTeam)
+    {
+        MyTeam = newTeam;
+        SetFSM();
+    }
 
     protected override void EntityAwake()
     {
@@ -219,5 +226,7 @@ public class Infantry : GridEntity
         if (!inCombat)
             infantry_FSM.SendInput(INFANTRY_STATES.FollowLeader);
     }
+
+   
     #endregion
 }
