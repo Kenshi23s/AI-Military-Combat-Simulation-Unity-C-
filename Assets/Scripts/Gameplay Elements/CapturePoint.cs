@@ -2,13 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
 
 [RequireComponent(typeof(DebugableObject))]
 public class CapturePoint : GridEntity
 {
     [SerializeField] float waitingFramesTilSearch=30, zoneRadius = 15;
 
-
+    public UnityEvent onPointOwnerChange;
     public float TakeProgress { get; private set; }
     public enum ZoneStates
     {
@@ -94,6 +95,7 @@ public class CapturePoint : GridEntity
 
     void CheckCaptureProgress()
     {
+        var aux = takenBy;
         switch (beingTakenBy)
         {
             case Team.Red:
@@ -109,13 +111,7 @@ public class CapturePoint : GridEntity
                 break;
         }
 
-        if (captureProgress >= ProgressRequiredForCapture)          
-                takenBy = Team.Red;
-                   
-         if (captureProgress <= -ProgressRequiredForCapture)         
-             takenBy = Team.Blue;
-                                              
-            beingTakenBy = Team.None;      
+        if (takenBy != aux) onPointOwnerChange?.Invoke();
     }
 
     private void DrawRadius()
