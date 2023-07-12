@@ -23,6 +23,11 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     #region TeamsDictionary
     Dictionary<Team, List<Entity>> _teams = new Dictionary<Team, List<Entity>>();
 
+
+
+
+    #region MemberAdd
+
     public void AddToTeam(Team key,Entity value)
     {
         if (!_teams[key].Contains(value))
@@ -58,6 +63,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
         }
     }
     #endregion
+    #endregion
 
     protected override void SingletonAwake()
     {
@@ -66,6 +72,26 @@ public class TeamsManager : MonoSingleton<TeamsManager>
         {
             _teams.Add(item, new List<Entity>());
         }
+        
+    }
+
+    public IEnumerable<Fireteam> GetAllyFireteams(Team team)
+    {
+        return _teams[team].OfType<Infantry>().Select(x => x.myFireteam).Where(x => x !=null).Distinct();
+           
+    }
+
+    //public IEnumerable<Infantry> GetAllTanks(Team team)
+    //{
+    //    return _teams[team].OfType<Infantry>().Select(x => x.myFireteam).Distinct();
+
+    //}
+
+    public IEnumerable<Plane> GetTeamPlanes(Team team)
+    {
+        return _teams[team]
+            .OfType<Plane>()
+            .Where(x => x.actualState != PlaneStates.ABANDONED);
     }
 
     void Start()
