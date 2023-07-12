@@ -9,7 +9,7 @@ public class LifeComponent : MonoBehaviour, IDamagable, IHealable
 
     [SerializeField] int _life = 100;
     [SerializeField] int _maxLife = 100;
-
+    public bool isAlive => life > 0;
     public int life => _life;
     public int maxLife => _maxLife;
 

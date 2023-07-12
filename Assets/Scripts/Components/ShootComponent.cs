@@ -4,15 +4,23 @@ using UnityEngine;
 using FacundoColomboMethods;
 using System;
 using Random = UnityEngine.Random;
+using static UnityEngine.ParticleSystem;
 
 public class ShootComponent : MonoBehaviour
 {
+    public event Action<IDamagable> onHit;
+
     [SerializeField] float _bulletspread;
     [SerializeField] int _bulletdamage;
     //estaria bueno sacar esto de un manager mejor, pero por ahora
     [SerializeField]LayerMask shootableLayers;
     [SerializeField] TrailRenderer trailSample;
-    public event Action<IDamagable> onHit;
+
+    [Header("Shooting Parameters")]
+    [SerializeField] float bulletsPerBurst;
+    [SerializeField] float burstCD = 3;
+    [SerializeField] float BulletCD = 0.3f;
+    [SerializeField] Transform shootPos;
 
     public void Shoot(Transform _shootPos)
     {
@@ -54,6 +62,17 @@ public class ShootComponent : MonoBehaviour
         Destroy(trail.gameObject);
     }
 
-
+    public IEnumerator ShootBullets(Transform _shootPos)
+    {
+        while (true)
+        {
+            for (int i = 0; i < bulletsPerBurst; i++)
+            {
+                Shoot(shootPos);
+                yield return new WaitForSeconds(BulletCD);
+            }
+            yield return new WaitForSeconds(burstCD);
+        }
+    }
 
 }
