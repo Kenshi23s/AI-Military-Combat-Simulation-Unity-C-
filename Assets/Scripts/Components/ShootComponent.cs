@@ -22,6 +22,8 @@ public class ShootComponent : MonoBehaviour
     [SerializeField] float BulletCD = 0.3f;
     [SerializeField] Transform shootPos;
 
+    const float maxTravelDistance = 100;
+
     public void Shoot(Transform _shootPos)
     {
         Vector3 dir = _shootPos.transform.forward.RandomDirFrom(Random.Range(0, _bulletspread));
@@ -38,9 +40,10 @@ public class ShootComponent : MonoBehaviour
             finalTrailPos = hit.point;
         }
 
-        if (finalTrailPos==Vector3.zero) finalTrailPos = dir.normalized * 100;
+        if (finalTrailPos == Vector3.zero) finalTrailPos = dir.normalized * maxTravelDistance;
 
-        StartCoroutine(SpawnTrail(Instantiate(trailSample,_shootPos.position,Quaternion.identity), finalTrailPos));
+        var trail = Instantiate(trailSample, _shootPos.position, Quaternion.identity);
+        StartCoroutine(SpawnTrail(trail, finalTrailPos));
     }
 
     IEnumerator SpawnTrail(TrailRenderer trail, Vector3 impactPos)
@@ -51,10 +54,7 @@ public class ShootComponent : MonoBehaviour
 
         while (time < 1)
         {
-
             trail.transform.position = Vector3.Lerp(startPos, impactPos, time);
-
-
             time += (Time.deltaTime / trail.time) * (dist / Vector3.Distance(trail.transform.position, impactPos));
             yield return null;
         }

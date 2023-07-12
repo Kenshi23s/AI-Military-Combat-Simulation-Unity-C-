@@ -21,6 +21,7 @@ public class Misile : GridEntity
     {
         [NonSerialized]
         public GameObject owner;
+        public Team myTeam;
         public float acceleration;
         public float maxSpeed;
         public float rotationSpeed;
@@ -50,11 +51,13 @@ public class Misile : GridEntity
         _movement.MaxSpeed += Time.deltaTime;
         _movement.Acceleration += Time.deltaTime / 2;
     }
+
     public void ShootMisile(MisileStats newStats, Transform newTarget)
     {
         myStats = newStats;
         SetMovementStats();
         StartCoroutine(CountdownForExplosion());
+        MyTeam = newStats.myTeam;
         target = newTarget;
         transform.parent = null;
         enabled = true;
@@ -87,6 +90,7 @@ public class Misile : GridEntity
     {
         var damagables = GetEntitiesInRange(myStats.explosionRadius)
             .OfType<Entity>()
+            .Where(x => x.MyTeam != myStats.myTeam)
             .Select(x => x.GetComponent<IDamagable>())
             .Where(x  => x != null);
 

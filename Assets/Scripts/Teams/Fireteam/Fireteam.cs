@@ -15,6 +15,7 @@ public class Fireteam : MonoBehaviour
 
    
     public float MinimumDistanceFromLeader { get; private set; }
+
     #region MemberManagment
     public void AddMember(Infantry infantry)
     {
@@ -80,15 +81,17 @@ public class Fireteam : MonoBehaviour
         //deberia poner a donde debe ir el lider
 
         var split = _fireteamMembers.ToLookup(x => x == Leader);
-
+        //agarro el lider y le digo q se mueva hacia la nueva destinacion
         split[true].First().MoveTowardsTransition(NewDestination);
 
         foreach (var members in split[false]) members.FollowLeaderTransition();
     }
 
+    #region GetMethods
     public IEnumerable<Mechanic> GetMechanics() => _fireteamMembers.OfType<Mechanic>();
 
     public IEnumerable<Medic> GetMedics() => _fireteamMembers.Select(x => x as GridEntity).OfType<Medic>();
+    #endregion
 
     #region UsefulQuestions
     //pregunta si algun aliado de la escuadra tiene enemigos cerca
@@ -105,7 +108,7 @@ public class Fireteam : MonoBehaviour
         }
         return false;
     }
-
+    //para saber si esta escuadra tiene a alguno de sus miembros  en combate
     public bool FireteamInCombat()
     {
         foreach (var item in fireteamMembers)
@@ -116,13 +119,15 @@ public class Fireteam : MonoBehaviour
 
         return false;
     }
-
+    //saber si la unidad esta cerca del lider
     public bool IsNearLeader(Infantry member)
     {
         return Vector3.Distance(Leader.transform.position,member.transform.position) < MinimumDistanceFromLeader;
     }
     #endregion
 
+
+    //para pedir apoyo a otras unidades
     public void RequestSupport(Vector3 enemyPosition)
     {
         //si hay un avion cercano para bombardeo
