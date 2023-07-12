@@ -35,7 +35,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     [SerializeField] Plane planePrefab;
    
 
-    public LayerMask NotSpawnable;
+    public LayerMask NotSpawnable,Ground;
 
     public float separationRadiusBetweenUnits;
 
@@ -123,22 +123,23 @@ public class TeamsManager : MonoSingleton<TeamsManager>
         float height = parameters.height;
         Vector3 randomPos = parameters.SpawnArea.transform.position + new Vector3(Random.Range(-width, width),0, Random.Range(-width, width));
         
-        if (!Physics.Raycast(randomPos,Vector3.down,out RaycastHit hit,Mathf.Infinity, NotSpawnable))
+        if (Physics.Raycast(randomPos,Vector3.down,out RaycastHit hit,Mathf.Infinity, Ground))
         {
             //si no hay ninguna grid entity cerca,devuelvo la posicion
-            bool entityNearby = Physics.OverlapSphere(hit.point, separationRadiusBetweenUnits)
-                .Where(x => x != this)
-                .SkipWhile(x => !x.TryGetComponent(out GridEntity aux))
-                .Any();
+            bool entityNearby = Physics.OverlapSphere(hit.point, separationRadiusBetweenUnits,NotSpawnable)
+                .Where(x => x != this).Where(x => x.TryGetComponent(out GridEntity aux)).Any();
+               
             //esto es pesadisimo, pero como solo se haria en el awake...
             if (!entityNearby) return hit.point;                  
         }      
+
+
         return GetRandomFreePosOnGround(parameters);
     }
 
     public IEnumerable<Fireteam> GetAllyFireteams(Team team)
     {
-        return _teams[team].OfType<Infantry>().Select(x => x.myFireteam).Where(x => x !=null).Distinct();
+        return _teams[team].OfType<Infantry>().Select(x => x.myFireteam).Where(x => x != null).Distinct();
            
     }
 
@@ -185,7 +186,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
             Vector3 freepos = GetRandomFreePosOnGround(item.Value);
 
             Gizmos.DrawWireSphere(freepos,separationRadiusBetweenUnits);
-            Gizmos.DrawLine(freepos,freepos+Vector3.up * 100);
+            Gizmos.DrawLine(freepos,freepos+Vector3.up * 50);
 
         }
       
