@@ -17,82 +17,37 @@ public class NewPhysicsMovement : MonoBehaviour
     public enum AlignmentType
     {
         Velocity,
-        TargetMoveDirection,
+        DesiredMoveDirection,
         Mix,
         Target,
         Custom
     }
 
-    [SerializeField]
-    public MovementType Movement = MovementType.Grounded;
-    public AlignmentType Alignment = AlignmentType.Velocity;
-
-    public Quaternion Rotation => _rb.rotation;
-    public float CurrentSpeed => _rb.velocity.magnitude;
-
     public Vector3 Velocity { 
-        get => _rb.velocity;
-        set => _rb.velocity = value;
+        get => Rigidbody.velocity;
+        set => Rigidbody.velocity = value;
     }
+    public Quaternion Rotation => Rigidbody.rotation;
+    public float CurrentSpeed => Rigidbody.velocity.magnitude;
 
-    public bool FreezeXAlignment, FreezeYAlignment, FreezeZAlignment;
+    public MovementType Movement = MovementType.Grounded;
 
-    Rigidbody _rb;
-    DebugableObject _debug;
-
-    Vector3 _velocity;
-    Quaternion _rotation;
-
-    [SerializeField, Min(0)] float _acceleration = 37.5f;
-
-    public Transform AlignmentTarget;
-
-    Quaternion _customAlignment = Quaternion.identity;
-    public Quaternion CustomOrientation
-    {
-        get => _customAlignment;
-        set => _customAlignment = value.normalized;
-    }
-
-    public float Acceleration 
+    #region Speed
+    public float Acceleration
     {
         get => _acceleration;
         set => _acceleration = Mathf.Max(0, value);
     }
-
-    [SerializeField, Min(0)] float _maxSpeed = 8f;
+    [SerializeField, Min(0)] 
+    float _acceleration = 37.5f;
 
     public float MaxSpeed
     {
         get => _maxSpeed;
         set => _maxSpeed = Mathf.Max(0, value);
     }
-
-    #region Alignment
-    [SerializeField, Min(0), Tooltip("El tiempo maximo que puede llegar a tardar en alinearse")]
-    float _alignTime = 0f;
-    bool _hasAlignTime = false;
-
-    public float AlignTime
-    {
-        get => _alignTime;
-        set
-        {
-            _alignTime = value;
-            _hasAlignTime = !Mathf.Approximately(_alignTime, 0);
-
-            if (_hasAlignTime)
-                _radiansAlignSpeed = (180f / _alignTime) * Mathf.Deg2Rad;
-        }
-    }
-
-    float _radiansAlignSpeed;
-    #endregion
-
-    #region Shortcuts
-    public Vector3 Right => _rb.rotation * Vector3.right;
-    public Vector3 Up => _rb.rotation * Vector3.up;
-    public Vector3 Forward => _rb.rotation * Vector3.forward;
+    [SerializeField, Min(0)]
+    float _maxSpeed = 8f;
     #endregion
 
     #region Grounding
@@ -115,17 +70,77 @@ public class NewPhysicsMovement : MonoBehaviour
 
     // Snap To Ground Settings
     public bool GroundSnapping = true;
+
     [SerializeField, Min(0f)]
-    float _probeDistance = 0.5f;
-    [SerializeField]
-    LayerMask _probeMask;
+    float _groundProbeDistance = 0.5f;
+    public float GroundProbeDistance 
+    {
+        get => _groundProbeDistance;
+        set => _groundProbeDistance = Mathf.Max(0, value);
+    }
+    public LayerMask GroundMask = -1;
     #endregion
 
+    #region Alignment
+    public AlignmentType Alignment = AlignmentType.Velocity;
+
+
+
+    public float AlignmentMix 
+    {
+        get => _alignmentMix;
+        set => _alignmentMix = Mathf.Clamp01(value);
+    }
+    [SerializeField, Range(0, 1)]
+    float _alignmentMix = 0.5f;
+    public Transform AlignmentTarget;
+
+    public Quaternion CustomAlignment
+    {
+        get => _customAlignment;
+        set => _customAlignment = value.normalized;
+    }
+
+    Quaternion _customAlignment = Quaternion.identity;
+
+    public float AlignTime
+    {
+        get => _alignTime;
+        set
+        {
+            _alignTime = value;
+            _hasAlignTime = !Mathf.Approximately(_alignTime, 0);
+
+            if (_hasAlignTime)
+                _radiansAlignSpeed = (180f / _alignTime) * Mathf.Deg2Rad;
+        }
+    }
+    [SerializeField, Min(0), Tooltip("El tiempo maximo que puede llegar a tardar en alinearse")]
+    float _alignTime = 0f;
+    bool _hasAlignTime = false;
+
+    float _radiansAlignSpeed;
+
+    public bool FreezeXAlignment, FreezeYAlignment, FreezeZAlignment;
+
+    #endregion
+
+    #region Shortcuts
+    public Vector3 Right => Rigidbody.rotation * Vector3.right;
+    public Vector3 Up => Rigidbody.rotation * Vector3.up;
+    public Vector3 Forward => Rigidbody.rotation * Vector3.forward;
+    #endregion
+
+    public Rigidbody Rigidbody { get; private set; }
+    DebugableObject _debug;
+
+    Vector3 _velocity;
+    Quaternion _rotation;
     Vector3 _inputMoveDirection;
 
     private void OnValidate()
     {
-        _rb = GetComponent<Rigidbody>();
+        Rigidbody = GetComponent<Rigidbody>();
         MaxGroundAngle = _maxGroundAngle;
         AlignTime = _alignTime;
     }
@@ -134,7 +149,7 @@ public class NewPhysicsMovement : MonoBehaviour
     private void Awake()
     {
         OnValidate();
-        _rb = GetComponent<Rigidbody>();
+        Rigidbody = GetComponent<Rigidbody>();
 
         _debug = GetComponent<DebugableObject>();
         _debug.AddGizmoAction(DrawSpeedArrow);
@@ -152,8 +167,8 @@ public class NewPhysicsMovement : MonoBehaviour
 
         AdjustRotation();
 
-        _rb.velocity = _velocity;
-        _rb.rotation = _rotation;
+        Rigidbody.velocity = _velocity;
+        Rigidbody.rotation = _rotation;
 
         ClearState();
     }
@@ -173,13 +188,6 @@ public class NewPhysicsMovement : MonoBehaviour
         }
     }
 
-    [SerializeField, Range(0, 1)] float _velocityMix;
-    public float VelocityMix 
-    {
-        get => _velocityMix;
-        set => _velocityMix = Mathf.Clamp01(value);
-    }
-
     void AdjustRotation() 
     {
         Quaternion targetRotation;
@@ -190,14 +198,14 @@ public class NewPhysicsMovement : MonoBehaviour
             case AlignmentType.Velocity:
                 targetRotation = Quaternion.LookRotation(_velocity);
                 break;
-            case AlignmentType.TargetMoveDirection:
+            case AlignmentType.DesiredMoveDirection:
                 targetRotation = Quaternion.LookRotation(_desiredMoveDir);
                 break;
             case AlignmentType.Mix:
-                targetRotation = Quaternion.LookRotation(Vector3.Lerp(_velocity, _desiredMoveDir, 0.5f));
+                targetRotation = Quaternion.LookRotation(Vector3.Lerp(_velocity, _desiredMoveDir, _alignmentMix));
                 break;
             case AlignmentType.Target:
-                targetRotation = Quaternion.LookRotation(AlignmentTarget.position - _rb.position);
+                targetRotation = Quaternion.LookRotation(AlignmentTarget.position - Rigidbody.position);
                 break;
             case AlignmentType.Custom:
                 targetRotation = _customAlignment;
@@ -315,8 +323,8 @@ public class NewPhysicsMovement : MonoBehaviour
     void UpdateState()
     {
 
-        _velocity = _rb.velocity;
-        _rotation = _rb.rotation;
+        _velocity = Rigidbody.velocity;
+        _rotation = Rigidbody.rotation;
 
         if (Movement != MovementType.Grounded)
             return;
@@ -347,7 +355,7 @@ public class NewPhysicsMovement : MonoBehaviour
             return false;
 
         // Solo queremos snappear al piso cuando hay suelo debajo al que adherirse.
-        if (!Physics.Raycast(_rb.position, Vector3.down, out RaycastHit hit, _probeDistance, _probeMask))
+        if (!Physics.Raycast(Rigidbody.position, Vector3.down, out RaycastHit hit, _groundProbeDistance, GroundMask))
             return false;
 
         // Si el Raycast golpeó algo, entonces debemos verificar si cuenta como suelo.
@@ -383,13 +391,13 @@ public class NewPhysicsMovement : MonoBehaviour
     }
 
     #region HelperMethods
-    public void AccelerateTowardsTarget(Vector3 destination) => AccelerateTowards(destination - _rb.position);
+    public void AccelerateTowardsTarget(Vector3 destination) => AccelerateTowards(destination - Rigidbody.position);
 
-    public void ClearForces() => _rb.velocity = Vector3.zero;
+    public void ClearForces() => Rigidbody.velocity = Vector3.zero;
 
-    public void UseGravity(bool value) => _rb.useGravity = value;
+    public void UseGravity(bool value) => Rigidbody.useGravity = value;
 
-    public void AddImpulse(Vector3 force) => _rb.velocity += force;
+    public void AddImpulse(Vector3 force) => Rigidbody.velocity += force;
     #endregion
 
     void DrawSpeedArrow()
