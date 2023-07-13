@@ -200,27 +200,27 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     private void OnDrawGizmos()
     {
 
-        if (Application.isPlaying || !canDebug) return;
+        //if (Application.isPlaying || !canDebug) return;
         
-        foreach (var item in MatchParameters)
-        {
-            Gizmos.color = item.Key == Team.Red ? Color.red : Color.blue;
-            float width = (float)item.Value.width;
-            float height = (float)item.Value.height;
-            if (item.Value.SpawnArea == null) continue;
-            Vector3 spawnArea = item.Value.SpawnArea.position;
+        //foreach (var item in MatchParameters)
+        //{
+        //    Gizmos.color = item.Key == Team.Red ? Color.red : Color.blue;
+        //    float width = (float)item.Value.width;
+        //    float height = (float)item.Value.height;
+        //    if (item.Value.SpawnArea == null) continue;
+        //    Vector3 spawnArea = item.Value.SpawnArea.position;
             
-            Gizmos.DrawLine(spawnArea + new Vector3(-width, 0, height), spawnArea + new Vector3(width, 0, height));
-            Gizmos.DrawLine(spawnArea + new Vector3(width, 0, -height), spawnArea + new Vector3(width, 0, height));
-            Gizmos.DrawLine(spawnArea + new Vector3(width, 0, -height), spawnArea + new Vector3(-width, 0, -height));
-            Gizmos.DrawLine(spawnArea + new Vector3(-width, 0, height),  spawnArea  + new Vector3(-width, 0, -height));
+        //    Gizmos.DrawLine(spawnArea + new Vector3(-width, 0, height), spawnArea + new Vector3(width, 0, height));
+        //    Gizmos.DrawLine(spawnArea + new Vector3(width, 0, -height), spawnArea + new Vector3(width, 0, height));
+        //    Gizmos.DrawLine(spawnArea + new Vector3(width, 0, -height), spawnArea + new Vector3(-width, 0, -height));
+        //    Gizmos.DrawLine(spawnArea + new Vector3(-width, 0, height),  spawnArea  + new Vector3(-width, 0, -height));
 
-            Vector3 freepos = GetRandomFreePosOnGround(item.Value);
+        //    Vector3 freepos = GetRandomFreePosOnGround(item.Value);
 
-            Gizmos.DrawWireSphere(freepos,separationRadiusBetweenUnits);
-            Gizmos.DrawLine(freepos,freepos+Vector3.up * 50);
+        //    Gizmos.DrawWireSphere(freepos,separationRadiusBetweenUnits);
+        //    Gizmos.DrawLine(freepos,freepos+Vector3.up * 50);
 
-        }
+        //}
       
     }
 
