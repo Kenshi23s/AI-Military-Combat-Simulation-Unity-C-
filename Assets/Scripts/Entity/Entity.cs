@@ -4,7 +4,6 @@ using UnityEngine;
 
 [RequireComponent(typeof(LifeComponent))]
 [RequireComponent(typeof(DebugableObject))]
-[RequireComponent(typeof(Rigidbody))]
 public abstract class Entity : MonoBehaviour
 {
 

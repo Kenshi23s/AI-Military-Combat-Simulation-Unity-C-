@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEngine;
-using static Infantry;
 
 public class Fireteam
 {
@@ -11,24 +10,25 @@ public class Fireteam
 
     public ReadOnlyCollection<Infantry> fireteamMembers;
 
-    public Fireteam(Team myTeam,List<Infantry> members)
+    public Fireteam(Team newTeam,List<Infantry> members)
     {
-        this.myTeam = myTeam;
+        MyTeam = newTeam;
     
-        foreach (var item in _fireteamMembers) item.InitializeUnit(myTeam);
+        foreach (var item in _fireteamMembers) item.InitializeUnit(newTeam);
 
         if (Leader == null)
         {
             Leader = _fireteamMembers.PickRandom();
             fireteamMembers = _fireteamMembers.AsReadOnly();
+            
         }
     }
 
     public Infantry Leader { get; private set; }
 
-    public DebugableObject _debug { get; private set; }
+    public DebugableObject Debug { get; private set; }
 
-    public Team myTeam { get; private set; }
+    public Team MyTeam { get; private set; }
 
    
     public float MinimumDistanceFromLeader { get; private set; }
@@ -59,25 +59,25 @@ public class Fireteam
     }
     #endregion
 
-    public Vector3 LookForNearestZone()
+    public void LookForNearestZone()
     {
         //obtengo mis zonas en disputa
-        var disputedMine = CapturePointManager.instance.CapturePoints.Where(x => x.Key == myTeam)
+        var disputedMine = CapturePointManager.instance.CapturePoints.Where(x => x.Key == MyTeam)
             .SelectMany(x => x.Value)
             .Where(x => x.CurrentCaptureState == CapturePoint.ZoneStates.Disputed)
             .Select(x => x);
 
-        //y las zonas neut
+        //y las zonas del enemigo y neutrales
         var enemyZones = CapturePointManager.instance.CapturePoints
-            .Where(x => x.Key != myTeam)
+            .Where(x => x.Key != MyTeam)
             .SelectMany(x => x.Value)
             .Select(x => x);
         //las uno
         var concat = disputedMine.Concat(enemyZones).Distinct();
         //y obtengo las mas cercanas, pongo el distinct por las dudas de q haya alguno repetido
         //Distinct: saca los elementos que sean iguales o esten "clonados"
-
-        return concat.Distinct().Minimum(x => Vector3.Distance(x.transform.position,Leader.transform.position)).transform.position;
+        Vector3 nearestZone = concat.Distinct().Minimum(x => Vector3.Distance(x.transform.position, Leader.transform.position)).transform.position;
+        SendPatrolOrders(nearestZone);
     
     }
 
@@ -106,7 +106,7 @@ public class Fireteam
     public bool AlliesWithEnemiesNearby(Entity whoAsks,out Entity neartestInDanger)
     {
         neartestInDanger = null;
-        var col = fireteamMembers.Where(x => x != whoAsks).Where(x => x.GetEntitiesAround().Any(x => x.health.isAlive && x.MyTeam != myTeam));
+        var col = fireteamMembers.Where(x => x != whoAsks).Where(x => x.GetEntitiesAround().Any(x => x.health.isAlive && x.MyTeam != MyTeam));
         //si tiene algun aliado de la escuadra que no sea el con enemigo cerca que tengan vida
         if (col.Any())
         {
@@ -121,7 +121,7 @@ public class Fireteam
     {
         foreach (var item in fireteamMembers)
         {
-            if (item.inCombat)
+            if (item.InCombat)
                 return true;
         }
 
@@ -135,30 +135,43 @@ public class Fireteam
     #endregion
 
 
-    //para pedir apoyo a otras unidades
+    /// <summary>
+    /// para pedir apoyo a otras unidades
+    /// </summary>
+    /// <param name="enemyPosition"></param>
     public void RequestSupport(Vector3 enemyPosition)
     {
+        string _debug = "Fireteam solicita apoyo";
+     
+     
         //si hay un avion cercano para bombardeo
-        var planes = TeamsManager.instance.GetTeamPlanes(myTeam).Where(x => x.actualState == PlaneStates.FLY_AROUND);
+        var planes = TeamsManager.instance.GetTeamPlanes(MyTeam).Where(x => x.actualState == PlaneStates.FLY_AROUND);
         if (planes.Any())
         {       //lo pido
+            _debug += ",hay un avion esta disponible, viene a bombardear!";
             planes.PickRandom().CallAirStrike(enemyPosition);
             return;
         }
                   
         //sino, pido apoyo a alguna escuadra que no este en combate
         var nearestFireteam = TeamsManager.instance
-            .GetAllyFireteams(myTeam)
-            .Where(x => x.FireteamInCombat())
+            .GetAllyFireteams(MyTeam)
+            .Where(x => !x.FireteamInCombat())
             .Minimum(x => Vector3.Distance(x.Leader.transform.position,Leader.transform.position));
-        if (nearestFireteam != null)       
+        if (nearestFireteam != null)
+        {
             nearestFireteam.HelpNearFireteam(enemyPosition);
-        
+            _debug += ", hay un fireteam disponible, viene a ayudar!";
+        }
+
+        _debug += ",sin respuesta, el Fireteam esta solo en esta :C";
+
+
     }
 
     public void HelpNearFireteam(Vector3 EnemyPos)
     {
-        Leader.MoveTowardsTransition(EnemyPos);
+        SendPatrolOrders(EnemyPos);
     }
     
    

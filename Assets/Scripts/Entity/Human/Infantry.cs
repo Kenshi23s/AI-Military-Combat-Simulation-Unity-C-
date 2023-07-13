@@ -17,21 +17,21 @@ public class Infantry : GridEntity,InitializeUnit
         FireAtWill
     }
     [field : SerializeField] public Transform Center { get; private set; }
-    public bool inCombat { get; private set; }
+    public bool InCombat { get; private set; }
     
 
     [SerializeField] float _timeBeforeSelectingTarget;
 
-    public Fireteam myFireteam { get; private set; }
+    public Fireteam MyFireteam { get; private set; }
     NewAIMovement _infantry_AI;
     FOVAgent _fov;
     #region ShootingLogic
-    ShootComponent gun;
+    ShootComponent _gun;
     [SerializeField] Transform _shootPos;
     #endregion
-    public EventFSM<INFANTRY_STATES> infantry_FSM;
+    public EventFSM<INFANTRY_STATES> Infantry_FSM { get; private set; }
 
-    public Entity actualTarget { get; private set; }
+    public Entity ActualTarget { get; private set; }
 
     public Vector3 Destination { get; private set; }
 
@@ -46,21 +46,82 @@ public class Infantry : GridEntity,InitializeUnit
     {
         _infantry_AI = GetComponent<NewAIMovement>();
         _fov = GetComponent<FOVAgent>();
-        gun = GetComponent<ShootComponent>();
+        _gun = GetComponent<ShootComponent>();
     }
+
     #region States
     void SetFSM()
     {
+        var waitOrders = WaitingOrders();
         var moveTowards = MoveTowards();
+        var followLeader = FollowLeader();
         var fireAtWill = FireAtWill();
+        var die = Die();
+
+        StateConfigurer.Create(waitOrders)
+            .SetTransition(INFANTRY_STATES.MoveTowards, moveTowards)
+            .SetTransition(INFANTRY_STATES.FollowLeader, followLeader)
+            .SetTransition(INFANTRY_STATES.FireAtWill, fireAtWill)
+            .SetTransition(INFANTRY_STATES.Die,die);
+
+        StateConfigurer.Create(moveTowards)
+           .SetTransition(INFANTRY_STATES.WaitingOrders, waitOrders)
+           .SetTransition(INFANTRY_STATES.FollowLeader, followLeader)
+           .SetTransition(INFANTRY_STATES.FireAtWill, fireAtWill)
+           .SetTransition(INFANTRY_STATES.Die, die)
+           .Done();
+
+        StateConfigurer.Create(followLeader)
+         .SetTransition(INFANTRY_STATES.WaitingOrders, waitOrders)
+         .SetTransition(INFANTRY_STATES.MoveTowards, moveTowards)
+         .SetTransition(INFANTRY_STATES.FireAtWill, fireAtWill)
+         .SetTransition(INFANTRY_STATES.Die, die)
+         .Done();
+
+        StateConfigurer.Create(fireAtWill)
+         .SetTransition(INFANTRY_STATES.WaitingOrders, waitOrders)
+         .SetTransition(INFANTRY_STATES.FollowLeader, followLeader)
+         .SetTransition(INFANTRY_STATES.MoveTowards, moveTowards)
+         .SetTransition(INFANTRY_STATES.Die, die)
+         .Done();
+
+        StateConfigurer.Create(die).Done();
+
+
+        Infantry_FSM = new EventFSM<INFANTRY_STATES>(waitOrders);
     }
-   
+
+
+    State<INFANTRY_STATES> WaitingOrders()
+    {
+        State<INFANTRY_STATES> state = new State<INFANTRY_STATES>("WaitingOrders");
+
+        state.OnEnter += (x) =>
+        {
+            _debug.Log("Espero Ordenes");
+            _infantry_AI.CancelMovement();
+            StartCoroutine(LookForTargets());
+            if (MyFireteam.Leader != this) return;
+            MyFireteam.LookForNearestZone();
+        };
+
+
+
+        state.OnExit += (x) =>
+        {
+            StopCoroutine(LookForTargets());           
+        };
+
+        return state;
+    }
+
     State<INFANTRY_STATES> MoveTowards()
     {
         State<INFANTRY_STATES> state = new State<INFANTRY_STATES>("MoveTowards");
 
         state.OnEnter += (x) =>
         {
+            _debug.Log("Me muevo hacia posicion x");
             _infantry_AI.SetDestination(Destination);
            
             StartCoroutine(LookForTargets());
@@ -81,9 +142,10 @@ public class Infantry : GridEntity,InitializeUnit
 
         state.OnEnter += (x) =>
         {
-            if (!myFireteam.IsNearLeader(this))
+            _debug.Log("Sigo al lider");
+            if (!MyFireteam.IsNearLeader(this))
             {
-                _infantry_AI.SetDestination(myFireteam.Leader.transform.position);
+                _infantry_AI.SetDestination(MyFireteam.Leader.transform.position);
             }
             
 
@@ -105,15 +167,16 @@ public class Infantry : GridEntity,InitializeUnit
 
         state.OnEnter += (x) =>
         {
+            _debug.Log("Sigo al lider");
             StartCoroutine(SetTarget());
-            if (myFireteam.Leader != this) return;
+            if (MyFireteam.Leader != this) return;
             
             var enemiesAlive = LookForEnemiesAlive().ToArray();
-            if (enemiesAlive.Length > myFireteam.fireteamMembers.Count)
+            if (enemiesAlive.Length > MyFireteam.fireteamMembers.Count)
             {
                 Vector3 middlePoint = enemiesAlive.Aggregate(Vector3.zero, (x, y) => x += y.transform.position) / enemiesAlive.Length;
                 middlePoint.y = transform.position.y;
-                myFireteam.RequestSupport(middlePoint);
+                MyFireteam.RequestSupport(middlePoint);
             }
          
         };
@@ -122,6 +185,20 @@ public class Infantry : GridEntity,InitializeUnit
         state.OnExit += (x) =>
         {
             StopCoroutine(SetTarget());
+        };
+
+        return state;
+    }
+
+    State<INFANTRY_STATES> Die()
+    {
+        State<INFANTRY_STATES> state = new State<INFANTRY_STATES>("Die");
+
+        state.OnEnter += (x) =>
+        {
+            _debug.Log("Mori");
+            MyFireteam.RemoveMember(this);
+
         };
 
         return state;
@@ -138,7 +215,7 @@ public class Infantry : GridEntity,InitializeUnit
            .Where(x => x.MyTeam != MyTeam)
            .Where(x => _fov.IN_FOV(x.transform.position));
 
-            if (z.Any()) infantry_FSM.SendInput(INFANTRY_STATES.FireAtWill);
+            if (z.Any()) Infantry_FSM.SendInput(INFANTRY_STATES.FireAtWill);
 
             for (int i = 0; i < 30; i++)
                 yield return null;
@@ -160,34 +237,30 @@ public class Infantry : GridEntity,InitializeUnit
     IEnumerator SetTarget()
     {
         while (true)
-        {
-         
-            
-            actualTarget = LookForEnemiesAlive().Minimum(GetWeakestAndNearest);
+        {      
+            ActualTarget = LookForEnemiesAlive().Minimum(GetWeakestAndNearest);
 
-
-            if (actualTarget != null)
+            if (ActualTarget != null)
             {
-                transform.forward = actualTarget.transform.position - transform.position;
-                gun.Shoot(_shootPos);
-
+                transform.forward = ActualTarget.transform.position - transform.position;
+                _gun.Shoot(_shootPos);
             }
             else
             {
                 //si soy el lider
-                if (myFireteam.Leader == this)
+                if (MyFireteam.Leader == this)
                 {
                     //pregunto si alguno de mis miembros tiene un enemigo cerca con vida
                   
-                    if (myFireteam.AlliesWithEnemiesNearby(this,out Entity ally))
+                    if (MyFireteam.AlliesWithEnemiesNearby(this,out Entity ally))
                     {
                         Destination = ally.transform.position;
-                        infantry_FSM.SendInput(INFANTRY_STATES.MoveTowards);
+                        Infantry_FSM.SendInput(INFANTRY_STATES.MoveTowards);
                     }
                 }
                 else
                 {
-                    infantry_FSM.SendInput(INFANTRY_STATES.FollowLeader);
+                    Infantry_FSM.SendInput(INFANTRY_STATES.FollowLeader);
                 }
             }
 
@@ -196,8 +269,6 @@ public class Infantry : GridEntity,InitializeUnit
             yield return new WaitForSeconds(_timeBeforeSelectingTarget);
         }
     }
-
-
 
     IEnumerable<Entity> LookForEnemiesAlive()
     {
@@ -217,14 +288,18 @@ public class Infantry : GridEntity,InitializeUnit
     #region Transitions
     public void MoveTowardsTransition(Vector3 posToGo)
     {
-        if (!inCombat)
-            infantry_FSM.SendInput(INFANTRY_STATES.MoveTowards);
+        if (!InCombat)
+        {
+            Destination = posToGo;
+            Infantry_FSM.SendInput(INFANTRY_STATES.MoveTowards);
+        }
+           
     }
 
     public void FollowLeaderTransition()
     {
-        if (!inCombat)
-            infantry_FSM.SendInput(INFANTRY_STATES.FollowLeader);
+        if (!InCombat)
+            Infantry_FSM.SendInput(INFANTRY_STATES.FollowLeader);
     }
 
    

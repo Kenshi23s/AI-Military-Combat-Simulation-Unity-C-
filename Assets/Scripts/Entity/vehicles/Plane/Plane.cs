@@ -64,15 +64,15 @@ public class Plane : Vehicle
         misileStats.owner = gameObject;
     }
 
-    public void CallAirStrike(Vector3 new_airStrikePosition)
-    {
-        airStrikePosition = new_airStrikePosition;
-        _planeFSM.SendInput(PlaneStates.AIRSTRIKE);
-    }
+    
+
+    
 
     #region UnityCalls
     private void Start()
     {
+       Vector3 dir = SpatialGrid.GetMidleOfGrid() - transform.position;
+        transform.forward = new Vector3(dir.x,0,0);
         _planeFSM = CreateFSM();
     }
 
@@ -174,6 +174,12 @@ public class Plane : Vehicle
     #endregion 
 
     #region PlaneStates
+
+    public void CallAirStrike(Vector3 new_airStrikePosition)
+    {
+        airStrikePosition = new_airStrikePosition;
+        _planeFSM.SendInput(PlaneStates.AIRSTRIKE);
+    }
 
     EventFSM<PlaneStates> CreateFSM()
     {

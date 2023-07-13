@@ -88,8 +88,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     #endregion
 
     protected override void SingletonAwake()
-    {
-      
+    {    
         //inicializo las listas del diccionario
         foreach (Team key in Enum.GetValues(typeof(Team)))
         {
@@ -180,18 +179,17 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     {
         if (_watchDog >= 200)
         {
-
             pos = Vector3.zero;
             Debug.LogError("WATCHDOG AL LIMITE, CORTO EJECUCION");
             return false;
         }
         float width = parameters.width;
         float height = parameters.height;
-        Debug.Log(width + " " + height);
+       
         Vector3 randomPos = parameters.SpawnArea.transform.position + new Vector3(Random.Range(-width, width), 0, Random.Range(-height, height));
 
 
-        if (Physics.Raycast(randomPos, Vector3.down, out RaycastHit hit, Mathf.Infinity, Ground))
+        if (Physics.Raycast(randomPos, Vector3.down, out RaycastHit hit, float.MaxValue, Ground))
         {
             //si no hay ninguna grid entity cerca,devuelvo la posicion
             var entityNearby = Physics.OverlapSphere(hit.point, SeparationRadiusBetweenUnits, NotSpawnable)
@@ -202,17 +200,17 @@ public class TeamsManager : MonoSingleton<TeamsManager>
             //esto es pesadisimo, pero como solo se haria en el awake...
             if (!entityNearby.Any())
             {
-                Debug.Log("Encontre lugar pa spawnear, spawneo");
-
-                Debug.Log("watchdog: " + _watchDog);
+             
                 pos = hit.point;
                 return true;
             }
             else
                 Debug.Log($"no puedo spawnear aca, hay {entityNearby.Count()} cerca, hago recursion C: ");
         }
-        else
-            Debug.Log("El raycast no choco con el piso");
+
+        Debug.Log(randomPos);
+        Debug.Log(hit.point+"watchdog = "+_watchDog);
+
 
 
         _watchDog++;
@@ -221,7 +219,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
     public IEnumerable<Fireteam> GetAllyFireteams(Team team)
     {
-        return _teams[team].OfType<Infantry>().Select(x => x.myFireteam).Where(x => x != null).Distinct();       
+        return _teams[team].OfType<Infantry>().Select(x => x.MyFireteam).Where(x => x != null).Distinct();       
     }
 
     public IEnumerable<Plane> GetTeamPlanes(Team team)
@@ -263,9 +261,6 @@ public class TeamsManager : MonoSingleton<TeamsManager>
                 Gizmos.DrawWireSphere(freepos, SeparationRadiusBetweenUnits);
                 Gizmos.DrawLine(freepos, freepos + Vector3.up * 50);
             }
-
-
-
         }
 
     }

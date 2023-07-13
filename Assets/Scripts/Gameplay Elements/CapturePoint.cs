@@ -39,13 +39,15 @@ public class CapturePoint : GridEntity
     List<Entity> CombatEntitiesAround = new List<Entity>();
 
     private void Awake()
-    {   
-        _debug.AddGizmoAction(DrawRadius);
+    {
+        _debug = GetComponent<DebugableObject>(); _debug.AddGizmoAction(DrawRadius);
+
     }
 
 
     private void Start()
     {
+        CapturePointManager.instance.AddZone(this);
         StartCoroutine(SearchEntitiesAround());
     }
 
@@ -116,6 +118,7 @@ public class CapturePoint : GridEntity
 
     private void DrawRadius()
     {
+        Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(transform.position, zoneRadius);
     }
 }

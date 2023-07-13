@@ -11,8 +11,6 @@ public class GameManager : MonoSingleton<GameManager>
     protected override void SingletonAwake()
     {
         bunkers = new ReadOnlyCollection<Bunker>(_bunkers);
-
-
     }
 
     public void AddBunker(Bunker newBunker)
