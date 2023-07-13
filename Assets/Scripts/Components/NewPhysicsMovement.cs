@@ -232,9 +232,8 @@ public class NewPhysicsMovement : MonoBehaviour
 
     public void FreeAccelerate()
     {
-        float maxSpeedChange = _acceleration * Time.fixedDeltaTime;
-        float currentSpeed = Mathf.MoveTowards(CurrentSpeed, MaxSpeed, maxSpeedChange);
-        _velocity = _inputMoveDirection * currentSpeed;
+        float maxSpeedChange = _acceleration * Time.fixedDeltaTime;        
+        _velocity = Vector3.MoveTowards(_velocity, _desiredMoveDir * MaxSpeed, maxSpeedChange);
     }
 
     public void SendInput(Vector3 targetDirection) 
