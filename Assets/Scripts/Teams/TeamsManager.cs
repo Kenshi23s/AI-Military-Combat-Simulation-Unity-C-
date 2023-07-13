@@ -39,7 +39,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
     public LayerMask NotSpawnable,Ground;
 
-    public float SeparationRadiusBetweenUnits;
+   [field: SerializeField] public float SeparationRadiusBetweenUnits { get; private set; }
 
     #region TeamsDictionary
     Dictionary<Team, List<Entity>> _teams = new Dictionary<Team, List<Entity>>();
@@ -90,10 +90,15 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     protected override void SingletonAwake()
     {    
         //inicializo las listas del diccionario
+        
+    }
+
+    private void Start()
+    {
         foreach (Team key in Enum.GetValues(typeof(Team)))
         {
             if (key == Team.None) continue;
-           
+
             _teams.Add(key, new List<Entity>());
             SpawnFireteams(key, _matchParameters[key]);
             SpawnPlanes(key, _matchParameters[key]);
@@ -117,11 +122,13 @@ public class TeamsManager : MonoSingleton<TeamsManager>
                 else
                     return;
 
-            }
+           }
+
+        
            Fireteam newFT = new Fireteam(team, members.ToList());
            fireteams.Add(newFT);         
         }
-        var col = fireteams.SelectMany(x => x.fireteamMembers);
+        var col = fireteams.SelectMany(x => x.FireteamMembers);
         AddToTeam(team, col);
     }
 

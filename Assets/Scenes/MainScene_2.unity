@@ -1797,13 +1797,13 @@ MonoBehaviour:
   Ground:
     serializedVersion: 2
     m_Bits: 128
-  SeparationRadiusBetweenUnits: 1
+  <SeparationRadiusBetweenUnits>k__BackingField: 1
   _matchParameters:
     _serializedList:
     - Key: 0
       Value:
-        FireteamQuantity: 10
-        membersPerFireteam: 1
+        FireteamQuantity: 2
+        membersPerFireteam: 2
         planesQuantity: 0
         tanksQuantity: 0
         SpawnArea: {fileID: 1823427471}
@@ -1811,14 +1811,14 @@ MonoBehaviour:
         height: 20
     - Key: 1
       Value:
-        FireteamQuantity: 10
-        membersPerFireteam: 1
+        FireteamQuantity: 2
+        membersPerFireteam: 2
         planesQuantity: 0
         tanksQuantity: 0
         SpawnArea: {fileID: 1020563752}
         width: 20
         height: 20
-  canDebug: 0
+  canDebug: 1
 --- !u!114 &658754924
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3174,7 +3174,7 @@ PrefabInstance:
     - target: {fileID: 8241401824802086380, guid: 1bb80c795aa2e904686059c3030621ec,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10.15
+      value: 7.51
       objectReference: {fileID: 0}
     - target: {fileID: 8241401824802086380, guid: 1bb80c795aa2e904686059c3030621ec,
         type: 3}

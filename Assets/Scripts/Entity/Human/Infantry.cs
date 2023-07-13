@@ -38,10 +38,15 @@ public class Infantry : GridEntity,InitializeUnit
 
     public void InitializeUnit(Team newTeam)
     {
+        Debug.Log("InitializeUnit");
         MyTeam = newTeam;
         SetFSM();
     }
 
+    public void SetFireteam(Fireteam MyFireteam)
+    {
+        this.MyFireteam = MyFireteam;
+    }
     protected override void EntityAwake()
     {
         _infantry_AI = GetComponent<NewAIMovement>();
@@ -62,7 +67,8 @@ public class Infantry : GridEntity,InitializeUnit
             .SetTransition(INFANTRY_STATES.MoveTowards, moveTowards)
             .SetTransition(INFANTRY_STATES.FollowLeader, followLeader)
             .SetTransition(INFANTRY_STATES.FireAtWill, fireAtWill)
-            .SetTransition(INFANTRY_STATES.Die,die);
+            .SetTransition(INFANTRY_STATES.Die,die)
+            .Done();
 
         StateConfigurer.Create(moveTowards)
            .SetTransition(INFANTRY_STATES.WaitingOrders, waitOrders)
@@ -102,8 +108,9 @@ public class Infantry : GridEntity,InitializeUnit
             _infantry_AI.CancelMovement();
             StartCoroutine(LookForTargets());
             if (MyFireteam.Leader != this) return;
-            MyFireteam.LookForNearestZone();
+            StartCoroutine(MyFireteam.LookForNearestZone());
         };
+           
 
 
 
@@ -172,7 +179,7 @@ public class Infantry : GridEntity,InitializeUnit
             if (MyFireteam.Leader != this) return;
             
             var enemiesAlive = LookForEnemiesAlive().ToArray();
-            if (enemiesAlive.Length > MyFireteam.fireteamMembers.Count)
+            if (enemiesAlive.Length > MyFireteam.FireteamMembers.Count)
             {
                 Vector3 middlePoint = enemiesAlive.Aggregate(Vector3.zero, (x, y) => x += y.transform.position) / enemiesAlive.Length;
                 middlePoint.y = transform.position.y;
