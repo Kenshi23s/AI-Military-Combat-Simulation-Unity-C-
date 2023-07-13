@@ -1802,7 +1802,7 @@ MonoBehaviour:
     _serializedList:
     - Key: 0
       Value:
-        FireteamQuantity: 1
+        FireteamQuantity: 10
         membersPerFireteam: 1
         planesQuantity: 0
         tanksQuantity: 0
@@ -1811,14 +1811,14 @@ MonoBehaviour:
         height: 20
     - Key: 1
       Value:
-        FireteamQuantity: 1
+        FireteamQuantity: 10
         membersPerFireteam: 1
         planesQuantity: 0
         tanksQuantity: 0
         SpawnArea: {fileID: 1020563752}
         width: 20
         height: 20
-  canDebug: 1
+  canDebug: 0
 --- !u!114 &658754924
 MonoBehaviour:
   m_ObjectHideFlags: 0
