@@ -9,11 +9,13 @@ using static NewPhysicsMovement;
 public class NewPhysicsMovementEditor : Editor
 {
     NewPhysicsMovement myTarget;
+
     public override void OnInspectorGUI()
     {
-        //DrawDefaultInspector();
-        //return;
         myTarget = (NewPhysicsMovement)target;
+
+        myTarget.Acceleration = EditorGUILayout.FloatField("Acceleration", myTarget.Acceleration);
+        myTarget.MaxSpeed = EditorGUILayout.FloatField("Max Speed", myTarget.MaxSpeed);
 
         myTarget.Movement = (MovementType)EditorGUILayout.EnumPopup("Movement Type", myTarget.Movement);
 
@@ -30,8 +32,6 @@ public class NewPhysicsMovementEditor : Editor
                 break;
         }
         EditorGUI.indentLevel--;
-
-
 
         myTarget.Alignment = (AlignmentType)EditorGUILayout.EnumPopup("Alignment Type", myTarget.Alignment);
 
@@ -61,6 +61,9 @@ public class NewPhysicsMovementEditor : Editor
         myTarget.FreezeYAlignment = EditorGUILayout.Toggle("Y", myTarget.FreezeYAlignment);
         myTarget.FreezeZAlignment = EditorGUILayout.Toggle("Z", myTarget.FreezeZAlignment);
         EditorGUI.indentLevel--;
+
+        if (GUI.changed) 
+            EditorUtility.SetDirty(myTarget);
     }
 
     void ShowGroundedMovementGUI() 

@@ -102,21 +102,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Movement: 0
+  _acceleration: 37.5
+  _maxSpeed: 8
+  _maxGroundAngle: 45
+  GroundSnapping: 1
+  _groundProbeDistance: 0.5
+  GroundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
   Alignment: 0
+  _alignmentMix: 0.5
+  AlignmentTarget: {fileID: 0}
+  _alignTime: 0
   FreezeXAlignment: 1
   FreezeYAlignment: 0
   FreezeZAlignment: 1
-  _acceleration: 5
-  AlignmentTarget: {fileID: 0}
-  _maxSpeed: 5
-  _alignTime: 0
-  _maxGroundAngle: 45
-  GroundSnapping: 1
-  _probeDistance: 0.5
-  _probeMask:
-    serializedVersion: 2
-    m_Bits: 128
-  _velocityMix: 0
 --- !u!114 &7684651609810558663
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -218,10 +218,10 @@ MonoBehaviour:
     m_Bits: 960
   trailSample: {fileID: 2610780281482316935, guid: ece5188b7e398c345a64fc3091428e05,
     type: 3}
-  bulletsPerBurst: 3
-  burstCD: 3
-  BulletCD: 0.2
-  shootPos: {fileID: 2889329660706087394}
+  _bulletsPerBurst: 0
+  _burstCD: 3
+  _bulletCD: 0.3
+  _shootPos: {fileID: 0}
 --- !u!1 &7684651611259997065
 GameObject:
   m_ObjectHideFlags: 0
