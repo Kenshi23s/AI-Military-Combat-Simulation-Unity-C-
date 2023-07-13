@@ -138,17 +138,8 @@ public class NewPhysicsMovement : MonoBehaviour
     Quaternion _rotation;
     Vector3 _inputMoveDirection;
 
-    private void OnValidate()
-    {
-        Rigidbody = GetComponent<Rigidbody>();
-        MaxGroundAngle = _maxGroundAngle;
-        AlignTime = _alignTime;
-    }
-
-
     private void Awake()
     {
-        OnValidate();
         Rigidbody = GetComponent<Rigidbody>();
 
         _debug = GetComponent<DebugableObject>();

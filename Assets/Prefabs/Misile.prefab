@@ -167,21 +167,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Movement: 1
+  _acceleration: 35
+  _maxSpeed: 40
+  _maxGroundAngle: 45
+  GroundSnapping: 0
+  _groundProbeDistance: 0.5
+  GroundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
   Alignment: 0
+  _alignmentMix: 0.5
+  AlignmentTarget: {fileID: 0}
+  _alignTime: 0
   FreezeXAlignment: 0
   FreezeYAlignment: 0
   FreezeZAlignment: 0
-  _acceleration: 5
-  AlignmentTarget: {fileID: 0}
-  _maxSpeed: 5
-  _alignTime: 0
-  _maxGroundAngle: 45
-  GroundSnapping: 0
-  _probeDistance: 0.5
-  _probeMask:
-    serializedVersion: 2
-    m_Bits: 0
-  _velocityMix: 0
 --- !u!114 &7282944069579428829
 MonoBehaviour:
   m_ObjectHideFlags: 0
