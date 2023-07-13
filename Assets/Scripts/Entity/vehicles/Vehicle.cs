@@ -24,13 +24,7 @@ public abstract class Vehicle : GridEntity, FlockableEntity
     [SerializeField] protected float _loseSightRadius;
     protected FOVAgent _fov;
     protected NewPhysicsMovement _movement;
-    public List<Seat> vehicleSeats = new List<Seat>();
-
-    public event Action OnEngineTurnOff;
-    public event Action OnEngineTurnOn;
-    public event Action whileEngineOn;
-
-    public bool EngineOn;
+   
 
     public abstract void VehicleAwake();
 
@@ -42,7 +36,16 @@ public abstract class Vehicle : GridEntity, FlockableEntity
         flockingParameters.myTransform = transform;
         VehicleAwake();
     }
-  
+
+    #region Ya no va en los vehiculos :C
+    public List<Seat> vehicleSeats = new List<Seat>();
+
+    public event Action OnEngineTurnOff;
+    public event Action OnEngineTurnOn;
+    public event Action whileEngineOn;
+
+    public bool EngineOn;
+
     /// <summary>
     /// Subirse al vehiculo, requiere que le pasen un pasajero, solo se subira si hay asientos disponibles,
     /// devuelve una booleana para chequear eso
@@ -100,12 +103,13 @@ public abstract class Vehicle : GridEntity, FlockableEntity
         OnEngineTurnOn?.Invoke();
 
     }
+    #endregion
+
     private void OnValidate()
     {
         sightRadius = Mathf.Clamp(sightRadius, 0, Mathf.Infinity);
         _loseSightRadius = Mathf.Clamp(_loseSightRadius, sightRadius, Mathf.Infinity);
         GetComponent<FOVAgent>().SetFov(sightRadius);
-    
     }
     public void Initialize(Team newTeam)
     {

@@ -4,12 +4,25 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEngine;
 using static Infantry;
-[RequireComponent(typeof(DebugableObject))]
-public class Fireteam : MonoBehaviour
+
+public class Fireteam
 {
     List<Infantry> _fireteamMembers = new List<Infantry>();
 
     public ReadOnlyCollection<Infantry> fireteamMembers;
+
+    public Fireteam(Team myTeam,List<Infantry> members)
+    {
+        this.myTeam = myTeam;
+    
+        foreach (var item in _fireteamMembers) item.InitializeUnit(myTeam);
+
+        if (Leader == null)
+        {
+            Leader = _fireteamMembers.PickRandom();
+            fireteamMembers = _fireteamMembers.AsReadOnly();
+        }
+    }
 
     public Infantry Leader { get; private set; }
 
@@ -45,26 +58,6 @@ public class Fireteam : MonoBehaviour
             _fireteamMembers.Remove(item);
     }
     #endregion
-
-    private void Awake()
-    {
-        _debug = GetComponent<DebugableObject>();
-    }
-    private void Start()
-    {
-        if (Leader == null)
-        {
-            Leader = _fireteamMembers.PickRandom();
-            fireteamMembers = _fireteamMembers.AsReadOnly();
-        }
-    }
-
-    public void Initialize(Team newTeam)
-    {
-        myTeam = newTeam;
-        foreach (var item in _fireteamMembers) item.InitializeUnit(myTeam);
-
-    }
 
     public Vector3 LookForNearestZone()
     {
@@ -157,7 +150,7 @@ public class Fireteam : MonoBehaviour
         var nearestFireteam = TeamsManager.instance
             .GetAllyFireteams(myTeam)
             .Where(x => x.FireteamInCombat())
-            .Minimum(x => Vector3.Distance(x.Leader.transform.position,transform.position));
+            .Minimum(x => Vector3.Distance(x.Leader.transform.position,Leader.transform.position));
         if (nearestFireteam != null)       
             nearestFireteam.HelpNearFireteam(enemyPosition);
         

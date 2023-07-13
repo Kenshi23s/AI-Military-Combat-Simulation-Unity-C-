@@ -459,11 +459,11 @@ public class Plane : Vehicle
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (_movement.Velocity.magnitude >= _movement.Velocity.magnitude/2)
-        {
-            _debug.Log("choque yendo muy rapido, asi que explote C:");
-            Destroy(gameObject);
-        }
+        //if (_movement.Velocity.magnitude >= _movement.Velocity.magnitude/2)
+        //{
+        //    _debug.Log("choque yendo muy rapido, asi que explote C:");
+        //    Destroy(gameObject);
+        //}
       
     }
 

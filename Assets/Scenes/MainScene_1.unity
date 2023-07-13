@@ -331,6 +331,16 @@ PrefabInstance:
       objectReference: {fileID: 205571597}
     - target: {fileID: 6565769872705145561, guid: 9d3a7005447117e428bb737f379b1de0,
         type: 3}
+      propertyPath: _cd_OnRandomDir
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 6565769872705145561, guid: 9d3a7005447117e428bb737f379b1de0,
+        type: 3}
+      propertyPath: misileStats.maxSpeed
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6565769872705145561, guid: 9d3a7005447117e428bb737f379b1de0,
+        type: 3}
       propertyPath: <MyTeam>k__BackingField
       value: 1
       objectReference: {fileID: 0}
@@ -338,6 +348,11 @@ PrefabInstance:
         type: 3}
       propertyPath: minimumDistanceForStrike
       value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6565769872705145561, guid: 9d3a7005447117e428bb737f379b1de0,
+        type: 3}
+      propertyPath: misileStats.acceleration
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 6565769872705145561, guid: 9d3a7005447117e428bb737f379b1de0,
         type: 3}
@@ -362,7 +377,7 @@ PrefabInstance:
     - target: {fileID: 6565769872705145562, guid: 9d3a7005447117e428bb737f379b1de0,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9d3a7005447117e428bb737f379b1de0, type: 3}
@@ -590,7 +605,7 @@ PrefabInstance:
     - target: {fileID: 6565769872705145562, guid: 9d3a7005447117e428bb737f379b1de0,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9d3a7005447117e428bb737f379b1de0, type: 3}

@@ -166,10 +166,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb77a9c1f3fcd634392a1fb3dd310371, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Movement: 1
+  Alignment: 0
+  FreezeXAlignment: 0
+  FreezeYAlignment: 0
+  FreezeZAlignment: 0
   _acceleration: 5
+  AlignmentTarget: {fileID: 0}
   _maxSpeed: 5
-  _groundedMovement: 0
-  _rotationSpeed: 180
+  _alignTime: 0
+  _maxGroundAngle: 45
+  GroundSnapping: 0
+  _probeDistance: 0.5
+  _probeMask:
+    serializedVersion: 2
+    m_Bits: 0
+  _velocityMix: 0
 --- !u!114 &7282944069579428829
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -209,14 +221,6 @@ MonoBehaviour:
   explosionParticleonGround:
     particle: {fileID: 6741098953864279398, guid: accd383182f6c59448a24e78b34fa338,
       type: 3}
-  myStats:
-    acceleration: 0
-    maxSpeed: 0
-    rotationSpeed: 0
-    timeBeforeExplosion: 0
-    damage: 0
-    explosionRadius: 0
-    initialVelocity: {x: 0, y: 0, z: 0}
 --- !u!65 &2803249810437451156
 BoxCollider:
   m_ObjectHideFlags: 0
