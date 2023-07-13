@@ -87,12 +87,12 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     protected override void SingletonAwake()
     {
         //inicializo las listas del diccionario
-        foreach (Team key in Enum.GetValues(typeof(Team)))
-        {
-            _teams.Add(key, new List<Entity>());
-            SpawnFireteams(key, MatchParameters[key]);
-            SpawnPlanes(key, MatchParameters[key]);
-        }       
+        //foreach (Team key in Enum.GetValues(typeof(Team)))
+        //{
+        //    _teams.Add(key, new List<Entity>());
+        //    SpawnFireteams(key, MatchParameters[key]);
+        //    SpawnPlanes(key, MatchParameters[key]);
+        //}       
     }
 
 

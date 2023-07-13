@@ -60,7 +60,7 @@ public class Plane : Vehicle
         shootComponent = GetComponent<ShootComponent>();
         _debug.AddGizmoAction(DrawTowardsTarget); _debug.AddGizmoAction(DrawAirstrikeZone);
         health.OnKilled += () => _planeFSM.SendInput(PlaneStates.ABANDONED);
-        _movement.GroundedMovement = false;
+
         misileStats.owner = gameObject;
     }
 

@@ -34,7 +34,7 @@ public class Misile : GridEntity
     private void Awake()
     {
         _movement = GetComponent<NewPhysicsMovement>();
-        _movement.GroundedMovement = false;
+
         GetComponent<Collider>().isTrigger = true;
         enabled = false;
        
@@ -67,7 +67,7 @@ public class Misile : GridEntity
     {
         _movement.Acceleration = myStats.acceleration;
         _movement.MaxSpeed = myStats.maxSpeed;
-        _movement.RotationSpeed = myStats.rotationSpeed;
+        //_movement.RotationSpeed = myStats.rotationSpeed;
         _movement.Velocity = myStats.initialVelocity;
     }
 

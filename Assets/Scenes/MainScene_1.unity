@@ -362,7 +362,7 @@ PrefabInstance:
     - target: {fileID: 6565769872705145562, guid: 9d3a7005447117e428bb737f379b1de0,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9d3a7005447117e428bb737f379b1de0, type: 3}
@@ -590,7 +590,7 @@ PrefabInstance:
     - target: {fileID: 6565769872705145562, guid: 9d3a7005447117e428bb737f379b1de0,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9d3a7005447117e428bb737f379b1de0, type: 3}
@@ -889,7 +889,8 @@ MonoBehaviour:
   DistanceX: 0
   maxDistanceZ: 0
   Scale: 0
-  <MisilePrefab>k__BackingField: {fileID: 0}
+  <MisilePrefab>k__BackingField: {fileID: 7282944069579428830, guid: 868d19977cfb5f8428e33f33aa49beef,
+    type: 3}
   groundMask:
     serializedVersion: 2
     m_Bits: 192

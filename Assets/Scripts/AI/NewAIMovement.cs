@@ -17,11 +17,11 @@ public class NewAIMovement : MonoBehaviour
 
     public float destinationArriveDistance;
 
-    Action _fixedUpdate;
+    Action _update, _fixedUpdate;
 
     List<Vector3> _path = new List<Vector3>();
 
-    [SerializeField]LayerMask obstacleMask;
+    [SerializeField] LayerMask obstacleMask;
 
     public Vector3 destination { get; private set; }
 
@@ -30,9 +30,11 @@ public class NewAIMovement : MonoBehaviour
     {
         ManualMovement = GetComponent<NewPhysicsMovement>();
         owner = GetComponent<GridEntity>();
-        _debug= GetComponent<DebugableObject>();
+        _debug = GetComponent<DebugableObject>();
         _debug.AddGizmoAction(DrawPath);
     }
+
+    public void Update() => _update?.Invoke();
 
     public void SetDestination(Vector3 newDestination)
     {
@@ -46,8 +48,6 @@ public class NewAIMovement : MonoBehaviour
         }
         else
         {
-           
-
             CalculatePath(newDestination);
         }
     }
@@ -64,11 +64,15 @@ public class NewAIMovement : MonoBehaviour
         _fixedUpdate = () =>
         {
             _debug.Log("Veo el destino, voy directo.");
-            ManualMovement.AccelerateTowardsTarget(newDestination);
+
             if (Vector3.Distance(newDestination, transform.position) < destinationArriveDistance)
             {
                 OnDestinationReached?.Invoke();
                 ClearPath();
+            }
+            else
+            {
+                ManualMovement.AccelerateTowardsTarget(newDestination);
             }
         };
     }
@@ -82,25 +86,41 @@ public class NewAIMovement : MonoBehaviour
         Tuple<Node, Node> keyNodes = Tuple.Create(I.GetNearestNode(transform.position), I.GetNearestNode(newDestination));
 
         if (keyNodes.Item1 != null && keyNodes.Item2 != null)
-            StartCoroutine(keyNodes.CalculateLazyThetaStar(I.wall_Mask, OnFinishCalculatingPath, destination,200));
+            StartCoroutine(keyNodes.CalculateLazyThetaStar(I.wall_Mask, OnFinishCalculatingPath, destination, 200));
         else
-            _debug.Log("El nodo Inicial"+keyNodes.Item1 != null ? "No es null" : "Es null" + "y el final es "+ keyNodes.Item2 != null ? "No es null" : " Es null");
+            _debug.Log("El nodo Inicial" + keyNodes.Item1 != null ? "No es null" : "Es null" + "y el final es " + keyNodes.Item2 != null ? "No es null" : " Es null");
     }
 
     void OnFinishCalculatingPath(List<Vector3> newPath)
     {
-        if (!newPath.Any()) { _debug.Log("No se pudo armar el camino"); return; }
+        if (!newPath.Any())
+        {
+            _debug.Log("No se pudo armar el camino");
+            return;
+        }
 
 
         _path = newPath;
 
-        _debug.Log("Arme el camino!, lo reproduzo ");
-        _fixedUpdate = PlayPath;     
+        _debug.Log("Arme el camino, lo reproduzo ");
+        _fixedUpdate = PlayPath;
     }
 
     void PlayPath()
     {
-        if (!_path.Any())
+        // Si llegamos al waypoint mas cercano, quitarlo para pasar al siguiente
+        if (Vector3.Distance(_path[0], transform.position) < destinationArriveDistance)
+        {
+            _path.RemoveAt(0);
+        }
+
+        // Mientras queden waypoints seguir avanzando
+        if (_path.Any())
+        {
+            _debug.Log("Se mueve hacia el siguiente nodo, me faltan " + _path.Count);
+            ManualMovement.AccelerateTowardsTarget(_path[0]);
+        }
+        else // Si no quedan, finalizar el recorrido
         {
             _debug.Log("no hay mas nodos, corto pathfinding");
             OnDestinationReached?.Invoke();
@@ -108,12 +128,6 @@ public class NewAIMovement : MonoBehaviour
             return;
         }
 
-        _debug.Log("Se mueve hacia el siguiente nodo, me faltan " + _path.Count);
-
-        ManualMovement.AccelerateTowardsTarget(_path[0]);
-
-        if (Vector3.Distance(_path[0], transform.position) < destinationArriveDistance)
-            _path.RemoveAt(0);
     }
 
     void ClearPath()

@@ -113,11 +113,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb77a9c1f3fcd634392a1fb3dd310371, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _acceleration: 5
-  _maxSpeed: 5
-  _groundedMovement: 1
-  SnapToGround: 1
-  _rotationSpeed: 180
+  Movement: 0
+  Alignment: 0
+  FreezeXAlignment: 1
+  FreezeYAlignment: 0
+  FreezeZAlignment: 1
+  _acceleration: 37.5
+  AlignmentTarget: {fileID: 0}
+  _maxSpeed: 8
+  _alignTime: 0
+  _maxGroundAngle: 45
+  GroundSnapping: 1
+  _probeDistance: 0.5
+  _probeMask:
+    serializedVersion: 2
+    m_Bits: 193
+  _velocityMix: 0
 --- !u!114 &4015529176650051648
 MonoBehaviour:
   m_ObjectHideFlags: 0

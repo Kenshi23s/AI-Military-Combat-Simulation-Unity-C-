@@ -124,6 +124,10 @@ MonoBehaviour:
     m_Bits: 448
   trailSample: {fileID: 2610780281482316935, guid: ece5188b7e398c345a64fc3091428e05,
     type: 3}
+  bulletsPerBurst: 0
+  burstCD: 3
+  BulletCD: 0.3
+  shootPos: {fileID: 0}
 --- !u!54 &6565769872705145564
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -152,10 +156,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb77a9c1f3fcd634392a1fb3dd310371, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _acceleration: 25
+  Movement: 1
+  Alignment: 0
+  FreezeXAlignment: 0
+  FreezeYAlignment: 0
+  FreezeZAlignment: 0
+  _acceleration: 5
+  AlignmentTarget: {fileID: 0}
   _maxSpeed: 35
-  _groundedMovement: 1
-  _rotationSpeed: 30
+  _alignTime: 0
+  _maxGroundAngle: 45
+  GroundSnapping: 1
+  _probeDistance: 0.5
+  _probeMask:
+    serializedVersion: 2
+    m_Bits: 0
+  _velocityMix: 0
 --- !u!114 &6565769872705145565
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -236,6 +252,7 @@ MonoBehaviour:
   - {fileID: 5285789855417990210}
   - {fileID: 3355421752814213245}
   misileStats:
+    myTeam: 0
     acceleration: 25
     maxSpeed: 50
     rotationSpeed: 180
