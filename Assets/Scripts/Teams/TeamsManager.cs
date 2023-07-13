@@ -104,6 +104,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
     void SpawnFireteams(Team team,TeamParameters param)
     {
+        return;
         List<Fireteam> fireteams = new List<Fireteam>();
         
         for (int i = 0; i < param.FireteamQuantity; i++)
@@ -112,11 +113,11 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
            for (int j = 0; j < param.membersPerFireteam; j++)
            {
-                _watchDog = 0;
-               if (GetRandomFreePosOnGround(param, out Vector3 pos))              
-                   members += Instantiate(_infantryPrefab, pos, Quaternion.identity);
-               else              
-                   return;
+               // _watchDog = 0;
+               //if (GetRandomFreePosOnGround(param, out Vector3 pos))              
+               //    members += Instantiate(_infantryPrefab, pos, Quaternion.identity);
+               //else              
+               //    return;
                
            }
            Fireteam newFT = new Fireteam(team, members.ToList());
@@ -176,48 +177,48 @@ public class TeamsManager : MonoSingleton<TeamsManager>
         return GetRandomFreePosOnAir(parameters,out pos);
     }
 
-    bool GetRandomFreePosOnGround(TeamParameters parameters, out Vector3 pos)
-    {
-        if (_watchDog >= 200)
-        {
+    //bool GetRandomFreePosOnGround(TeamParameters parameters, out Vector3 pos)
+    //{
+    //    if (_watchDog >= 200)
+    //    {
        
-            pos = Vector3.zero;
-            Debug.LogError("WATCHDOG AL LIMITE, CORTO EJECUCION");
-            return false;
-        }
-        float width = parameters.width;
-        float height = parameters.height;
-        Debug.Log(width+" "+ height);
-        Vector3 randomPos = parameters.SpawnArea.transform.position + new Vector3(Random.Range(-width, width),0, Random.Range(-height, height));
+    //        pos = Vector3.zero;
+    //        Debug.LogError("WATCHDOG AL LIMITE, CORTO EJECUCION");
+    //        return false;
+    //    }
+    //    float width = parameters.width;
+    //    float height = parameters.height;
+    //    Debug.Log(width+" "+ height);
+    //    Vector3 randomPos = parameters.SpawnArea.transform.position + new Vector3(Random.Range(-width, width),0, Random.Range(-height, height));
 
           
-        if (Physics.Raycast(randomPos,Vector3.down,out RaycastHit hit,Mathf.Infinity, Ground))
-        {
-            //si no hay ninguna grid entity cerca,devuelvo la posicion
-            var entityNearby = Physics.OverlapSphere(hit.point, SeparationRadiusBetweenUnits, NotSpawnable)
-                .Where(x => x != this)
-                .Where(x => x.TryGetComponent(out GridEntity aux));
+    //    if (Physics.Raycast(randomPos,Vector3.down,out RaycastHit hit,Mathf.Infinity, Ground))
+    //    {
+    //        //si no hay ninguna grid entity cerca,devuelvo la posicion
+    //        var entityNearby = Physics.OverlapSphere(hit.point, SeparationRadiusBetweenUnits, NotSpawnable)
+    //            .Where(x => x != this)
+    //            .Where(x => x.TryGetComponent(out GridEntity aux));
                
 
-            //esto es pesadisimo, pero como solo se haria en el awake...
-            if (!entityNearby.Any()) 
-            {
-                Debug.Log("Encontre lugar pa spawnear, spawneo");
+    //        //esto es pesadisimo, pero como solo se haria en el awake...
+    //        if (!entityNearby.Any()) 
+    //        {
+    //            Debug.Log("Encontre lugar pa spawnear, spawneo");
 
-                Debug.Log(_watchDog);
-                pos = hit.point;
-                return true;
-            }
-            else           
-                Debug.Log($"no puedo spawnear aca, hay {entityNearby.Count()} cerca, hago recursion C: ");
-        }
-        else
-            Debug.Log("El raycast no choco con el piso");
+    //            Debug.Log(_watchDog);
+    //            pos = hit.point;
+    //            return true;
+    //        }
+    //        else           
+    //            Debug.Log($"no puedo spawnear aca, hay {entityNearby.Count()} cerca, hago recursion C: ");
+    //    }
+    //    else
+    //        Debug.Log("El raycast no choco con el piso");
         
 
-        _watchDog++;
-        return GetRandomFreePosOnGround(parameters,out pos);
-    }
+    //    _watchDog++;
+    //    return GetRandomFreePosOnGround(parameters,out pos);
+    //}
 
     public IEnumerable<Fireteam> GetAllyFireteams(Team team)
     {
@@ -258,11 +259,11 @@ public class TeamsManager : MonoSingleton<TeamsManager>
             Gizmos.DrawLine(spawnArea + new Vector3(width, 0, -height), spawnArea + new Vector3(-width, 0, -height));
             Gizmos.DrawLine(spawnArea + new Vector3(-width, 0, height), spawnArea + new Vector3(-width, 0, -height));
             _watchDog = 0;
-            if (GetRandomFreePosOnGround(item.Value,out Vector3 freepos))
-            {
-                Gizmos.DrawWireSphere(freepos, SeparationRadiusBetweenUnits);
-                Gizmos.DrawLine(freepos, freepos + Vector3.up * 50);
-            }
+            //if (GetRandomFreePosOnGround(item.Value,out Vector3 freepos))
+            //{
+            //    Gizmos.DrawWireSphere(freepos, SeparationRadiusBetweenUnits);
+            //    Gizmos.DrawLine(freepos, freepos + Vector3.up * 50);
+            //}
 
             
 

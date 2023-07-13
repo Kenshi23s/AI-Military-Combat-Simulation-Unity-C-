@@ -1759,11 +1759,9 @@ Transform:
   m_LocalPosition: {x: 55, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1823427471}
-  - {fileID: 1020563752}
+  m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &658754922
 MonoBehaviour:
@@ -1789,9 +1787,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a60b0997fc49924aa359871cb962acd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  infantryPrefab: {fileID: 7684651609810558659, guid: 451e98b6690f4fe44a7f048fca3f0e32,
+  _infantryPrefab: {fileID: 7684651609810558659, guid: 451e98b6690f4fe44a7f048fca3f0e32,
     type: 3}
-  planePrefab: {fileID: 6565769872705145561, guid: 9d3a7005447117e428bb737f379b1de0,
+  _planePrefab: {fileID: 6565769872705145561, guid: 9d3a7005447117e428bb737f379b1de0,
     type: 3}
   NotSpawnable:
     serializedVersion: 2
@@ -1799,27 +1797,27 @@ MonoBehaviour:
   Ground:
     serializedVersion: 2
     m_Bits: 128
-  separationRadiusBetweenUnits: 2
-  MatchParameters:
+  SeparationRadiusBetweenUnits: 1
+  _matchParameters:
     _serializedList:
     - Key: 0
       Value:
-        FireteamQuantity: 10
+        FireteamQuantity: 1
         membersPerFireteam: 1
         planesQuantity: 0
-        tanksQuantity: 13
+        tanksQuantity: 0
         SpawnArea: {fileID: 1823427471}
-        width: 50
-        height: 50
+        width: 20
+        height: 20
     - Key: 1
       Value:
         FireteamQuantity: 1
         membersPerFireteam: 1
         planesQuantity: 0
-        tanksQuantity: 10
+        tanksQuantity: 0
         SpawnArea: {fileID: 1020563752}
-        width: 60.64
-        height: 61.81
+        width: 20
+        height: 20
   canDebug: 1
 --- !u!114 &658754924
 MonoBehaviour:
@@ -3126,12 +3124,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1020563751}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -16.28, y: 60.441776, z: 172.5}
+  m_LocalPosition: {x: 38.72, y: 60.441776, z: 172.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 658754921}
-  m_RootOrder: 1
+  m_Father: {fileID: 0}
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1060281811 stripped
 Transform:
@@ -6061,12 +6059,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1823427470}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -56.9, y: 60.441776, z: -208.95}
+  m_LocalPosition: {x: -1.9000015, y: 60.441776, z: -208.95}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 658754921}
-  m_RootOrder: 0
+  m_Father: {fileID: 0}
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1828162148
 PrefabInstance:
