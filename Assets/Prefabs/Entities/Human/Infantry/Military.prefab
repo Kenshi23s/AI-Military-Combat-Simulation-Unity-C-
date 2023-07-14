@@ -54,12 +54,12 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2174598261648835438}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.577, y: -0.304, z: 0}
+  m_LocalRotation: {x: -0.0016838287, y: -0.040749565, z: 0.041251887, w: 0.99831605}
+  m_LocalPosition: {x: -0.21116783, y: -0.32111576, z: -0.01583077}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 7686155637466333991}
+  m_Father: {fileID: 7689225822032186665}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4214858932860941153
@@ -229,7 +229,7 @@ Transform:
   - {fileID: 7686471413740429669}
   - {fileID: 7686424268010523771}
   m_Father: {fileID: 7689225822032186665}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7683162731250843801
 GameObject:
@@ -865,9 +865,10 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 7976335328327065517}
   - {fileID: 7686379309595482167}
   m_Father: {fileID: 7686155637466333991}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7683491150404639601
 GameObject:
@@ -1088,7 +1089,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 7976335328327065517}
   - {fileID: 7689225822032186665}
   m_Father: {fileID: 7685993884650697679}
   m_RootOrder: 0
@@ -1941,7 +1941,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <MyTeam>k__BackingField: 0
-  onGrid: 0
+  OnGrid: 0
   <Center>k__BackingField: {fileID: 7686234030039808085}
   _anim: {fileID: 7779844200561149171}
   _timeBeforeSelectingTarget: 2
