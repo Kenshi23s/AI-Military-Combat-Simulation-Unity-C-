@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,11 +8,6 @@ using UnityEngine.Events;
 [RequireComponent(typeof(DebugableObject))]
 public class CapturePoint : GridEntity
 {
-    [SerializeField] float waitingFramesTilSearch = 30, zoneRadius = 15;
-
-    public UnityEvent onPointOwnerChange;
-    public UnityEvent onProgressChange;
-    public float TakeProgress { get; private set; }
     public enum ZoneStates
     {
         Disputed,
@@ -19,6 +15,20 @@ public class CapturePoint : GridEntity
         BeingTaken,
         Taken
     }
+
+    [SerializeField] float waitingFramesTilSearch = 30, zoneRadius = 15;
+
+    #region Events
+    public UnityEvent onPointOwnerChange;
+
+    public UnityEvent onProgressChange;
+
+    //ya se q es rarisimo esto jocha no me asesines :C
+    public UnityEvent<ILookup<Team,Entity>> onEntitiesAroundUpdate;
+    #endregion
+
+    public float TakeProgress { get; private set; }
+   
 
     [field: SerializeField] public float ProgressRequiredForCapture { get; private set; }
     float captureProgress = 0;
@@ -72,11 +82,9 @@ public class CapturePoint : GridEntity
 
 
             CombatEntitiesAround = GetEntitiesInRange(zoneRadius)
-                .Where(x => x != this)
-                .NotOfType<Entity,Civilian>()
-                .NotOfType<Entity,Plane>()
+                .Where(x => x != this).OfType<Entity>()
                 .ToList();
-
+            DebugEntity.Log(CombatEntitiesAround.Count.ToString());
             //divido la lista entre equipo rojo y verde con el lookup
             //si pasan el predicado, accedo a esos items con [true] y si no
             //accedo a los otros items con [false]
@@ -84,7 +92,16 @@ public class CapturePoint : GridEntity
                 .Where(x => x.MyTeam != Team.None)
                 .ToLookup(x => x.MyTeam);
 
-            if (!split[Team.Red].Any() || !split[Team.Blue].Any()) continue;
+
+            
+            onEntitiesAroundUpdate?.Invoke(split);
+
+            if (!split[Team.Red].Any() || !split[Team.Blue].Any()) 
+            {
+                DebugEntity.Log("No hay unidades en el area");
+                continue;
+            }
+          
 
             //rojo                    
             if (split[Team.Red].Any() && split[Team.Blue].Any())
@@ -107,6 +124,7 @@ public class CapturePoint : GridEntity
                 beingTakenBy = Team.Blue;
             }
             DebugEntity.Log(debug);
+
             onProgressChange?.Invoke();
             CheckCaptureProgress();
         }    

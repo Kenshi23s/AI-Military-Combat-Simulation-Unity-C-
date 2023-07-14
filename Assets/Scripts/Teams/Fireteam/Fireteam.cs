@@ -89,8 +89,10 @@ public class Fireteam
         //y obtengo las mas cercanas, pongo el distinct por las dudas de q haya alguno repetido
         //Distinct: saca los elementos que sean iguales o esten "clonados"
         yield return null;
-        Vector3 nearestZone = concat.Distinct().Minimum(x => Vector3.Distance(x.transform.position, Leader.transform.position)).transform.position;
-        SendPatrolOrders(nearestZone);
+       
+        var nearestZone = concat.Distinct().Minimum(x => Vector3.Distance(x.transform.position, Leader.transform.position));
+        Leader.DebugEntity.Log($"Moviendome a la bandera {nearestZone}");
+        SendPatrolOrders(nearestZone.transform.position);
     
     }
 

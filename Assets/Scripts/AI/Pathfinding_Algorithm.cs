@@ -241,8 +241,6 @@ public static class Pathfinding_Algorithm
                 }
                 path.Add(nodes.Item1);
                 path.Reverse();
-
-                Debug.Log(path.Count());
                
                 onFinish(path);
                 pathMade = true;

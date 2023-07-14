@@ -110,7 +110,7 @@ MonoBehaviour:
   _groundProbeDistance: 0.5
   GroundMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 64
   Alignment: 0
   _alignmentMix: 0.5
   AlignmentTarget: {fileID: 0}
