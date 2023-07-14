@@ -8,11 +8,8 @@ using static UnityEditor.Progress;
 
 public class Fireteam
 {
-    List<Infantry> _fireteamMembers = new List<Infantry>();
 
-    public ReadOnlyCollection<Infantry> FireteamMembers;
-
-    public Fireteam(Team newTeam,List<Infantry> members)
+    public Fireteam(Team newTeam, List<Infantry> members)
     {
         MyTeam = newTeam;
 
@@ -22,19 +19,23 @@ public class Fireteam
         {
             Leader = _fireteamMembers.PickRandom();
             Leader.DebugEntity.AddGizmoAction(DrawConnectionToMembers);
+            Leader.gameObject.name = "[Lider]" + Leader.gameObject.name;
             FireteamMembers = _fireteamMembers.AsReadOnly();
         }
 
         foreach (var item in _fireteamMembers) item.InitializeUnit(newTeam);
-
-       
     }
 
+    List<Infantry> _fireteamMembers = new List<Infantry>();
+
+    public ReadOnlyCollection<Infantry> FireteamMembers;
+
+   
     public Infantry Leader { get; private set; }
 
     public Team MyTeam { get; private set; }
  
-    public float MinimumDistanceFromLeader { get; private set; }
+   
 
     #region MemberManagment
     public void AddMember(Infantry infantry)
@@ -143,7 +144,7 @@ public class Fireteam
         return false;
     }
     //saber si la unidad esta cerca del lider
-    public bool IsNearLeader(Infantry member)
+    public bool IsNearLeader(Infantry member,float MinimumDistanceFromLeader)
     {
         return Vector3.Distance(Leader.transform.position,member.transform.position) < MinimumDistanceFromLeader;
     }

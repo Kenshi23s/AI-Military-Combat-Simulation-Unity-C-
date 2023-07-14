@@ -40,7 +40,7 @@ public class Misile : GridEntity
        
     }
 
-    private void Start()
+    public override void GridEntityStart()
     {
         explosionParticle.key = ParticlePool.instance.CreateVFXPool(explosionParticle.particle);
         explosionParticleonGround.key = ParticlePool.instance.CreateVFXPool(explosionParticleonGround.particle);
@@ -138,5 +138,5 @@ public class Misile : GridEntity
         Gizmos.DrawLine(transform.position, target.position);
     }
 
-   
+  
 }

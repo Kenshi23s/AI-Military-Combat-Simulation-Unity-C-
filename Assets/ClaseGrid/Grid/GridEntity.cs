@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 //[ExecuteInEditMode]
-public class GridEntity : Entity
+public abstract class GridEntity : Entity
 {
 	public event Action<GridEntity> OnMove = delegate {};
     Vector3 _previousPos;
@@ -12,6 +12,14 @@ public class GridEntity : Entity
     SpatialGrid3D _spatialGrid;
     public SpatialGrid3D SpatialGrid => _spatialGrid;
 
+    public abstract void GridEntityStart();
+
+    private void Start()
+    {
+        _spatialGrid = FindObjectOfType<SpatialGrid3D>();
+        _spatialGrid.AddEntity(this);
+        GridEntityStart();
+    }
 
     public IEnumerable<GridEntity> GetEntitiesInRange(float range) 
     {

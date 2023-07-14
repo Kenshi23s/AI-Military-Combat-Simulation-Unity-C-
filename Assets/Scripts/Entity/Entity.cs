@@ -7,9 +7,16 @@ using UnityEngine;
 public abstract class Entity : MonoBehaviour
 {
 
-    [field:SerializeField] public Team MyTeam { get; protected set; }
+    [field : SerializeField] public Team MyTeam { get; protected set; }
     public LifeComponent Health { get; private set; }
     public DebugableObject DebugEntity { get; private set; }
+    public bool IsCapturing { get; private set; }
+
+
+    public void SetCaptureState(bool arg)
+    {
+        IsCapturing = arg;
+    }
 
     private void Awake()
     {

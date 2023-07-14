@@ -46,19 +46,25 @@ public class Medic : GridEntity
 
         ConfigureTransitions();
 
+
+    }
+
+    public override void GridEntityStart()
+    {
         _fsm = new EventFSM<MedicInputs>(_idle);
     }
 
-    State<MedicInputs> CreateIdleState() 
+
+    State<MedicInputs> CreateIdleState()
     {
         var idle = new State<MedicInputs>("IDLE");
 
-        idle.OnEnter += _ => 
+        idle.OnEnter += _ =>
         {
             _anim.SetBool("Idle", true);
 
             // Dejar de moverse
-            
+
         };
 
         return idle;
@@ -124,7 +130,7 @@ public class Medic : GridEntity
     {
         var shoot = new State<MedicInputs>("SHOOT_TARGET");
 
-        shoot.OnEnter += _ => 
+        shoot.OnEnter += _ =>
         {
             // Pasar a animacion de disparar
             _anim.SetBool("Shooting", true);
@@ -137,7 +143,7 @@ public class Medic : GridEntity
             // Logica de disparo y recarga
         };
 
-        shoot.OnExit += _ => 
+        shoot.OnExit += _ =>
         {
             _anim.SetBool("Shooting", false);
         };
@@ -182,7 +188,7 @@ public class Medic : GridEntity
         return heal;
     }
 
-    State<MedicInputs> CreateDieState() 
+    State<MedicInputs> CreateDieState()
     {
         var die = new State<MedicInputs>("DIE");
 
@@ -202,7 +208,7 @@ public class Medic : GridEntity
         return die;
     }
 
-    void ConfigureTransitions() 
+    void ConfigureTransitions()
     {
         StateConfigurer.Create(_idle)
             .SetTransition(MedicInputs.RUN_TO, _runTo)
@@ -242,3 +248,5 @@ public class Medic : GridEntity
 
     private void SendInputToFSM(MedicInputs inp) => _fsm.SendInput(inp);
 }
+
+   

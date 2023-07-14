@@ -304,9 +304,9 @@ public static class Pathfinding_Algorithm
 
 
             List<Vector3> select = pathToCut.Select(node => node.groundPosition).ToList();
-            //if (endpos != default)
-            //    select.Add(endpos);
-            
+            if (endpos != default)
+                select.Add(endpos);
+
             onFinish(select);
         };
 

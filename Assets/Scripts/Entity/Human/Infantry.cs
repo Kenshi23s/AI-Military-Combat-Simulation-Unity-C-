@@ -8,7 +8,7 @@ using UnityEngine;
 [RequireComponent(typeof(ShootComponent))]
 [RequireComponent(typeof(DebugableObject))]
 [SelectionBase]
-public class Infantry : GridEntity,InitializeUnit
+public class Infantry : GridEntity, InitializeUnit
 {
     public enum INFANTRY_STATES
     {
@@ -18,8 +18,9 @@ public class Infantry : GridEntity,InitializeUnit
         Die,
         FireAtWill
     }
-    [field : SerializeField] public Transform Center { get; private set; }
+    [field: SerializeField] public Transform Center { get; private set; }
     public bool InCombat { get; private set; }
+
 
     [SerializeField] Animator _anim;
 
@@ -39,18 +40,25 @@ public class Infantry : GridEntity,InitializeUnit
 
     public Vector3 Destination { get; private set; }
 
+    [field: SerializeField] public float MinDistanceFromDestination { get; private set; }
 
+ 
     public void InitializeUnit(Team newTeam)
-    {
-      
+    {     
         MyTeam = newTeam;
         SetFSM();
+    }
+
+    public override void GridEntityStart()
+    {
+        
     }
 
     public void SetFireteam(Fireteam MyFireteam)
     {
         this.MyFireteam = MyFireteam;
     }
+
     protected override void EntityAwake()
     {
         _infantry_AI = GetComponent<NewAIMovement>();
@@ -109,6 +117,7 @@ public class Infantry : GridEntity,InitializeUnit
 
         state.OnEnter += (x) =>
         {
+            StopMoving();
             _anim.SetBool("Running", false);
             DebugEntity.Log("Espero Ordenes");
             _infantry_AI.CancelMovement();
@@ -134,17 +143,29 @@ public class Infantry : GridEntity,InitializeUnit
 
         state.OnEnter += (x) =>
         {
+            if (MinDistanceFromDestination <= Vector3.Distance(Destination,transform.position))
+            {
+                Infantry_FSM.SendInput(INFANTRY_STATES.WaitingOrders);
+                return;
+            }
+            StopMoving();
             DebugEntity.Log("Me muevo hacia posicion x");
+
             _infantry_AI.SetDestination(Destination);
+            _infantry_AI.OnDestinationReached += () =>
+            {
+                Infantry_FSM.SendInput(INFANTRY_STATES.WaitingOrders);
+            };
             _anim.SetBool("Running", true);
 
             StartCoroutine(LookForTargets());
         };
 
         state.OnExit += (x) => 
-        { 
+        {
+            _anim.SetBool("Running", false);
             StopCoroutine(LookForTargets());
-            _infantry_AI.CancelMovement();
+            StopMoving();
         };
 
         return state;
@@ -156,14 +177,16 @@ public class Infantry : GridEntity,InitializeUnit
 
         state.OnEnter += (x) =>
         {
-            DebugEntity.Log("Sigo al lider");
-            _anim.SetBool("Running", true);
-            if (!MyFireteam.IsNearLeader(this))
+            if (MyFireteam.IsNearLeader(this, MinDistanceFromDestination))
             {
-                _infantry_AI.SetDestination(MyFireteam.Leader.transform.position);
+                Infantry_FSM.SendInput(INFANTRY_STATES.WaitingOrders);
+                return;
             }
-            
 
+             DebugEntity.Log("Sigo al lider");
+            
+            _anim.SetBool("Running", true);
+  
             StartCoroutine(LookForTargets());
             StartCoroutine(FollowLeaderRoutine());
         };
@@ -171,6 +194,7 @@ public class Infantry : GridEntity,InitializeUnit
 
         state.OnExit += (x) =>
         {
+            _anim.SetBool("Running", false);
             StopCoroutine(LookForTargets());
             StopCoroutine(FollowLeaderRoutine());
             _infantry_AI.CancelMovement();
@@ -179,22 +203,29 @@ public class Infantry : GridEntity,InitializeUnit
         return state;
     }
 
-
     IEnumerator FollowLeaderRoutine()
     {
         while (true)
         {
+           
+            if (!MyFireteam.IsNearLeader(this,MinDistanceFromDestination))
+            {
+
+                _infantry_AI.SetDestination(MyFireteam.Leader.transform.position);
+                _infantry_AI.OnDestinationReached += () =>
+                {
+                    Infantry_FSM.SendInput(INFANTRY_STATES.WaitingOrders);
+                };
+            }
+
             for (int i = 0; i < 120; i++)
             {
                 yield return null;
             }
-            if (!MyFireteam.IsNearLeader(this))
-            {
-                _infantry_AI.SetDestination(MyFireteam.Leader.transform.position);
-            }
         }
        
     }
+
     State<INFANTRY_STATES> FireAtWill()
     {
         State<INFANTRY_STATES> state = new State<INFANTRY_STATES>("FireAtWill");
@@ -247,6 +278,11 @@ public class Infantry : GridEntity,InitializeUnit
 
     #endregion
 
+
+    public void StopMoving()
+    {
+        _infantry_AI.CancelMovement();
+    }
     #region Metodos Utiles
     IEnumerator LookForTargets()
     {
@@ -344,5 +380,7 @@ public class Infantry : GridEntity,InitializeUnit
     }
 
    
+
+
     #endregion
 }

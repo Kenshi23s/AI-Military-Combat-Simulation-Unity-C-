@@ -64,15 +64,15 @@ public class Plane : Vehicle
         misileStats.owner = gameObject;
     }
 
-    
 
-    
+
+
 
     #region UnityCalls
-    private void Start()
+    public override void GridEntityStart()
     {
-       Vector3 dir = SpatialGrid.GetMidleOfGrid() - transform.position;
-        transform.forward = new Vector3(dir.x,0,0);
+        Vector3 dir = SpatialGrid.GetMidleOfGrid() - transform.position;
+        transform.forward = new Vector3(dir.x, 0, 0);
         _planeFSM = CreateFSM();
     }
 
@@ -493,4 +493,6 @@ public class Plane : Vehicle
         Gizmos.DrawLine(airStrikePosition, airStrikePosition + Vector3.up * minimumDistanceForStrike);
         
     }
+
+   
 }

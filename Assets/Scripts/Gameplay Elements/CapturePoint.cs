@@ -18,7 +18,7 @@ public class CapturePoint : MonoBehaviour
 
     [SerializeField, Min(1)] float _waitingFramesTilSearch = 30;
     [SerializeField, Min(0)] float _zoneRadius = 15;
-    [SerializeField] DebugableObject _debug;
+    DebugableObject _debug;
 
     #region Events
     public UnityEvent onPointOwnerChange;
@@ -52,7 +52,15 @@ public class CapturePoint : MonoBehaviour
         {
             if (captureProgress == 0) return 0.5f;
 
-            return Mathf.Abs(captureProgress) / (ProgressRequiredForCapture * 2);
+            if (captureProgress > 0)
+            {
+                return Mathf.Abs(captureProgress) / (ProgressRequiredForCapture) + 0.5f;
+            }
+            else
+            {
+                return Mathf.Abs(captureProgress) / (ProgressRequiredForCapture) - 0.5f;
+            }
+          
         }
     }
         
@@ -69,6 +77,7 @@ public class CapturePoint : MonoBehaviour
     {
         _debug = GetComponent<DebugableObject>();
         _debug.AddGizmoAction(DrawRadius);
+        captureProgress = 0;
     }
 
 
@@ -89,10 +98,17 @@ public class CapturePoint : MonoBehaviour
 
             _combatEntitiesAround = SphereQuery()
                 .OfType<Entity>()
+                .Where(x => x.MyTeam != Team.None)
                 .ToList();
 
             _debug.Log("Combat Entities Around Zone: " + _combatEntitiesAround.Count);
 
+            var combatants = _combatEntitiesAround
+                .Where(x => x.MyTeam != takenBy);
+            foreach (var item in combatants)
+            {
+                
+            }
             //divido la lista entre equipo rojo y verde con el lookup
             //si pasan el predicado, accedo a esos items con [true] y si no
             //accedo a los otros items con [false]
@@ -104,7 +120,7 @@ public class CapturePoint : MonoBehaviour
             
             onEntitiesAroundUpdate?.Invoke(split);
 
-            if (!split[Team.Red].Any() || !split[Team.Blue].Any()) 
+            if (!split[Team.Red].Any() && !split[Team.Blue].Any()) 
             {
                 _debug.Log("No hay unidades en el area");
                 continue;
@@ -122,15 +138,16 @@ public class CapturePoint : MonoBehaviour
             if (split[Team.Red].Any())
             {
                 debug += "El equipo rojo";
-                CaptureProgress += Time.deltaTime * split[Team.Red].Count();
+                CaptureProgress += Time.deltaTime * split[Team.Red].Count() * _waitingFramesTilSearch;
                 beingTakenBy = Team.Red;
             }                    
             else
             {
                 debug += "El equipo azul";
-                CaptureProgress -= Time.deltaTime * split[Team.Blue].Count();
+                CaptureProgress -= Time.deltaTime * split[Team.Blue].Count() * _waitingFramesTilSearch;
                 beingTakenBy = Team.Blue;
             }
+            debug += $" el progreso es de {captureProgress}";
             _debug.Log(debug);
 
             onProgressChange?.Invoke();
@@ -145,7 +162,10 @@ public class CapturePoint : MonoBehaviour
         {
             case Team.Red:
                 if (captureProgress >= ProgressRequiredForCapture)
+                {
                     takenBy = Team.Red;
+                }
+                    
                 break;
             case Team.Blue:
                 if (captureProgress <= -ProgressRequiredForCapture)
