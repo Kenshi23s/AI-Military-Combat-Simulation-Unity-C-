@@ -133,6 +133,7 @@ public class NewAIMovement : MonoBehaviour
     {
         _fixedUpdate = null;
         ManualMovement.ClearForces();
+        ManualMovement.AccelerateTowards(Vector3.zero);
         _path.Clear();
     }
 

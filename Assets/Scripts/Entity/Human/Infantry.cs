@@ -20,8 +20,8 @@ public class Infantry : GridEntity,InitializeUnit
     }
     [field : SerializeField] public Transform Center { get; private set; }
     public bool InCombat { get; private set; }
-    
-  
+
+    [SerializeField] Animator _anim;
 
     public Fireteam MyFireteam { get; private set; }
 
@@ -109,6 +109,7 @@ public class Infantry : GridEntity,InitializeUnit
 
         state.OnEnter += (x) =>
         {
+            _anim.SetBool("Running", false);
             DebugEntity.Log("Espero Ordenes");
             _infantry_AI.CancelMovement();
             StartCoroutine(LookForTargets());
@@ -135,7 +136,8 @@ public class Infantry : GridEntity,InitializeUnit
         {
             DebugEntity.Log("Me muevo hacia posicion x");
             _infantry_AI.SetDestination(Destination);
-           
+            _anim.SetBool("Running", true);
+
             StartCoroutine(LookForTargets());
         };
 
@@ -155,6 +157,7 @@ public class Infantry : GridEntity,InitializeUnit
         state.OnEnter += (x) =>
         {
             DebugEntity.Log("Sigo al lider");
+            _anim.SetBool("Running", true);
             if (!MyFireteam.IsNearLeader(this))
             {
                 _infantry_AI.SetDestination(MyFireteam.Leader.transform.position);
@@ -198,6 +201,9 @@ public class Infantry : GridEntity,InitializeUnit
 
         state.OnEnter += (x) =>
         {
+            _anim.SetBool("Running", false);
+            _anim.SetBool("Shooting",true);
+            InCombat=true;
             DebugEntity.Log("Sigo al lider");
             StartCoroutine(SetTarget());
             if (MyFireteam.Leader != this) return;
@@ -215,6 +221,8 @@ public class Infantry : GridEntity,InitializeUnit
 
         state.OnExit += (x) =>
         {
+            InCombat = false;
+            _anim.SetBool("Shooting", false);
             StopCoroutine(SetTarget());
         };
 
@@ -227,6 +235,8 @@ public class Infantry : GridEntity,InitializeUnit
 
         state.OnEnter += (x) =>
         {
+            InCombat = false;
+            _anim.SetBool("Die",true);
             DebugEntity.Log("Mori");
             MyFireteam.RemoveMember(this);
 

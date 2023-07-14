@@ -81,15 +81,9 @@ public class Plane : Vehicle
         _planeFSM.Update();
     }
 
-    private void LateUpdate()
-    {
-        _planeFSM.LateUpdate();
-    }
-
     private void FixedUpdate()
     {
         _planeFSM.FixedUpdate();
-        Moved();
     }
     #endregion
 
@@ -247,7 +241,7 @@ public class Plane : Vehicle
             var col = GetNearbyPlanes().Where(x => x.MyTeam == MyTeam).Where(x => x != this);
 
             //si hay alguno y estoy en zona de combate, hago flocking
-            if (col.Any() && onGrid)
+            if (col.Any() && OnGrid)
             {
                 var endPromise = col.ToArray();
                 dir += endPromise.Flocking(flockingParameters);
@@ -255,7 +249,7 @@ public class Plane : Vehicle
                 DebugEntity.Log($"hago flocking con {endPromise.Length} aviones aliados");
             }
                 
-            else if (!onGrid)
+            else if (!OnGrid)
             {
                 DebugEntity.Log("No estoy en la grilla, me pego la vuelta hacia alla");
 
@@ -331,7 +325,7 @@ public class Plane : Vehicle
 
             dir += (targetPos - transform.position).normalized;
 
-            if (!onGrid)
+            if (!OnGrid)
             {
                 Vector3 dirToCenter = SpatialGrid.GetMidleOfGrid() - transform.position;
                 Debug.Log("no estoy en la grilla, voy hacia ella");
@@ -385,7 +379,7 @@ public class Plane : Vehicle
             dir += beingChasedBy.Evade();
             dir += _evadingDir;
 
-            if (!onGrid)
+            if (!OnGrid)
             {
                 DebugEntity.Log("No estoy en la grilla, me pego la vuelta hacia alla");
 

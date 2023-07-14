@@ -759,10 +759,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6eeb1dd3f05737a4f98be9c9aa108d80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <MyTeam>k__BackingField: 2
-  onGrid: 1
-  waitingFramesTilSearch: 0
-  zoneRadius: 15
+  waitingFramesTilSearch: 1
+  _zoneRadius: 15
+  _debug: {fileID: 0}
   onPointOwnerChange:
     m_PersistentCalls:
       m_Calls: []
@@ -772,6 +771,7 @@ MonoBehaviour:
   onEntitiesAroundUpdate:
     m_PersistentCalls:
       m_Calls: []
+  _targetGrid: {fileID: 0}
   <ProgressRequiredForCapture>k__BackingField: 100
   takenBy: 2
 --- !u!1001 &7439353184931151119

@@ -181,47 +181,53 @@ public class NewPhysicsMovement : MonoBehaviour
 
     void AdjustRotation() 
     {
-        Quaternion targetRotation;
+        Quaternion desiredRotation = default;
 
         // Conseguir targetRotation segun el metodo de alineacion.
         switch (Alignment)
         {
             case AlignmentType.Velocity:
-                targetRotation = Quaternion.LookRotation(_velocity);
+                if (_velocity != Vector3.zero)
+                    desiredRotation = Quaternion.LookRotation(_velocity);
                 break;
             case AlignmentType.DesiredMoveDirection:
-                targetRotation = Quaternion.LookRotation(_desiredMoveDir);
+                if (_desiredMoveDir != Vector3.zero)
+                    desiredRotation = Quaternion.LookRotation(_desiredMoveDir);
                 break;
             case AlignmentType.Mix:
-                targetRotation = Quaternion.LookRotation(Vector3.Lerp(_velocity, _desiredMoveDir, _alignmentMix));
+                Vector3 mixDir = Vector3.Lerp(_velocity.normalized, _desiredMoveDir, _alignmentMix);
+                if (mixDir != Vector3.zero)
+                    desiredRotation = Quaternion.LookRotation(mixDir);
                 break;
             case AlignmentType.Target:
-                targetRotation = Quaternion.LookRotation(AlignmentTarget.position - Rigidbody.position);
+                Vector3 targetDir = AlignmentTarget.position - Rigidbody.position;
+                if (targetDir != Vector3.zero)
+                    desiredRotation = Quaternion.LookRotation(targetDir);
                 break;
             case AlignmentType.Custom:
-                targetRotation = _customAlignment;
+                desiredRotation = _customAlignment;
                 break;
             default:
-                targetRotation = _rotation;
+                desiredRotation = _rotation;
                 break;
         }
 
         // Freezear ejes... tiene que haber una manera mas optima de hacer esto, sin tener que conseguir 
         // eulerAngles y hacer estas idas y vueltas de conversiones
         Vector3 currentEulerAngles = _rotation.eulerAngles;
-        Vector3 targetEulerAngles = targetRotation.eulerAngles;
-        targetRotation.eulerAngles = new Vector3(
-            FreezeXAlignment ? currentEulerAngles.x : targetEulerAngles.x,
-            FreezeYAlignment ? currentEulerAngles.y : targetEulerAngles.y,
-            FreezeZAlignment ? currentEulerAngles.z : targetEulerAngles.z
+        Vector3 desiredEulerAngles = desiredRotation.eulerAngles;
+        desiredRotation.eulerAngles = new Vector3(
+            FreezeXAlignment ? currentEulerAngles.x : desiredEulerAngles.x,
+            FreezeYAlignment ? currentEulerAngles.y : desiredEulerAngles.y,
+            FreezeZAlignment ? currentEulerAngles.z : desiredEulerAngles.z
             );
 
         // Si tiene tiempo de alineacion, alinear de a poco
         if (_hasAlignTime)
-            _rotation = Quaternion.RotateTowards(_rotation, targetRotation, _radiansAlignSpeed);
+            _rotation = Quaternion.RotateTowards(_rotation, desiredRotation, _radiansAlignSpeed);
         // Si no, alinear directo.
         else
-            _rotation = targetRotation;
+            _rotation = desiredRotation;
     }
 
     public void AccelerateTowards(Vector3 inputDir) 
