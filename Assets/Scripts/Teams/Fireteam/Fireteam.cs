@@ -21,6 +21,7 @@ public class Fireteam
         if (Leader == null)
         {
             Leader = _fireteamMembers.PickRandom();
+            Leader.DebugEntity.AddGizmoAction(DrawConnectionToMembers);
             FireteamMembers = _fireteamMembers.AsReadOnly();
         }
 
@@ -118,7 +119,7 @@ public class Fireteam
     public bool AlliesWithEnemiesNearby(Entity whoAsks,out Entity neartestInDanger)
     {
         neartestInDanger = null;
-        var col = FireteamMembers.Where(x => x != whoAsks).Where(x => x.GetEntitiesAround().Any(x => x.health.isAlive && x.MyTeam != MyTeam));
+        var col = FireteamMembers.Where(x => x != whoAsks).Where(x => x.GetEntitiesAround().Any(x => x.Health.isAlive && x.MyTeam != MyTeam));
         //si tiene algun aliado de la escuadra que no sea el con enemigo cerca que tengan vida
         if (col.Any())
         {
@@ -186,11 +187,9 @@ public class Fireteam
         SendPatrolOrders(EnemyPos);
     }
 
-   public void DrawConnectionToMembers(Infantry whoAsks)
-   {
-        if (whoAsks != Leader) return;
+   public void DrawConnectionToMembers()
+   {       
         
-
         foreach (var item in FireteamMembers.Where(x => x != Leader))
         {
             Gizmos.color = MyTeam == Team.Red ? Color.red : Color.blue;

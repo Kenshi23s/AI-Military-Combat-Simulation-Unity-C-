@@ -109,10 +109,9 @@ public class NewAIMovement : MonoBehaviour
     void PlayPath()
     {
         // Si llegamos al waypoint mas cercano, quitarlo para pasar al siguiente
-        if (Vector3.Distance(_path[0], transform.position) < destinationArriveDistance)
-        {
+        if (Vector3.Distance(_path[0], transform.position) < destinationArriveDistance)      
             _path.RemoveAt(0);
-        }
+        
 
         // Mientras queden waypoints seguir avanzando
         if (_path.Any())
@@ -133,11 +132,13 @@ public class NewAIMovement : MonoBehaviour
     void ClearPath()
     {
         _fixedUpdate = null;
+        ManualMovement.ClearForces();
         _path.Clear();
     }
 
     public void CancelMovement()
     {
+       
         ClearPath();
         OnMovementCanceled?.Invoke();
     }

@@ -8,13 +8,13 @@ public abstract class Entity : MonoBehaviour
 {
 
     [field:SerializeField] public Team MyTeam { get; protected set; }
-    public LifeComponent health { get; private set; }
-    protected DebugableObject _debug;
+    public LifeComponent Health { get; private set; }
+    public DebugableObject DebugEntity { get; private set; }
 
     private void Awake()
     {
-        health = GetComponent<LifeComponent>();
-        _debug = GetComponent<DebugableObject>();
+        Health = GetComponent<LifeComponent>();
+        DebugEntity = GetComponent<DebugableObject>();
 
         EntityAwake();
     }

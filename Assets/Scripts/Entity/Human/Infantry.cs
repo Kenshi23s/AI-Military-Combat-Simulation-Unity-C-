@@ -6,6 +6,8 @@ using UnityEngine;
 [RequireComponent(typeof(NewAIMovement))]
 [RequireComponent(typeof(FOVAgent))]
 [RequireComponent(typeof(ShootComponent))]
+[RequireComponent(typeof(DebugableObject))]
+[SelectionBase]
 public class Infantry : GridEntity,InitializeUnit
 {
     public enum INFANTRY_STATES
@@ -19,10 +21,12 @@ public class Infantry : GridEntity,InitializeUnit
     [field : SerializeField] public Transform Center { get; private set; }
     public bool InCombat { get; private set; }
     
+  
+
+    public Fireteam MyFireteam { get; private set; }
 
     [SerializeField] float _timeBeforeSelectingTarget;
 
-    public Fireteam MyFireteam { get; private set; }
     NewAIMovement _infantry_AI;
     FOVAgent _fov;
     #region ShootingLogic
@@ -38,7 +42,7 @@ public class Infantry : GridEntity,InitializeUnit
 
     public void InitializeUnit(Team newTeam)
     {
-        Debug.Log("InitializeUnit");
+      
         MyTeam = newTeam;
         SetFSM();
     }
@@ -52,6 +56,7 @@ public class Infantry : GridEntity,InitializeUnit
         _infantry_AI = GetComponent<NewAIMovement>();
         _fov = GetComponent<FOVAgent>();
         _gun = GetComponent<ShootComponent>();
+     
     }
 
     #region States
@@ -104,7 +109,7 @@ public class Infantry : GridEntity,InitializeUnit
 
         state.OnEnter += (x) =>
         {
-            _debug.Log("Espero Ordenes");
+            DebugEntity.Log("Espero Ordenes");
             _infantry_AI.CancelMovement();
             StartCoroutine(LookForTargets());
             if (MyFireteam.Leader != this) return;
@@ -128,7 +133,7 @@ public class Infantry : GridEntity,InitializeUnit
 
         state.OnEnter += (x) =>
         {
-            _debug.Log("Me muevo hacia posicion x");
+            DebugEntity.Log("Me muevo hacia posicion x");
             _infantry_AI.SetDestination(Destination);
            
             StartCoroutine(LookForTargets());
@@ -149,7 +154,7 @@ public class Infantry : GridEntity,InitializeUnit
 
         state.OnEnter += (x) =>
         {
-            _debug.Log("Sigo al lider");
+            DebugEntity.Log("Sigo al lider");
             if (!MyFireteam.IsNearLeader(this))
             {
                 _infantry_AI.SetDestination(MyFireteam.Leader.transform.position);
@@ -157,24 +162,43 @@ public class Infantry : GridEntity,InitializeUnit
             
 
             StartCoroutine(LookForTargets());
+            StartCoroutine(FollowLeaderRoutine());
         };
+
 
         state.OnExit += (x) =>
         {
             StopCoroutine(LookForTargets());
+            StopCoroutine(FollowLeaderRoutine());
             _infantry_AI.CancelMovement();
         };
 
         return state;
     }
 
+
+    IEnumerator FollowLeaderRoutine()
+    {
+        while (true)
+        {
+            for (int i = 0; i < 120; i++)
+            {
+                yield return null;
+            }
+            if (!MyFireteam.IsNearLeader(this))
+            {
+                _infantry_AI.SetDestination(MyFireteam.Leader.transform.position);
+            }
+        }
+       
+    }
     State<INFANTRY_STATES> FireAtWill()
     {
         State<INFANTRY_STATES> state = new State<INFANTRY_STATES>("FireAtWill");
 
         state.OnEnter += (x) =>
         {
-            _debug.Log("Sigo al lider");
+            DebugEntity.Log("Sigo al lider");
             StartCoroutine(SetTarget());
             if (MyFireteam.Leader != this) return;
             
@@ -203,7 +227,7 @@ public class Infantry : GridEntity,InitializeUnit
 
         state.OnEnter += (x) =>
         {
-            _debug.Log("Mori");
+            DebugEntity.Log("Mori");
             MyFireteam.RemoveMember(this);
 
         };
@@ -280,7 +304,7 @@ public class Infantry : GridEntity,InitializeUnit
     IEnumerable<Entity> LookForEnemiesAlive()
     {
         return GetEntitiesAround().Where(x => x.MyTeam != MyTeam)
-                  .Where(x => x.health.isAlive);
+                  .Where(x => x.Health.isAlive);
     }
     #endregion
     
@@ -288,7 +312,7 @@ public class Infantry : GridEntity,InitializeUnit
     {
         float result = 0;
         result += Vector3.Distance(transform.position, entity.transform.position);
-        result += entity.health.life;
+        result += entity.Health.life;
         return result;
     }
 

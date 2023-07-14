@@ -121,10 +121,8 @@ public class TeamsManager : MonoSingleton<TeamsManager>
                     members += Instantiate(_infantryPrefab, pos, Quaternion.identity);
                 else
                     return;
+           }      
 
-           }
-
-        
            Fireteam newFT = new Fireteam(team, members.ToList());
            fireteams.Add(newFT);         
         }

@@ -58,8 +58,8 @@ public class Plane : Vehicle
     public override void VehicleAwake()
     {
         shootComponent = GetComponent<ShootComponent>();
-        _debug.AddGizmoAction(DrawTowardsTarget); _debug.AddGizmoAction(DrawAirstrikeZone);
-        health.OnKilled += () => _planeFSM.SendInput(PlaneStates.ABANDONED);
+        DebugEntity.AddGizmoAction(DrawTowardsTarget); DebugEntity.AddGizmoAction(DrawAirstrikeZone);
+        Health.OnKilled += () => _planeFSM.SendInput(PlaneStates.ABANDONED);
 
         misileStats.owner = gameObject;
     }
@@ -126,12 +126,12 @@ public class Plane : Vehicle
         if (newChaser == null)
         {
             beingChasedBy = null;
-            _debug.Log("Me dejaron de seguir, vuelvo a volar");
+            DebugEntity.Log("Me dejaron de seguir, vuelvo a volar");
             _planeFSM.SendInput(PlaneStates.FLY_AROUND);
         }
         else
         {
-            _debug.Log("Me setearon un perseguidor, me tomo el palo");
+            DebugEntity.Log("Me setearon un perseguidor, me tomo el palo");
             beingChasedBy = newChaser;
             _planeFSM.SendInput(PlaneStates.FLEE_FROM_PURSUITER);
         }
@@ -143,7 +143,7 @@ public class Plane : Vehicle
     {
         if (Physics.Raycast(transform.position, transform.forward, _collisionCheckDistance + _movement.CurrentSpeed, PlanesManager.instance.groundMask))
         {
-            _debug.Log("Tengo piso adelante, levanto vuelo");
+            DebugEntity.Log("Tengo piso adelante, levanto vuelo");
             return Vector3.up;
         }            
         return Vector3.zero;
@@ -216,7 +216,7 @@ public class Plane : Vehicle
 
         state.OnEnter += (x) =>
         {
-            _debug.Log($"entre a {state.Name} desde {x}");
+            DebugEntity.Log($"entre a {state.Name} desde {x}");
         };
         state.OnUpdate += () =>
         {
@@ -232,7 +232,7 @@ public class Plane : Vehicle
             .Where(x => x.MyTeam != MyTeam);
             if (col.Any())
             {
-                _debug.Log($"Aviones enemigos a la vista, elijo el mas cercano de{col.Count()}");
+                DebugEntity.Log($"Aviones enemigos a la vista, elijo el mas cercano de{col.Count()}");
                 //si encuentro alguno, obtengo el mas cercano
                 targetPlane = col.Minimum((x) => Vector3.Distance(x.transform.position, transform.position));
                 //y empiezo la persecucion
@@ -252,12 +252,12 @@ public class Plane : Vehicle
                 var endPromise = col.ToArray();
                 dir += endPromise.Flocking(flockingParameters);
                 
-                _debug.Log($"hago flocking con {endPromise.Length} aviones aliados");
+                DebugEntity.Log($"hago flocking con {endPromise.Length} aviones aliados");
             }
                 
             else if (!onGrid)
             {
-                _debug.Log("No estoy en la grilla, me pego la vuelta hacia alla");
+                DebugEntity.Log("No estoy en la grilla, me pego la vuelta hacia alla");
 
                 //sino estoy en zona de combate me pego la vuelta
                 Vector3 dirToCenter = SpatialGrid.GetMidleOfGrid() - transform.position;
@@ -288,13 +288,13 @@ public class Plane : Vehicle
             StopAllCoroutines();
             if (targetPlane == null)
             {
-                _debug.Log("No hay blanco de disparo, paso de nuevo a FLY_AROUND");
+                DebugEntity.Log("No hay blanco de disparo, paso de nuevo a FLY_AROUND");
                 _planeFSM.SendInput(PlaneStates.FLY_AROUND);
                 return;
             }
             else
             {
-                _debug.Log("Hay Blanco, Le digo que lo voy a seguir");
+                DebugEntity.Log("Hay Blanco, Le digo que lo voy a seguir");
                 StartCoroutine(ShootBullets());
                 StartCoroutine(ShootMisiles());
 
@@ -387,7 +387,7 @@ public class Plane : Vehicle
 
             if (!onGrid)
             {
-                _debug.Log("No estoy en la grilla, me pego la vuelta hacia alla");
+                DebugEntity.Log("No estoy en la grilla, me pego la vuelta hacia alla");
 
                 //sino estoy en zona de combate me pego la vuelta
                 Vector3 dirToCenter = SpatialGrid.GetMidleOfGrid() - transform.position;

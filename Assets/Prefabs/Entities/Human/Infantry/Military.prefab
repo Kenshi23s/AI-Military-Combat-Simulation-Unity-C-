@@ -197,7 +197,7 @@ MonoBehaviour:
   <MyTeam>k__BackingField: 0
   onGrid: 0
   <Center>k__BackingField: {fileID: 7686234030039808085}
-  _timeBeforeSelectingTarget: 0
+  _timeBeforeSelectingTarget: 2
   _shootPos: {fileID: 2889329660706087394}
 --- !u!114 &6308491211211733762
 MonoBehaviour:

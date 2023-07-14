@@ -65,7 +65,7 @@ public class Civilian : Entity
             nearestBunker = GameManager.instance.bunkers.Minimum(x => Vector3.Distance(x.transform.position,transform.position));
             civilian_AI.SetDestination(nearestBunker.transform.position);
             civilian_AI.OnDestinationReached += TryEnterBunker;
-            _debug.Log("Corro hacia el refugio");
+            DebugEntity.Log("Corro hacia el refugio");
         };
 
 
@@ -77,7 +77,7 @@ public class Civilian : Entity
     {
         State<CivilianStates> pray = new State<CivilianStates>("Pray");
 
-        pray.OnEnter += (x) => { _debug.Log("A rezar C:"); };
+        pray.OnEnter += (x) => { DebugEntity.Log("A rezar C:"); };
         
        
         //me imagino q aca se harian cosas del animator
@@ -91,9 +91,9 @@ public class Civilian : Entity
 
         die.OnEnter += (x) =>
         {
-            _debug.Log("ha muerto");
+            DebugEntity.Log("ha muerto");
             Destroy(GetComponent<BoxCollider>());
-            Destroy(health);
+            Destroy(Health);
             anim.SetTrigger("Die");
 
         };
@@ -108,7 +108,7 @@ public class Civilian : Entity
 
         nearestBunker.onBunkerDestroyed += () =>
         {
-            _debug.Log("El bunker en el que estaba fue destruido");
+            DebugEntity.Log("El bunker en el que estaba fue destruido");
             gameObject.SetActive(true);
             civilianFSM.SendInput(CivilianStates.Pray);
         };
