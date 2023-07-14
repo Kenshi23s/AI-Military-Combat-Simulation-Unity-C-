@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.Events;
 
 [RequireComponent(typeof(DebugableObject))]
-public class CapturePoint : GridEntity
+public class CapturePoint : MonoBehaviour
 {
     public enum ZoneStates
     {
@@ -16,19 +16,23 @@ public class CapturePoint : GridEntity
         Taken
     }
 
-    [SerializeField] float waitingFramesTilSearch = 30, zoneRadius = 15;
+    [SerializeField, Min(1)] float _waitingFramesTilSearch = 30;
+    [SerializeField, Min(0)] float _zoneRadius = 15;
+    [SerializeField] DebugableObject _debug;
 
     #region Events
     public UnityEvent onPointOwnerChange;
 
     public UnityEvent onProgressChange;
 
-    //ya se q es rarisimo esto jocha no me asesines :C
     public UnityEvent<ILookup<Team,Entity>> onEntitiesAroundUpdate;
     #endregion
 
     public float TakeProgress { get; private set; }
-   
+
+
+    [SerializeField]
+    SpatialGrid3D _targetGrid;
 
     [field: SerializeField] public float ProgressRequiredForCapture { get; private set; }
     float captureProgress = 0;
@@ -58,17 +62,19 @@ public class CapturePoint : GridEntity
     public Team takenBy = Team.None;
     public Team beingTakenBy { get; private set; }
 
-    List<Entity> CombatEntitiesAround = new List<Entity>();
+    List<Entity> _combatEntitiesAround = new List<Entity>();
 
    
-    protected override void EntityAwake()
+    void Awake()
     {
-        DebugEntity.AddGizmoAction(DrawRadius);
+        _debug = GetComponent<DebugableObject>();
+        _debug.AddGizmoAction(DrawRadius);
     }
 
 
     private void Start()
     {
+        _targetGrid = FindObjectOfType<SpatialGrid3D>();
         CapturePointManager.instance.AddZone(this);
         StartCoroutine(SearchEntitiesAround());
     }
@@ -78,17 +84,19 @@ public class CapturePoint : GridEntity
     {
         while (true) 
         {
-            for (int i = 0; i < waitingFramesTilSearch; i++) yield return null;
+            for (int i = 0; i < _waitingFramesTilSearch; i++) yield return null;
 
 
-            CombatEntitiesAround = GetEntitiesInRange(zoneRadius)
-                .Where(x => x != this).OfType<Entity>()
+            _combatEntitiesAround = SphereQuery()
+                .OfType<Entity>()
                 .ToList();
-            DebugEntity.Log(CombatEntitiesAround.Count.ToString());
+
+            _debug.Log("Combat Entities Around Zone: " + _combatEntitiesAround.Count);
+
             //divido la lista entre equipo rojo y verde con el lookup
             //si pasan el predicado, accedo a esos items con [true] y si no
             //accedo a los otros items con [false]
-            var split = CombatEntitiesAround
+            var split = _combatEntitiesAround
                 .Where(x => x.MyTeam != Team.None)
                 .ToLookup(x => x.MyTeam);
 
@@ -98,7 +106,7 @@ public class CapturePoint : GridEntity
 
             if (!split[Team.Red].Any() || !split[Team.Blue].Any()) 
             {
-                DebugEntity.Log("No hay unidades en el area");
+                _debug.Log("No hay unidades en el area");
                 continue;
             }
           
@@ -107,7 +115,7 @@ public class CapturePoint : GridEntity
             if (split[Team.Red].Any() && split[Team.Blue].Any())
             {
                 CurrentCaptureState = ZoneStates.Disputed;
-                DebugEntity.Log("Esta en disputa, hay unidades de ambos equipos");
+                _debug.Log("Esta en disputa, hay unidades de ambos equipos");
                 continue;
             }
             string debug = "Esta siendo tomada por";
@@ -123,7 +131,7 @@ public class CapturePoint : GridEntity
                 CaptureProgress -= Time.deltaTime * split[Team.Blue].Count();
                 beingTakenBy = Team.Blue;
             }
-            DebugEntity.Log(debug);
+            _debug.Log(debug);
 
             onProgressChange?.Invoke();
             CheckCaptureProgress();
@@ -154,6 +162,18 @@ public class CapturePoint : GridEntity
     private void DrawRadius()
     {
         Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(transform.position, zoneRadius);
+        Gizmos.DrawWireSphere(transform.position, _zoneRadius);
+    }
+
+    IEnumerable<GridEntity> SphereQuery() 
+    {
+        //creo una "caja" con las dimensiones deseadas, y luego filtro segun distancia para formar el círculo
+        return _targetGrid.Query(
+            transform.position + new Vector3(-_zoneRadius, -_zoneRadius, -_zoneRadius),
+            transform.position + new Vector3(_zoneRadius, _zoneRadius, _zoneRadius),
+            pos => {
+                var distance = pos - transform.position;
+                return distance.sqrMagnitude < _zoneRadius * _zoneRadius;
+            });
     }
 }

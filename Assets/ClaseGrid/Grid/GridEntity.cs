@@ -6,8 +6,8 @@ using UnityEngine;
 public class GridEntity : Entity
 {
 	public event Action<GridEntity> OnMove = delegate {};
-	[NonSerialized]public Vector3 velocity = new Vector3(0, 0, 0);
-    public bool onGrid;
+    Vector3 _previousPos;
+    public bool OnGrid;
 
     SpatialGrid3D _spatialGrid;
     public SpatialGrid3D SpatialGrid => _spatialGrid;
@@ -16,7 +16,7 @@ public class GridEntity : Entity
     public IEnumerable<GridEntity> GetEntitiesInRange(float range) 
     {
         //creo una "caja" con las dimensiones deseadas, y luego filtro segun distancia para formar el círculo
-        if (!onGrid) return new List<GridEntity>();
+        if (!OnGrid) return new List<GridEntity>();
        
         float sqrDistance = range * range;
         return _spatialGrid.Query(
@@ -33,11 +33,12 @@ public class GridEntity : Entity
         _spatialGrid = spatialGrid;
     }
 
-    /// <summary>
-    /// Llama al evento OnMove().
-    /// </summary>
-    protected void Moved() 
+    private void LateUpdate()
     {
-        OnMove(this);
+        if (transform.position != _previousPos)
+        {
+            OnMove(this);
+            _previousPos = transform.position;
+        }
     }
 }

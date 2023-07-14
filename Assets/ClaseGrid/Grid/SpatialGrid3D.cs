@@ -130,13 +130,13 @@ public class SpatialGrid3D : MonoBehaviour
             buckets[currentPos.Item1, currentPos.Item2, currentPos.Item3].Add(entity);
             lastPositions[entity] = currentPos;
           
-            entity.onGrid = true;
+            entity.OnGrid = true;
         }
         else
         {
           
             lastPositions.Remove(entity);
-            entity.onGrid = false;
+            entity.OnGrid = false;
         }
     }
 

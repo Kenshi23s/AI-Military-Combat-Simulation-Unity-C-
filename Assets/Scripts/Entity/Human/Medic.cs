@@ -13,7 +13,8 @@ public class Medic : GridEntity
         IDLE,
         FOLLOW_LEADER,
         RUN_TO,
-        SHOOT_TARGET,
+        SHOOT,
+        HEAL,
         DIE
     }
 
@@ -22,30 +23,30 @@ public class Medic : GridEntity
     Fireteam _fireteam;
     public EventFSM<MedicInputs> _fsm;
 
-    public Entity _shootTarget;
-    public Infantry _healTarget;
-    public Vector3 coverPosition;
+    public Entity ShootTarget;
+    public Infantry HealTarget;
 
-    Vector3 runToTarget;
-    Action onTargetReached = delegate { };
+    Vector3 _runToPosition;
+    Action _onTargetReached = delegate { };
 
     Animator _anim;
 
-    State<MedicInputs> idle, followLeader, runTo, shootTarget, die;
+    State<MedicInputs> _idle, _followLeader, _runTo, _shoot, _heal, _die;
 
     private void Awake()
     {
         _anim = GetComponent<Animator>();
 
-        idle = CreateIdleState();
-        followLeader = CreateFollowLeaderState();
-        runTo = CreateRunToState();
-        shootTarget = CreateShootTargetState();
-        die = CreateDieState();
+        _idle = CreateIdleState();
+        _followLeader = CreateFollowLeaderState();
+        _runTo = CreateRunToState();
+        _shoot = CreateShootState();
+        _heal = CreateHealState();
+        _die = CreateDieState();
 
         ConfigureTransitions();
 
-        _fsm = new EventFSM<MedicInputs>(idle);
+        _fsm = new EventFSM<MedicInputs>(_idle);
     }
 
     State<MedicInputs> CreateIdleState() 
@@ -57,6 +58,7 @@ public class Medic : GridEntity
             _anim.SetBool("Idle", true);
 
             // Dejar de moverse
+            
         };
 
         return idle;
@@ -86,18 +88,28 @@ public class Medic : GridEntity
     {
         var runTo = new State<MedicInputs>("RUN_TO");
 
+
         runTo.OnEnter += _ =>
         {
             // Empezar a calcular camino hacia posicion, y cuando se haya calculado
             // empezar a moverse y pasar a animacion de correr.
-
-            _anim.SetBool("Running", true);
+            //_ai.SetDestination(_runToPosition, pathFound =>
+            //{
+            //    if (pathFound)
+            //    {
+            //        _anim.SetBool("Running", true);
+            //        moving = true;
+            //    }
+            //    else
+            //    {
+            //        _fsm.SendInput(MedicInputs.FOLLOW_LEADER);
+            //    }
+            //});
         };
 
         runTo.OnUpdate += () =>
         {
-            // Avisar que nos movimos.
-            Moved();
+
         };
 
         runTo.OnExit += _ =>
@@ -108,11 +120,11 @@ public class Medic : GridEntity
         return runTo;
     }
 
-    State<MedicInputs> CreateShootTargetState()
+    State<MedicInputs> CreateShootState()
     {
-        var shootTarget = new State<MedicInputs>("SHOOT_TARGET");
+        var shoot = new State<MedicInputs>("SHOOT_TARGET");
 
-        shootTarget.OnEnter += _ => 
+        shoot.OnEnter += _ => 
         {
             // Pasar a animacion de disparar
             _anim.SetBool("Shooting", true);
@@ -120,17 +132,54 @@ public class Medic : GridEntity
             // Dejar de moverse
         };
 
-        shootTarget.OnUpdate += () =>
+        shoot.OnUpdate += () =>
         {
             // Logica de disparo y recarga
         };
 
-        shootTarget.OnExit += _ => 
+        shoot.OnExit += _ => 
         {
             _anim.SetBool("Shooting", false);
         };
 
-        return shootTarget;
+        return shoot;
+    }
+
+    [SerializeField] float _healTime = 0.4f;
+
+    State<MedicInputs> CreateHealState()
+    {
+        var heal = new State<MedicInputs>("DIE");
+
+        float timer = 0;
+
+        heal.OnEnter += _ =>
+        {
+            timer = 0;
+            // Pasar a animacion de curacion
+            _anim.SetBool("Healing", true);
+
+            // Dejar de 
+        };
+
+        heal.OnUpdate += () =>
+        {
+            timer += Time.deltaTime;
+
+            // Despues de cierta cantidad de segundos, terminar de curar
+            if (timer >= _healTime)
+            {
+
+            }
+
+        };
+
+        heal.OnExit += _ =>
+        {
+            _anim.SetBool("Healing", false);
+        };
+
+        return heal;
     }
 
     State<MedicInputs> CreateDieState() 
@@ -155,35 +204,35 @@ public class Medic : GridEntity
 
     void ConfigureTransitions() 
     {
-        StateConfigurer.Create(idle)
-            .SetTransition(MedicInputs.RUN_TO, runTo)
-            .SetTransition(MedicInputs.FOLLOW_LEADER, followLeader)
-            .SetTransition(MedicInputs.SHOOT_TARGET, shootTarget)
-            .SetTransition(MedicInputs.DIE, die)
+        StateConfigurer.Create(_idle)
+            .SetTransition(MedicInputs.RUN_TO, _runTo)
+            .SetTransition(MedicInputs.FOLLOW_LEADER, _followLeader)
+            .SetTransition(MedicInputs.SHOOT, _shoot)
+            .SetTransition(MedicInputs.DIE, _die)
             .Done();
 
-        StateConfigurer.Create(followLeader)
-            .SetTransition(MedicInputs.RUN_TO, runTo)
-            .SetTransition(MedicInputs.SHOOT_TARGET, shootTarget)
-            .SetTransition(MedicInputs.IDLE, idle)
-            .SetTransition(MedicInputs.DIE, die)
+        StateConfigurer.Create(_followLeader)
+            .SetTransition(MedicInputs.RUN_TO, _runTo)
+            .SetTransition(MedicInputs.SHOOT, _shoot)
+            .SetTransition(MedicInputs.IDLE, _idle)
+            .SetTransition(MedicInputs.DIE, _die)
             .Done();
 
-        StateConfigurer.Create(runTo)
-            .SetTransition(MedicInputs.FOLLOW_LEADER, followLeader)
-            .SetTransition(MedicInputs.SHOOT_TARGET, shootTarget)
-            .SetTransition(MedicInputs.IDLE, idle)
-            .SetTransition(MedicInputs.DIE, die)
+        StateConfigurer.Create(_runTo)
+            .SetTransition(MedicInputs.FOLLOW_LEADER, _followLeader)
+            .SetTransition(MedicInputs.SHOOT, _shoot)
+            .SetTransition(MedicInputs.IDLE, _idle)
+            .SetTransition(MedicInputs.DIE, _die)
             .Done();
 
-        StateConfigurer.Create(shootTarget)
-            .SetTransition(MedicInputs.RUN_TO, runTo)
-            .SetTransition(MedicInputs.FOLLOW_LEADER, followLeader)
-            .SetTransition(MedicInputs.IDLE, idle)
-            .SetTransition(MedicInputs.DIE, die)
+        StateConfigurer.Create(_shoot)
+            .SetTransition(MedicInputs.RUN_TO, _runTo)
+            .SetTransition(MedicInputs.FOLLOW_LEADER, _followLeader)
+            .SetTransition(MedicInputs.IDLE, _idle)
+            .SetTransition(MedicInputs.DIE, _die)
             .Done();
 
-        StateConfigurer.Create(die).Done();
+        StateConfigurer.Create(_die).Done();
     }
 
     // Update is called once per frame
