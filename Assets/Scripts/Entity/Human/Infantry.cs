@@ -47,6 +47,7 @@ public class Infantry : GridEntity, InitializeUnit
     {     
         MyTeam = newTeam;
         SetFSM();
+        InCombat = false;
     }
 
     public override void GridEntityStart()
@@ -120,7 +121,7 @@ public class Infantry : GridEntity, InitializeUnit
 
         state.OnEnter += (x) =>
         {
-            _infantry_AI.CancelMovement();
+         
             StopMoving();
             _anim.SetBool("Running", false);
 

@@ -51,13 +51,9 @@ public class CapturePoint : MonoBehaviour
     public float ZoneProgressNormalized 
     {
         get
-        {
-            if (captureProgress == 0) return 0.5f;
-
-            if (captureProgress > 0)         
-                return Mathf.Abs(captureProgress) / (ProgressRequiredForCapture) + 0.5f;          
-            else           
-                return Mathf.Abs(captureProgress) / (ProgressRequiredForCapture) - 0.5f;    
+        {                  
+             return captureProgress / (ProgressRequiredForCapture * 2) + 0.5f;          
+               
         }
     }
         
@@ -90,6 +86,7 @@ public class CapturePoint : MonoBehaviour
     {
         while (true) 
         {
+            float timePassed = Time.time;
             for (int i = 0; i < _waitingFramesTilSearch; i++) yield return null;
 
 
@@ -128,17 +125,19 @@ public class CapturePoint : MonoBehaviour
                 _debug.Log("Esta en disputa, hay unidades de ambos equipos");
                 continue;
             }
+
             string debug = "Esta siendo tomada por el equipo";
-            if (split[Team.Red].Any())
+
+            if (split[Team.Red].Any() && takenBy != Team.Red)
             {
                 debug += " rojo";
-                CaptureProgress += Time.deltaTime * split[Team.Red].Count() * _waitingFramesTilSearch;
+                CaptureProgress += (Time.time - timePassed) * split[Team.Red].Count();
                 beingTakenBy = Team.Red;
             }                    
-            else
+            else if (split[Team.Blue].Any() && takenBy != Team.Blue)
             {
                 debug += " azul";
-                CaptureProgress -= Time.deltaTime * split[Team.Blue].Count() * _waitingFramesTilSearch;
+                CaptureProgress -= (Time.time - timePassed) * split[Team.Blue].Count();
                 beingTakenBy = Team.Blue;
             }
             debug += $" el progreso es de {captureProgress}";
@@ -159,6 +158,7 @@ public class CapturePoint : MonoBehaviour
             case Team.Red:
                 if (captureProgress >= ProgressRequiredForCapture && takenBy != Team.Red )
                 {
+                    Debug.Log("tomada por el rojo, invoco evento de captura completada");
                     takenBy = Team.Red;
                     onCaptureComplete?.Invoke(takenBy);
                     onCaptureComplete = delegate { };
@@ -168,6 +168,7 @@ public class CapturePoint : MonoBehaviour
             case Team.Blue:
                 if (captureProgress <= -ProgressRequiredForCapture && takenBy != Team.Blue)
                 {
+                    Debug.Log("tomada por el rojo, invoco evento de captura completada");
                     takenBy = Team.Blue;
                     onCaptureComplete?.Invoke(takenBy);
                     onCaptureComplete = delegate { };

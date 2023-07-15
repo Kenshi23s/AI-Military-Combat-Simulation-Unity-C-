@@ -93,9 +93,9 @@ public class Fireteam
        
         var nearestZone = concat.Distinct().Minimum(x => Vector3.Distance(x.transform.position, Leader.transform.position));
         
-        nearestZone.onCaptureComplete += (x) =>
+        nearestZone.onCaptureComplete += (captureBy) =>
         {
-            if (x != MyTeam) return;
+            if (captureBy != MyTeam) return;
 
             Leader.WaitOrdersTransition();
             foreach (var unit in _fireteamMembers.Where(x => x != Leader))           
