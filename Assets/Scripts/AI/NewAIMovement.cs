@@ -97,9 +97,9 @@ public class NewAIMovement : MonoBehaviour
             
     }
 
-    void OnFinishCalculatingPath(List<Vector3> newPath)
+    void OnFinishCalculatingPath(bool pathmade,List<Vector3> newPath)
     {
-        if (!newPath.Any())
+        if (!pathmade && !newPath.Any())
         {
             _debug.Log("No se pudo armar el camino");
             return;

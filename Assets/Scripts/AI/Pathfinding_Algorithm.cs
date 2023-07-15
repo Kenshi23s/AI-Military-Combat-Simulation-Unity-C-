@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Linq;
 using System;
 using System.Collections;
+using System.IO;
 //Todos los algoritmos de pathfinding visto en la materia de IA 1
 //los nodos deben tener de nombre de clase "Node" y las siguientes variables con los siguientes nombres:
 
@@ -210,7 +211,7 @@ public static class Pathfinding_Algorithm
         List<Vector3> myPathList = x;
     }
 
-    public static IEnumerator CalculateLazyAStar(this Tuple<Node, Node> nodes, Action<List<Node>> onFinish, int stepsPerFrame = 30)
+    public static IEnumerator CalculateLazyAStar(this Tuple<Node, Node> nodes, Action<bool,List<Node>> onFinish, int stepsPerFrame = 30)
     {
         int stepCount = 0;
         bool pathMade = false;
@@ -242,8 +243,8 @@ public static class Pathfinding_Algorithm
                 path.Add(nodes.Item1);
                 path.Reverse();
                
-                onFinish(path);
                 pathMade = true;
+                onFinish(pathMade, path);
                 break;
             }
 
@@ -280,17 +281,22 @@ public static class Pathfinding_Algorithm
 
         if (!pathMade)
         {
+            onFinish(pathMade, new List<Node>());
             Debug.LogWarning("No se pudo hacer el camino en Lazy A STAR");
         }
        
     }
 
-    public static IEnumerator CalculateLazyThetaStar(this Tuple<Node, Node> nodes, LayerMask wallMask, Action<List<Vector3>> onFinish, Vector3 endpos = default, int iterationPerFrame = 30)
+    public static IEnumerator CalculateLazyThetaStar(this Tuple<Node, Node> nodes, LayerMask wallMask, Action<bool,List<Vector3>> onFinish, Vector3 endpos = default, int iterationPerFrame = 30)
     {
         
 
-        Action<List<Node>> CutNodes = (pathToCut) =>
+        Action<bool,List<Node>> CutNodes = (pathmade,pathToCut) =>
         {
+            if (!pathmade)
+            {
+                onFinish(pathmade, new List<Vector3>());
+            }
             int current = 0;
 
             while (current + 2 < pathToCut.Count)
@@ -307,7 +313,7 @@ public static class Pathfinding_Algorithm
             if (endpos != default)
                 select.Add(endpos);
 
-            onFinish(select);
+            onFinish(pathmade, select);
         };
 
         return nodes.CalculateLazyAStar(CutNodes, iterationPerFrame);

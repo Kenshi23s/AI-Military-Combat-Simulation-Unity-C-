@@ -32,78 +32,77 @@ public abstract class Vehicle : GridEntity, FlockableEntity
     {
         _movement = GetComponent<NewPhysicsMovement>();
         _fov = GetComponent<FOVAgent>();
-        vehicleSeats = vehicleSeats.OrderBy(x => x.seatPriority).ToList();
         flockingParameters.myTransform = transform;
         VehicleAwake();
     }
 
-    #region Ya no va en los vehiculos :C
-    public List<Seat> vehicleSeats = new List<Seat>();
+    //#region Ya no va en los vehiculos :C
+    //public List<Seat> vehicleSeats = new List<Seat>();
 
-    public event Action OnEngineTurnOff;
-    public event Action OnEngineTurnOn;
-    public event Action whileEngineOn;
+    //public event Action OnEngineTurnOff;
+    //public event Action OnEngineTurnOn;
+    //public event Action whileEngineOn;
 
-    public bool EngineOn;
+    //public bool EngineOn;
 
-    /// <summary>
-    /// Subirse al vehiculo, requiere que le pasen un pasajero, solo se subira si hay asientos disponibles,
-    /// devuelve una booleana para chequear eso
-    /// </summary>
-    /// <param name="NewPassenger"></param>
-    /// <returns></returns>
-    public bool GetInVehicle(Infantry NewPassenger)
-    {
-        var col = vehicleSeats.Where(x => x.Available);
-        if (!col.Any()) return false;
+    ///// <summary>
+    ///// Subirse al vehiculo, requiere que le pasen un pasajero, solo se subira si hay asientos disponibles,
+    ///// devuelve una booleana para chequear eso
+    ///// </summary>
+    ///// <param name="NewPassenger"></param>
+    ///// <returns></returns>
+    ////public bool GetInVehicle(Infantry NewPassenger)
+    ////{
+    ////    var col = vehicleSeats.Where(x => x.Available);
+    ////    if (!col.Any()) return false;
       
-        var seat = col.Maximum(x => x.seatPriority);
-        seat.Available = false;
-        seat.passenger = NewPassenger;
-        NewPassenger.transform.position = seat.seatPos.position;
-        NewPassenger.transform.parent = seat.seatPos;
+    ////    var seat = col.Maximum(x => x.seatPriority);
+    ////    seat.Available = false;
+    ////    seat.passenger = NewPassenger;
+    ////    NewPassenger.transform.position = seat.seatPos.position;
+    ////    NewPassenger.transform.parent = seat.seatPos;
 
-        if (!EngineOn) TurnOnEngine();
+    ////    if (!EngineOn) TurnOnEngine();
 
 
-        return true;
-    }
+    ////    return true;
+    ////}
   
-    public void GetOffVehicle(Infantry removePassenger)
-    {
-        var col = vehicleSeats.Where((x) => x.passenger == removePassenger);
-        if (!col.Any()) return;       
+    ////public void GetOffVehicle(Infantry removePassenger)
+    ////{
+    ////    var col = vehicleSeats.Where((x) => x.passenger == removePassenger);
+    ////    if (!col.Any()) return;       
             
-        var seat = col.First();
-        seat.Available = true;
-        seat.passenger = null;
-        removePassenger.transform.parent = null;
-        if (vehicleSeats.Where(x => !x.Available).Any())
-        {
-            TurnOffEngine();
-        }
-    }
+    ////    var seat = col.First();
+    ////    seat.Available = true;
+    ////    seat.passenger = null;
+    ////    removePassenger.transform.parent = null;
+    ////    if (vehicleSeats.Where(x => !x.Available).Any())
+    ////    {
+    ////        TurnOffEngine();
+    ////    }
+    ////}
 
-    //private void Update()
-    //{
-    //    //si el motor esta prendido se ejecuta el evento
-    //    //me la estoy complicando talvez¿?
-    //    if (EngineOn) whileEngineOn?.Invoke();
-    //}
+    //////private void Update()
+    //////{
+    //////    //si el motor esta prendido se ejecuta el evento
+    //////    //me la estoy complicando talvez¿?
+    //////    if (EngineOn) whileEngineOn?.Invoke();
+    //////}
 
-    void TurnOffEngine()
-    {
-        EngineOn = false;
-        OnEngineTurnOff?.Invoke();
-    }
+    ////void TurnOffEngine()
+    ////{
+    ////    EngineOn = false;
+    ////    OnEngineTurnOff?.Invoke();
+    ////}
 
-    void TurnOnEngine()
-    {
-        EngineOn=true;
-        OnEngineTurnOn?.Invoke();
+    ////void TurnOnEngine()
+    ////{
+    ////    EngineOn=true;
+    ////    OnEngineTurnOn?.Invoke();
 
-    }
-    #endregion
+    ////}
+    //#endregion
 
     private void OnValidate()
     {
