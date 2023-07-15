@@ -92,6 +92,18 @@ public class Fireteam
         yield return null;
        
         var nearestZone = concat.Distinct().Minimum(x => Vector3.Distance(x.transform.position, Leader.transform.position));
+        
+        nearestZone.onCaptureComplete += (x) =>
+        {
+            if (x != MyTeam) return;
+
+            Leader.WaitOrdersTransition();
+            foreach (var unit in _fireteamMembers.Where(x => x != Leader))           
+                unit.WaitOrdersTransition();
+               
+                    
+        };
+        
         Leader.DebugEntity.Log($"Moviendome a la bandera {nearestZone}");
         SendPatrolOrders(nearestZone.transform.position);
     

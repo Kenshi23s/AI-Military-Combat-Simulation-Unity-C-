@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4702120679254966}
   - component: {fileID: 33353604933409844}
   - component: {fileID: 23457511866475350}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SM_Veh_Armored_Car_SteeringW_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -94,7 +94,7 @@ GameObject:
   - component: {fileID: 4216936359693502}
   - component: {fileID: 33926267763936900}
   - component: {fileID: 23154142706285664}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SM_Veh_Armored_Car_Wheel_fl
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -177,7 +177,7 @@ GameObject:
   - component: {fileID: 4153594208926064}
   - component: {fileID: 33980016374753616}
   - component: {fileID: 23478449151903446}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SM_Veh_Armored_Car_Wheel_rl
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -260,7 +260,7 @@ GameObject:
   - component: {fileID: 4031224892562218}
   - component: {fileID: 33939618550572432}
   - component: {fileID: 23951285258536312}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SM_Veh_Armored_Car_Wheel_rr
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -343,7 +343,7 @@ GameObject:
   - component: {fileID: 4850684076200348}
   - component: {fileID: 33183119068079632}
   - component: {fileID: 23043966879591338}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SM_Veh_Armored_Car_Glass_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -427,7 +427,7 @@ GameObject:
   - component: {fileID: 33383805039317586}
   - component: {fileID: 23832635026531654}
   - component: {fileID: 1021641166264522452}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SM_Veh_Armored_Car_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -529,7 +529,7 @@ GameObject:
   - component: {fileID: 4121932185406466}
   - component: {fileID: 33348444697834152}
   - component: {fileID: 23564137133341628}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SM_Veh_Armored_Car_Wheel_fr
   m_TagString: Untagged
   m_Icon: {fileID: 0}

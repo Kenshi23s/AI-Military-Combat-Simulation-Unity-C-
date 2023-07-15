@@ -12,11 +12,11 @@ public class Infantry : GridEntity, InitializeUnit
 {
     public enum INFANTRY_STATES
     {
-        WaitingOrders,
-        MoveTowards,
-        FollowLeader,
-        Die,
-        FireAtWill
+        WAITING_ORDERS,
+        MOVE_TOWARDS,
+        FOLLOW_LEADER,
+        DIE,
+        FIRE_AT_WILL
     }
     [field: SerializeField] public Transform Center { get; private set; }
     public bool InCombat { get; private set; }
@@ -51,7 +51,10 @@ public class Infantry : GridEntity, InitializeUnit
 
     public override void GridEntityStart()
     {
-        
+        Health.OnTakeDamage += (x) =>
+        {
+            Infantry_FSM.SendInput(INFANTRY_STATES.FIRE_AT_WILL);
+        };
     }
 
     public void SetFireteam(Fireteam MyFireteam)
@@ -77,31 +80,31 @@ public class Infantry : GridEntity, InitializeUnit
         var die = Die();
 
         StateConfigurer.Create(waitOrders)
-            .SetTransition(INFANTRY_STATES.MoveTowards, moveTowards)
-            .SetTransition(INFANTRY_STATES.FollowLeader, followLeader)
-            .SetTransition(INFANTRY_STATES.FireAtWill, fireAtWill)
-            .SetTransition(INFANTRY_STATES.Die,die)
+            .SetTransition(INFANTRY_STATES.MOVE_TOWARDS, moveTowards)
+            .SetTransition(INFANTRY_STATES.FOLLOW_LEADER, followLeader)
+            .SetTransition(INFANTRY_STATES.FIRE_AT_WILL, fireAtWill)
+            .SetTransition(INFANTRY_STATES.DIE,die)
             .Done();
 
         StateConfigurer.Create(moveTowards)
-           .SetTransition(INFANTRY_STATES.WaitingOrders, waitOrders)
-           .SetTransition(INFANTRY_STATES.FollowLeader, followLeader)
-           .SetTransition(INFANTRY_STATES.FireAtWill, fireAtWill)
-           .SetTransition(INFANTRY_STATES.Die, die)
+           .SetTransition(INFANTRY_STATES.WAITING_ORDERS, waitOrders)
+           .SetTransition(INFANTRY_STATES.FOLLOW_LEADER, followLeader)
+           .SetTransition(INFANTRY_STATES.FIRE_AT_WILL, fireAtWill)
+           .SetTransition(INFANTRY_STATES.DIE, die)
            .Done();
 
         StateConfigurer.Create(followLeader)
-         .SetTransition(INFANTRY_STATES.WaitingOrders, waitOrders)
-         .SetTransition(INFANTRY_STATES.MoveTowards, moveTowards)
-         .SetTransition(INFANTRY_STATES.FireAtWill, fireAtWill)
-         .SetTransition(INFANTRY_STATES.Die, die)
+         .SetTransition(INFANTRY_STATES.WAITING_ORDERS, waitOrders)
+         .SetTransition(INFANTRY_STATES.MOVE_TOWARDS, moveTowards)
+         .SetTransition(INFANTRY_STATES.FIRE_AT_WILL, fireAtWill)
+         .SetTransition(INFANTRY_STATES.DIE, die)
          .Done();
 
         StateConfigurer.Create(fireAtWill)
-         .SetTransition(INFANTRY_STATES.WaitingOrders, waitOrders)
-         .SetTransition(INFANTRY_STATES.FollowLeader, followLeader)
-         .SetTransition(INFANTRY_STATES.MoveTowards, moveTowards)
-         .SetTransition(INFANTRY_STATES.Die, die)
+         .SetTransition(INFANTRY_STATES.WAITING_ORDERS, waitOrders)
+         .SetTransition(INFANTRY_STATES.FOLLOW_LEADER, followLeader)
+         .SetTransition(INFANTRY_STATES.MOVE_TOWARDS, moveTowards)
+         .SetTransition(INFANTRY_STATES.DIE, die)
          .Done();
 
         StateConfigurer.Create(die).Done();
@@ -117,17 +120,19 @@ public class Infantry : GridEntity, InitializeUnit
 
         state.OnEnter += (x) =>
         {
+            _infantry_AI.CancelMovement();
             StopMoving();
             _anim.SetBool("Running", false);
+
             DebugEntity.Log("Espero Ordenes");
-            _infantry_AI.CancelMovement();
+       
+
             StartCoroutine(LookForTargets());
+
             if (MyFireteam.Leader != this) return;
             StartCoroutine(MyFireteam.LookForNearestZone());
+            DebugEntity.Log("Busco la zona mas cercana");
         };
-           
-
-
 
         state.OnExit += (x) =>
         {
@@ -143,9 +148,9 @@ public class Infantry : GridEntity, InitializeUnit
 
         state.OnEnter += (x) =>
         {
-            if (MinDistanceFromDestination <= Vector3.Distance(Destination,transform.position))
+            if (MinDistanceFromDestination > Vector3.Distance(Destination,transform.position))
             {
-                Infantry_FSM.SendInput(INFANTRY_STATES.WaitingOrders);
+                Infantry_FSM.SendInput(INFANTRY_STATES.WAITING_ORDERS);
                 return;
             }
             StopMoving();
@@ -154,7 +159,7 @@ public class Infantry : GridEntity, InitializeUnit
             _infantry_AI.SetDestination(Destination);
             _infantry_AI.OnDestinationReached += () =>
             {
-                Infantry_FSM.SendInput(INFANTRY_STATES.WaitingOrders);
+                Infantry_FSM.SendInput(INFANTRY_STATES.WAITING_ORDERS);
             };
             _anim.SetBool("Running", true);
 
@@ -179,7 +184,7 @@ public class Infantry : GridEntity, InitializeUnit
         {
             if (MyFireteam.IsNearLeader(this, MinDistanceFromDestination))
             {
-                Infantry_FSM.SendInput(INFANTRY_STATES.WaitingOrders);
+                Infantry_FSM.SendInput(INFANTRY_STATES.WAITING_ORDERS);
                 return;
             }
 
@@ -205,25 +210,28 @@ public class Infantry : GridEntity, InitializeUnit
 
     IEnumerator FollowLeaderRoutine()
     {
+        GoToLeader();
         while (true)
         {
-           
-            if (!MyFireteam.IsNearLeader(this,MinDistanceFromDestination))
-            {
-
-                _infantry_AI.SetDestination(MyFireteam.Leader.transform.position);
-                _infantry_AI.OnDestinationReached += () =>
-                {
-                    Infantry_FSM.SendInput(INFANTRY_STATES.WaitingOrders);
-                };
-            }
-
             for (int i = 0; i < 120; i++)
             {
                 yield return null;
             }
+            if (MyFireteam.IsNearLeader(this, MinDistanceFromDestination)) continue;
+
+            GoToLeader();
         }
        
+    }
+
+    void GoToLeader()
+    {
+
+        _infantry_AI.SetDestination(MyFireteam.Leader.transform.position);
+        _infantry_AI.OnDestinationReached += () =>
+        {
+            Infantry_FSM.SendInput(INFANTRY_STATES.WAITING_ORDERS);
+        };
     }
 
     State<INFANTRY_STATES> FireAtWill()
@@ -292,7 +300,7 @@ public class Infantry : GridEntity, InitializeUnit
            .Where(x => x.MyTeam != MyTeam)
            .Where(x => _fov.IN_FOV(x.transform.position));
 
-            if (z.Any()) Infantry_FSM.SendInput(INFANTRY_STATES.FireAtWill);
+            if (z.Any()) Infantry_FSM.SendInput(INFANTRY_STATES.FIRE_AT_WILL);
 
             for (int i = 0; i < 30; i++)
                 yield return null;
@@ -332,12 +340,12 @@ public class Infantry : GridEntity, InitializeUnit
                     if (MyFireteam.AlliesWithEnemiesNearby(this,out Entity ally))
                     {
                         Destination = ally.transform.position;
-                        Infantry_FSM.SendInput(INFANTRY_STATES.MoveTowards);
+                        Infantry_FSM.SendInput(INFANTRY_STATES.MOVE_TOWARDS);
                     }
                 }
                 else
                 {
-                    Infantry_FSM.SendInput(INFANTRY_STATES.FollowLeader);
+                    Infantry_FSM.SendInput(INFANTRY_STATES.FOLLOW_LEADER);
                 }
             }
 
@@ -368,7 +376,7 @@ public class Infantry : GridEntity, InitializeUnit
         if (!InCombat)
         {
             Destination = posToGo;
-            Infantry_FSM.SendInput(INFANTRY_STATES.MoveTowards);
+            Infantry_FSM.SendInput(INFANTRY_STATES.MOVE_TOWARDS);
         }
            
     }
@@ -376,10 +384,16 @@ public class Infantry : GridEntity, InitializeUnit
     public void FollowLeaderTransition()
     {
         if (!InCombat)
-            Infantry_FSM.SendInput(INFANTRY_STATES.FollowLeader);
+            Infantry_FSM.SendInput(INFANTRY_STATES.FOLLOW_LEADER);
     }
 
-   
+    public void WaitOrdersTransition()
+    {
+        if (!InCombat)
+            Infantry_FSM.SendInput(INFANTRY_STATES.WAITING_ORDERS);
+    }
+
+
 
 
     #endregion

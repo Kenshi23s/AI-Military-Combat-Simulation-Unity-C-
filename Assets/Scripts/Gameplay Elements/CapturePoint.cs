@@ -26,6 +26,8 @@ public class CapturePoint : MonoBehaviour
     public UnityEvent onProgressChange;
 
     public UnityEvent<ILookup<Team,Entity>> onEntitiesAroundUpdate;
+
+    public event Action<Team> onCaptureComplete;
     #endregion
 
     public float TakeProgress { get; private set; }
@@ -52,15 +54,10 @@ public class CapturePoint : MonoBehaviour
         {
             if (captureProgress == 0) return 0.5f;
 
-            if (captureProgress > 0)
-            {
-                return Mathf.Abs(captureProgress) / (ProgressRequiredForCapture) + 0.5f;
-            }
-            else
-            {
-                return Mathf.Abs(captureProgress) / (ProgressRequiredForCapture) - 0.5f;
-            }
-          
+            if (captureProgress > 0)         
+                return Mathf.Abs(captureProgress) / (ProgressRequiredForCapture) + 0.5f;          
+            else           
+                return Mathf.Abs(captureProgress) / (ProgressRequiredForCapture) - 0.5f;    
         }
     }
         
@@ -101,14 +98,11 @@ public class CapturePoint : MonoBehaviour
                 .Where(x => x.MyTeam != Team.None)
                 .ToList();
 
-            _debug.Log("Combat Entities Around Zone: " + _combatEntitiesAround.Count);
+          
 
             var combatants = _combatEntitiesAround
                 .Where(x => x.MyTeam != takenBy);
-            foreach (var item in combatants)
-            {
-                
-            }
+           
             //divido la lista entre equipo rojo y verde con el lookup
             //si pasan el predicado, accedo a esos items con [true] y si no
             //accedo a los otros items con [false]
@@ -134,16 +128,16 @@ public class CapturePoint : MonoBehaviour
                 _debug.Log("Esta en disputa, hay unidades de ambos equipos");
                 continue;
             }
-            string debug = "Esta siendo tomada por";
+            string debug = "Esta siendo tomada por el equipo";
             if (split[Team.Red].Any())
             {
-                debug += "El equipo rojo";
+                debug += " rojo";
                 CaptureProgress += Time.deltaTime * split[Team.Red].Count() * _waitingFramesTilSearch;
                 beingTakenBy = Team.Red;
             }                    
             else
             {
-                debug += "El equipo azul";
+                debug += " azul";
                 CaptureProgress -= Time.deltaTime * split[Team.Blue].Count() * _waitingFramesTilSearch;
                 beingTakenBy = Team.Blue;
             }
@@ -157,19 +151,28 @@ public class CapturePoint : MonoBehaviour
 
     void CheckCaptureProgress()
     {
-        var aux = takenBy;
+        var aux = beingTakenBy;
+
+
         switch (beingTakenBy)
         {
             case Team.Red:
-                if (captureProgress >= ProgressRequiredForCapture)
+                if (captureProgress >= ProgressRequiredForCapture && takenBy != Team.Red )
                 {
                     takenBy = Team.Red;
+                    onCaptureComplete?.Invoke(takenBy);
+                    onCaptureComplete = delegate { };
                 }
                     
                 break;
             case Team.Blue:
-                if (captureProgress <= -ProgressRequiredForCapture)
+                if (captureProgress <= -ProgressRequiredForCapture && takenBy != Team.Blue)
+                {
                     takenBy = Team.Blue;
+                    onCaptureComplete?.Invoke(takenBy);
+                    onCaptureComplete = delegate { };
+                }
+                    
                 break;
             default:
                 takenBy = Team.None;
