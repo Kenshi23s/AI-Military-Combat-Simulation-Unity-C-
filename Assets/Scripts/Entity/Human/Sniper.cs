@@ -16,7 +16,7 @@ public class Sniper : GridEntity, InitializeUnit
         LOOK_FOR_TARGETS,
         AIM,
         SHOOT,
-        DEAD
+        DIE
     }
 
     public event Action OnEnemyFound = delegate { };
@@ -29,9 +29,11 @@ public class Sniper : GridEntity, InitializeUnit
     LineRenderer _laser;
     public GridEntity target { get; private set; }
 
-    [SerializeField] int FramesBetweenSearch;
-    [SerializeField] float RequiredFocusTime, AimSpeed;
-    float currentAimSlerp,currentFocusTime;
+    [SerializeField] int FramesBetweenSearch = 4 ,maxShootsInRow = 1;
+    [SerializeField] float _requiredFocusTime, _aimSpeed;
+    float _currentAimLerp, _currentFocusTime;
+    int timesFocused = 1;
+    [SerializeField] float _addPerTimesFocused;
 
     protected override void EntityAwake()
     {
@@ -51,10 +53,26 @@ public class Sniper : GridEntity, InitializeUnit
     void CreateFSM()
     {
 
+        var lookEnemies = LookForEnemies();
+        var aimEnemy = AimAtEnemy();
+        var shootAtEnemy = ShootAtEnemy();
+        var die = Die();
+
+        StateConfigurer.Create(lookEnemies)
+            .SetTransition(SNIPER_STATES.AIM,aimEnemy)
+            .Done();
+
+        StateConfigurer.Create(aimEnemy)
+           .SetTransition(SNIPER_STATES.LOOK_FOR_TARGETS, lookEnemies)
+           .SetTransition(SNIPER_STATES.SHOOT, shootAtEnemy)
+           .SetTransition(SNIPER_STATES.DIE,die)
+           .Done();
 
 
 
 
+        StateConfigurer.Create(die)
+            .Done();
 
     }
 
@@ -62,21 +80,21 @@ public class Sniper : GridEntity, InitializeUnit
     State<SNIPER_STATES> LookForEnemies()
     {
         var state = new State<SNIPER_STATES>("Look For Enemies");
-        Action found = () =>
+        Action _onFound = () =>
         {
             _fsm.SendInput(SNIPER_STATES.AIM);
         };
 
         state.OnEnter += (x) =>
         {
-            OnEnemyFound += found;
+            OnEnemyFound += _onFound;
             StartCoroutine(LookForEnemiesCoroutine());
 
         };
 
         state.OnExit += (x) =>
         {
-            OnEnemyFound -= found;         
+            OnEnemyFound -= _onFound;         
         };
 
         return state;
@@ -114,27 +132,28 @@ public class Sniper : GridEntity, InitializeUnit
         state.OnEnter += (x) =>
         {
             if (target == null) _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
-            currentAimSlerp = 0;
+            _currentAimLerp = 0;
 
         };
 
         state.OnUpdate += () =>
         {
-            if (!_fovAgent.IN_FOV(target.transform.position)) _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
+            if (!_fovAgent.IN_FOV(target.transform.position) || !target.Health.isAlive) _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
 
             Vector3 dir = target.transform.position - transform.position;
-            if (currentAimSlerp < 1)
+            if (_currentAimLerp < 1)
             {
-                currentAimSlerp += Time.deltaTime * AimSpeed;
-                transform.forward = Vector3.Slerp(transform.forward, dir.normalized, currentAimSlerp);
+                _currentAimLerp += Time.deltaTime * _aimSpeed;
+                Vector3 aux = Vector3.Slerp(transform.forward, dir.normalized, _currentAimLerp);
+                transform.forward= new Vector3(aux.x ,transform.forward.y, aux.z);
                 return;
             }
            
             
-            currentAimSlerp = 1;
+            _currentAimLerp = 1;
             transform.forward = dir.normalized;
-            currentFocusTime += Time.deltaTime;
-            if (currentFocusTime >= RequiredFocusTime)
+            _currentFocusTime += Time.deltaTime;
+            if (_currentFocusTime >= _requiredFocusTime)
             {
 
             }
@@ -155,33 +174,50 @@ public class Sniper : GridEntity, InitializeUnit
         state.OnEnter += (x) =>
         {
             if (target == null) _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
-            currentAimSlerp = 0;
-
+            _currentFocusTime = 0;
+            timesFocused = 1;
         };
-
+  
         state.OnUpdate += () =>
         {
-            if (!_fovAgent.IN_FOV(target.transform.position)) _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
+            
+            if (!_fovAgent.IN_FOV(target.transform.position) || !target.Health.isAlive) _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
 
             Vector3 dir = target.transform.position - transform.position;
          
             transform.forward = dir.normalized;
-            currentFocusTime += Time.deltaTime;
-            if (currentFocusTime >= RequiredFocusTime)
+            _currentFocusTime += Time.deltaTime * (_addPerTimesFocused * timesFocused );
+            if (_currentFocusTime >= _requiredFocusTime)
             {
+                _currentFocusTime = 0;
+                _shootComponent.Shoot(_shootPos);
+                timesFocused++;
 
+                if (timesFocused > maxShootsInRow) _fsm.SendInput(SNIPER_STATES.AIM);
             }
+        };
 
 
-
-
-
+        state.OnExit += (x) =>
+        {
+            _currentFocusTime = 0;
+            timesFocused = 0;
         };
 
         return state;
     }
 
+    State<SNIPER_STATES> Die()
+    {
+        State<SNIPER_STATES> state = new State<SNIPER_STATES>("Die");
 
+        state.OnEnter += (x) =>
+        {
+            DebugEntity.Log("Die");
+        };
+
+        return state;
+    }
 
 
     void ActivateLaser()

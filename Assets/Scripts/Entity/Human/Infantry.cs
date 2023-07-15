@@ -130,7 +130,7 @@ public class Infantry : GridEntity, InitializeUnit
 
             StartCoroutine(LookForTargets());
 
-            if (MyFireteam.Leader != this) return;
+            if (MyFireteam.Leader != this || !IsCapturing) return;
             StartCoroutine(MyFireteam.LookForNearestZone());
             DebugEntity.Log("Busco la zona mas cercana");
         };
