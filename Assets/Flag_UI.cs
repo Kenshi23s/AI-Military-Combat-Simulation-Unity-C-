@@ -36,12 +36,11 @@ public class Flag_UI : MonoBehaviour
     }
 
 
-    void SetTexts(ILookup<Team,Entity> col)
+    void SetTexts(Dictionary<Team, Entity[]> col)
     {
-     
         foreach (var key in TeamTexts.Keys.Where(x => col[x] != null ))
         {
-            TeamTexts[key].text = col[key].Count().ToString();
+            TeamTexts[key].text = col[key].Length.ToString();
         }
     }
 

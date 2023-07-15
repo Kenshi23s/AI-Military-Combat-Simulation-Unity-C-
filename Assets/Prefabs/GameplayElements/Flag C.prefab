@@ -724,7 +724,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 360ca867e48780448a1401b7fc47e037, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  canDebug: 1
+  canDebug: 0
   gizmoDraw:
     m_PersistentCalls:
       m_Calls: []
@@ -759,9 +759,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6eeb1dd3f05737a4f98be9c9aa108d80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  waitingFramesTilSearch: 1
+  _waitingTimeTilSearch: 0.2
   _zoneRadius: 15
-  _debug: {fileID: 0}
+  _zoneHeight: 3
   onPointOwnerChange:
     m_PersistentCalls:
       m_Calls: []

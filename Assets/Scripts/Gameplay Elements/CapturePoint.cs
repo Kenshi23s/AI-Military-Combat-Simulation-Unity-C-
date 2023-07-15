@@ -16,8 +16,8 @@ public class CapturePoint : MonoBehaviour
         Taken
     }
 
-    [SerializeField, Min(1)] float _waitingFramesTilSearch = 30;
-    [SerializeField, Min(0)] float _zoneRadius = 15;
+    [SerializeField, Min(1)] float _waitingTimeTilSearch = 0.2f;
+    [SerializeField, Min(0)] float _zoneRadius = 15, _zoneHeight = 8;
     DebugableObject _debug;
 
     #region Events
@@ -25,7 +25,7 @@ public class CapturePoint : MonoBehaviour
 
     public UnityEvent onProgressChange;
 
-    public UnityEvent<ILookup<Team,Entity>> onEntitiesAroundUpdate;
+    public UnityEvent<Dictionary<Team, Entity[]>> onEntitiesAroundUpdate;
 
     public event Action<Team> onCaptureComplete;
     #endregion
@@ -63,13 +63,17 @@ public class CapturePoint : MonoBehaviour
     public Team takenBy = Team.None;
     public Team beingTakenBy { get; private set; }
 
-    List<Entity> _combatEntitiesAround = new List<Entity>();
+    Dictionary<Team, Entity[]> _teamSplit = new Dictionary<Team, Entity[]> 
+    {
+        [Team.Blue] = new Entity[0],
+        [Team.Red]  = new Entity[0]
+    };
 
-   
     void Awake()
     {
         _debug = GetComponent<DebugableObject>();
         _debug.AddGizmoAction(DrawRadius);
+
         captureProgress = 0;
     }
 
@@ -86,66 +90,57 @@ public class CapturePoint : MonoBehaviour
     {
         while (true) 
         {
-            float timePassed = Time.time;
-            for (int i = 0; i < _waitingFramesTilSearch; i++) yield return null;
-
-
-            _combatEntitiesAround = SphereQuery()
-                .OfType<Entity>()
-                .Where(x => x.MyTeam != Team.None)
-                .ToList();
-
-          
-
-            var combatants = _combatEntitiesAround
-                .Where(x => x.MyTeam != takenBy);
-           
             //divido la lista entre equipo rojo y verde con el lookup
             //si pasan el predicado, accedo a esos items con [true] y si no
             //accedo a los otros items con [false]
-            var split = _combatEntitiesAround
+            var aux = ZoneQuery()
+                .OfType<Entity>()
                 .Where(x => x.MyTeam != Team.None)
                 .ToLookup(x => x.MyTeam);
 
-
+            _teamSplit = aux.ToDictionary(x => x.Key, x => x.ToArray());
             
-            onEntitiesAroundUpdate?.Invoke(split);
-
-            if (!split[Team.Red].Any() && !split[Team.Blue].Any()) 
-            {
-                _debug.Log("No hay unidades en el area");
-                continue;
-            }
-          
-
-            //rojo                    
-            if (split[Team.Red].Any() && split[Team.Blue].Any())
-            {
-                CurrentCaptureState = ZoneStates.Disputed;
-                _debug.Log("Esta en disputa, hay unidades de ambos equipos");
-                continue;
-            }
-
-            string debug = "Esta siendo tomada por el equipo";
-
-            if (split[Team.Red].Any() && takenBy != Team.Red)
-            {
-                debug += " rojo";
-                CaptureProgress += (Time.time - timePassed) * split[Team.Red].Count();
-                beingTakenBy = Team.Red;
-            }                    
-            else if (split[Team.Blue].Any() && takenBy != Team.Blue)
-            {
-                debug += " azul";
-                CaptureProgress -= (Time.time - timePassed) * split[Team.Blue].Count();
-                beingTakenBy = Team.Blue;
-            }
-            debug += $" el progreso es de {captureProgress}";
-            _debug.Log(debug);
-
-            onProgressChange?.Invoke();
-            CheckCaptureProgress();
+            onEntitiesAroundUpdate?.Invoke(_teamSplit);
+            yield return new WaitForSeconds(_waitingTimeTilSearch);
         }    
+    }
+
+    private void Update()
+    {
+        if (!_teamSplit[Team.Red].Any() && !_teamSplit[Team.Blue].Any())
+        {
+            _debug.Log("No hay unidades en el area");
+            return;
+        }
+
+
+        //rojo                    
+        if (_teamSplit[Team.Red].Any() && _teamSplit[Team.Blue].Any())
+        {
+            CurrentCaptureState = ZoneStates.Disputed;
+            _debug.Log("Esta en disputa, hay unidades de ambos equipos");
+            return;
+        }
+
+        string debug = "Esta siendo tomada por el equipo";
+
+        if (_teamSplit[Team.Red].Any() && takenBy != Team.Red)
+        {
+            debug += " rojo";
+            CaptureProgress += Time.deltaTime * _teamSplit[Team.Red].Count();
+            beingTakenBy = Team.Red;
+        }
+        else if (_teamSplit[Team.Blue].Any() && takenBy != Team.Blue)
+        {
+            debug += " azul";
+            CaptureProgress -= Time.deltaTime * _teamSplit[Team.Blue].Count();
+            beingTakenBy = Team.Blue;
+        }
+        debug += $" el progreso es de {captureProgress}";
+        _debug.Log(debug);
+
+        onProgressChange?.Invoke();
+        CheckCaptureProgress();
     }
 
     void CheckCaptureProgress()
@@ -185,19 +180,99 @@ public class CapturePoint : MonoBehaviour
 
     private void DrawRadius()
     {
-        Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(transform.position, _zoneRadius);
+        Gizmos.color = new Color(243, 58, 106, 255) / 255;
+
+        DrawCylinder(transform.position, Quaternion.identity, _zoneHeight, _zoneRadius);
+
     }
 
-    IEnumerable<GridEntity> SphereQuery() 
+    IEnumerable<GridEntity> ZoneQuery() 
     {
         //creo una "caja" con las dimensiones deseadas, y luego filtro segun distancia para formar el círculo
         return _targetGrid.Query(
-            transform.position + new Vector3(-_zoneRadius, -_zoneRadius, -_zoneRadius),
-            transform.position + new Vector3(_zoneRadius, _zoneRadius, _zoneRadius),
+            transform.position + new Vector3(-_zoneRadius, 0, -_zoneRadius),
+            transform.position + new Vector3(_zoneRadius, _zoneHeight, _zoneRadius),
             pos => {
                 var distance = pos - transform.position;
+                distance.y = transform.position.y;
                 return distance.sqrMagnitude < _zoneRadius * _zoneRadius;
             });
+    }
+
+    public static void DrawCylinder(Vector3 position, Quaternion orientation, float height, float radius, bool drawFromBase = true)
+    {
+        Vector3 localUp = orientation * Vector3.up;
+        Vector3 localRight = orientation * Vector3.right;
+        Vector3 localForward = orientation * Vector3.forward;
+
+        Vector3 basePositionOffset = drawFromBase ? Vector3.zero : (localUp * height * 0.5f);
+        Vector3 basePosition = position - basePositionOffset;
+        Vector3 topPosition = basePosition + localUp * height;
+
+        Quaternion circleOrientation = orientation * Quaternion.Euler(90, 0, 0);
+
+        Vector3 pointA = basePosition + localRight * radius;
+        Vector3 pointB = basePosition + localForward * radius;
+        Vector3 pointC = basePosition - localRight * radius;
+        Vector3 pointD = basePosition - localForward * radius;
+
+        Gizmos.DrawRay(pointA, localUp * height);
+        Gizmos.DrawRay(pointB, localUp * height);
+        Gizmos.DrawRay(pointC, localUp * height);
+        Gizmos.DrawRay(pointD, localUp * height);
+
+        DrawCircle(basePosition, circleOrientation, radius, 32);
+        DrawCircle(topPosition, circleOrientation, radius, 32);
+    }
+
+    public static void DrawCircle(Vector3 position, Quaternion rotation, float radius, int segments)
+    {
+        // If either radius or number of segments are less or equal to 0, skip drawing
+        if (radius <= 0.0f || segments <= 0)
+        {
+            return;
+        }
+
+        // Single segment of the circle covers (360 / number of segments) degrees
+        float angleStep = (360.0f / segments);
+
+        // Result is multiplied by Mathf.Deg2Rad constant which transforms degrees to radians
+        // which are required by Unity's Mathf class trigonometry methods
+
+        angleStep *= Mathf.Deg2Rad;
+
+        // lineStart and lineEnd variables are declared outside of the following for loop
+        Vector3 lineStart = Vector3.zero;
+        Vector3 lineEnd = Vector3.zero;
+
+        for (int i = 0; i < segments; i++)
+        {
+            // Line start is defined as starting angle of the current segment (i)
+            lineStart.x = Mathf.Cos(angleStep * i);
+            lineStart.y = Mathf.Sin(angleStep * i);
+            lineStart.z = 0.0f;
+
+            // Line end is defined by the angle of the next segment (i+1)
+            lineEnd.x = Mathf.Cos(angleStep * (i + 1));
+            lineEnd.y = Mathf.Sin(angleStep * (i + 1));
+            lineEnd.z = 0.0f;
+
+            // Results are multiplied so they match the desired radius
+            lineStart *= radius;
+            lineEnd *= radius;
+
+            // Results are multiplied by the rotation quaternion to rotate them 
+            // since this operation is not commutative, result needs to be
+            // reassigned, instead of using multiplication assignment operator (*=)
+            lineStart = rotation * lineStart;
+            lineEnd = rotation * lineEnd;
+
+            // Results are offset by the desired position/origin 
+            lineStart += position;
+            lineEnd += position;
+
+            // Points are connected using DrawLine method and using the passed color
+            Gizmos.DrawLine(lineStart, lineEnd);
+        }
     }
 }
