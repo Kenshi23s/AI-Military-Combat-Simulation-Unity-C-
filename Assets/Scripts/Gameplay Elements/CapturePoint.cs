@@ -93,13 +93,21 @@ public class CapturePoint : MonoBehaviour
             //divido la lista entre equipo rojo y verde con el lookup
             //si pasan el predicado, accedo a esos items con [true] y si no
             //accedo a los otros items con [false]
-            var aux = ZoneQuery()
+
+            _teamSplit = ZoneQuery()
                 .OfType<Entity>()
                 .Where(x => x.MyTeam != Team.None)
-                .ToLookup(x => x.MyTeam);
+                .ToLookup(x => x.MyTeam)
+                .ToDictionary(x => x.Key, x => x.ToArray());
 
-            _teamSplit = aux.ToDictionary(x => x.Key, x => x.ToArray());
-            
+            foreach (Team item in Enum.GetValues(typeof(Team)))
+            {
+                if (!_teamSplit.ContainsKey(item))
+                    _teamSplit[item] = new Entity[0];
+            }
+
+
+
             onEntitiesAroundUpdate?.Invoke(_teamSplit);
             yield return new WaitForSeconds(_waitingTimeTilSearch);
         }    
