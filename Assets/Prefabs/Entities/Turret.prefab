@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 284750394642650641}
   m_Layer: 0
-  m_Name: _B008
+  m_Name: TurretBase
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -24,12 +24,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 284750394642680369}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.7914829, y: 95.1874, z: -84.26369}
+  m_LocalPosition: {x: -3.8323402, y: 95.1874, z: -89.260864}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 284750394642650647}
-  m_Father: {fileID: 284750394642650649}
+  m_Father: {fileID: 284750394642650643}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &284750394642680371
@@ -60,6 +60,7 @@ Transform:
   m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 284750394642650641}
   - {fileID: 284750394642650649}
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -74,7 +75,7 @@ GameObject:
   m_Component:
   - component: {fileID: 284750394642650647}
   m_Layer: 0
-  m_Name: _B009
+  m_Name: TurretNeck
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -88,7 +89,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 284750394642680375}
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 21.924686, y: -0.7186966, z: 33.434143}
+  m_LocalPosition: {x: 21.924686, y: -0.71868896, z: 33.435066}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -124,10 +125,9 @@ Transform:
   m_LocalPosition: {x: -4.623823, y: 0, z: -4.997177}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 284750394642650641}
+  m_Children: []
   m_Father: {fileID: 284750394642650643}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!137 &284750394645858099
 SkinnedMeshRenderer:
@@ -196,7 +196,7 @@ GameObject:
   m_Component:
   - component: {fileID: 284750394642650651}
   m_Layer: 0
-  m_Name: _B011
+  m_Name: TurretHead
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -210,8 +210,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 284750394642680379}
   m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -77.29998, y: -93.00003, z: 0.9994278}
-  m_LocalScale: {x: 1, y: 0.99999976, z: 0.99999976}
+  m_LocalPosition: {x: -77.29997, y: -92.99928, z: 0.9994354}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 284750394642650647}
