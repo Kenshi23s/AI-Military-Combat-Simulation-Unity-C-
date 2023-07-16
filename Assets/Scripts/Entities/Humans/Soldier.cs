@@ -5,13 +5,14 @@ using UnityEngine;
 [RequireComponent(typeof(GridEntity))]
 public abstract class Soldier : Human, IMilitary
 {
-    public MilitaryTeam Team { get; protected set; }
+    [field : SerializeField]public MilitaryTeam Team { get; protected set; }
 
     protected GridEntity _gridEntity;
 
     protected override void EntityAwake()
     {
         _gridEntity = GetComponent<GridEntity>();
+
         SoldierAwake();
     }
 

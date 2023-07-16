@@ -30,10 +30,12 @@ public class Infantry : Soldier
 
     NewAIMovement _infantry_AI;
     FOVAgent _fov;
+
     #region ShootingLogic
     ShootComponent _gun;
     [SerializeField] Transform _shootPos;
     #endregion
+
     public EventFSM<INFANTRY_STATES> Infantry_FSM { get; private set; }
 
     public Entity ActualTarget { get; private set; }
@@ -130,7 +132,7 @@ public class Infantry : Soldier
 
             StartCoroutine(LookForTargets());
 
-            if (MyFireteam.Leader != this || !IsCapturing) return;
+            if (MyFireteam.Leader != this && !IsCapturing) return;
             StartCoroutine(MyFireteam.LookForNearestZone());
             DebugEntity.Log("Busco la zona mas cercana");
         };

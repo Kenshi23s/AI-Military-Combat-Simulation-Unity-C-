@@ -26,10 +26,9 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     [SerializeField] Infantry _infantryPrefab;
     [SerializeField] Plane _planePrefab;
  
-
     public LayerMask NotSpawnable,Ground;
 
-   [field: SerializeField] public float SeparationRadiusBetweenUnits { get; private set; }
+    [field: SerializeField] public float SeparationRadiusBetweenUnits { get; private set; }
 
     #region TeamsDictionary
     Dictionary<MilitaryTeam, List<Entity>> _teams = new Dictionary<MilitaryTeam, List<Entity>>();

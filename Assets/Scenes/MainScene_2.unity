@@ -2239,7 +2239,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _infantryPrefab: {fileID: 7684651609810558659, guid: 451e98b6690f4fe44a7f048fca3f0e32,
     type: 3}
-  _planePrefab: {fileID: 6565769872705145561, guid: 9d3a7005447117e428bb737f379b1de0,
+  _planePrefab: {fileID: 191271609524376827, guid: 9d3a7005447117e428bb737f379b1de0,
     type: 3}
   NotSpawnable:
     serializedVersion: 2
@@ -3716,7 +3716,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1020563752}
   m_Layer: 0
-  m_Name: SpawnBlue
+  m_Name: Spawn Red
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7043,7 +7043,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1823427471}
   m_Layer: 0
-  m_Name: Spawn Red
+  m_Name: Spawn Blue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

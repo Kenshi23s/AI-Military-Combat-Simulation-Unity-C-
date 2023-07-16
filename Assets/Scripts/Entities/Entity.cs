@@ -20,6 +20,7 @@ public abstract class Entity : MonoBehaviour
     {
         Health = GetComponent<LifeComponent>();
         DebugEntity = GetComponent<DebugableObject>();
+        IsCapturing = false;
 
         EntityAwake();
     }
