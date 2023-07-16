@@ -12,7 +12,6 @@ public class Flag_UI : MonoBehaviour
     [SerializeField] Image _flagOwner;
     [SerializeField,SerializedDictionary("Team","TextMesh")] SerializedDictionary<MilitaryTeam, TextMeshProUGUI> TeamTexts;
 
-    [Range(0,1)]public float SliderTest;
     CapturePoint _myCapturePoint;
     private void Awake()
     {
@@ -28,7 +27,7 @@ public class Flag_UI : MonoBehaviour
 
     private void LateUpdate()
     {
-        transform.forward = Camera.main.transform.position - transform.position;
+        transform.forward = (Camera.main.transform.position - transform.position).normalized;
     }
 
     void SetImageValue()
@@ -59,7 +58,6 @@ public class Flag_UI : MonoBehaviour
 
     private void OnValidate()
     {
-        if (_flagOwner == null) return;
-        _flagOwner.color = _gradientFlag.Evaluate(SliderTest);
+      
     }
 }

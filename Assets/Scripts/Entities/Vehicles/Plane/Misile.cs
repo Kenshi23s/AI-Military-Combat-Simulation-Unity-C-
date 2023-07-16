@@ -15,6 +15,8 @@ public class Misile : Entity, IMilitary
 
     public MilitaryTeam Team { get; protected set; }
 
+    public bool InCombat => false;
+
     [SerializeField] ParticleHold explosionParticle;
     [SerializeField] ParticleHold explosionParticleonGround;
 
@@ -60,8 +62,10 @@ public class Misile : Entity, IMilitary
     public void ShootMisile(MisileStats newStats, Transform newTarget)
     {
         myStats = newStats;
+
         SetMovementStats();
         StartCoroutine(CountdownForExplosion());
+
         Team = newStats.Team;
         target = newTarget;
         transform.parent = null;
@@ -92,6 +96,8 @@ public class Misile : Entity, IMilitary
 
     void Explosion()
     {
+        //esto tendria que golpear a todos, pq si por ejemplo hay un civil en esa area
+        //chau, cago y muere
         var damagables = _gridEntity.GetEntitiesInRange(myStats.explosionRadius)
             .OfType<IMilitary>()
             .Where(x => x.Team != Team)
@@ -112,23 +118,18 @@ public class Misile : Entity, IMilitary
     }
     private void OnDestroy()
     {
-        if (_gridEntity.SpatialGrid!=null)
-        {
+        if (_gridEntity.SpatialGrid!=null)     
             _gridEntity.SpatialGrid.RemoveEntity(_gridEntity);
-        }
-    
+         
     }
 
     private void FixedUpdate()
     {
-        if (target==null)
-        {
-            _movement.AccelerateTowards(_movement.Forward);
-        }
+        if (target == null)       
+            _movement.AccelerateTowards(_movement.Forward);    
         else
-        {
             _movement.AccelerateTowardsTarget(target.transform.position);
-        }     
+          
     }
 
     private void OnDrawGizmos()

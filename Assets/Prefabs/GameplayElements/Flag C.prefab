@@ -686,7 +686,6 @@ GameObject:
   m_Component:
   - component: {fileID: 7439353184476601509}
   - component: {fileID: 7439353184476601514}
-  - component: {fileID: 7439353184476601515}
   - component: {fileID: 7439353184476601512}
   m_Layer: 0
   m_Name: Flag C
@@ -728,25 +727,6 @@ MonoBehaviour:
   gizmoDraw:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &7439353184476601515
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7439353184476601513}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d9c8b9bb2e7803e418e7eb18ca7d9b0f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _life: 100
-  _maxLife: 100
-  _dmgMultiplier: 1
-  dmgResist: 1
-  canTakeDamage: 1
-  canBeHealed: 1
-  isCrit: 0
 --- !u!114 &7439353184476601512
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -28,6 +28,8 @@ public abstract class Vehicle : Entity, IMilitary, FlockableEntity
 
     public MilitaryTeam Team { get; private set; }
 
+    public bool InCombat => throw new NotImplementedException();
+
     protected GridEntity _gridEntity;
 
     public abstract void VehicleAwake();

@@ -19,11 +19,12 @@ public interface IMilitary
 
 public interface IZoneEntity 
 {
-    void ZoneEnter() { }
-    void ZoneStay() { }
-    void ZoneExit() { }
+    void ZoneEnter(CapturePoint zone);
+    void ZoneStay(CapturePoint zone);
+    void ZoneExit(CapturePoint zone);
 
-    CapturePoint Zone { get; set; }
+    public bool CanCapture { get; }
+    CapturePoint Zone { get; }
     bool IsInZone => Zone != null;
 }
 

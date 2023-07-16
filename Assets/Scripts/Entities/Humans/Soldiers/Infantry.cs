@@ -19,7 +19,7 @@ public class Infantry : Soldier
         FIRE_AT_WILL
     }
     [field: SerializeField] public Transform Center { get; private set; }
-    public bool InCombat { get; private set; }
+   
 
 
     [SerializeField] Animator _anim;

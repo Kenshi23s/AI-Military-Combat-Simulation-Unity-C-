@@ -52,8 +52,7 @@ public class CapturePoint : MonoBehaviour
     {
         get
         {                  
-             return captureProgress / (ProgressRequiredForCapture * 2) + 0.5f;          
-               
+             return captureProgress / (ProgressRequiredForCapture * 2) + 0.5f;                   
         }
     }
         
@@ -105,11 +104,17 @@ public class CapturePoint : MonoBehaviour
             //{
 
             //}
+            //antes de la query
+            var BeforeQueryCol = _teamSplit.SelectMany(x => x.Value).ToArray();
+            yield return null;
 
             _teamSplit = ZoneQuery()
-                .Where(x => x.Team != MilitaryTeam.None)
+                .Where(x => x.CanCapture)
+                .OfType<IMilitary>()
+                .Where(x => x.Team != MilitaryTeam.None)                
                 .ToLookup(x => x.Team)
                 .ToDictionary(x => x.Key, x => x.ToArray());
+
 
             foreach (MilitaryTeam item in Enum.GetValues(typeof(MilitaryTeam)))
             {
@@ -117,10 +122,49 @@ public class CapturePoint : MonoBehaviour
                     _teamSplit[item] = new IMilitary[0];
             }
 
+            yield return null;
+            //despues de query
+            var AfterQueryCol = _teamSplit.SelectMany(x => x.Value).ToArray();
+
+            CheckWhoEntered(BeforeQueryCol, AfterQueryCol); yield return null;
+            CheckWhoStayed(BeforeQueryCol, AfterQueryCol);  yield return null;
+            CheckWhoExited(BeforeQueryCol, AfterQueryCol);  yield return null;
+
+
+
             onEntitiesAroundUpdate?.Invoke(_teamSplit);
             yield return new WaitForSeconds(_waitingTimeTilSearch);
         }    
     }
+
+    void CheckWhoEntered(IMilitary[] BeforeQuery, IMilitary[] afterQuery)
+    {
+        //donde despues de hacer la query hay nuevo
+        foreach (var item in afterQuery.Distinct().Where(x => !BeforeQuery.Contains(x)).OfType<IZoneEntity>())
+        {
+            item.ZoneEnter(this);
+        }
+    }
+
+    void CheckWhoStayed(IMilitary[] beforeQuery, IMilitary[] afterQuery)
+    {
+        //donde despues de hacer la query sigue estando la entidad
+        foreach (var item in beforeQuery.Distinct().Where(x => afterQuery.Contains(x)).OfType<IZoneEntity>())
+        {
+            item.ZoneStay(this);
+        }
+    }
+
+    void CheckWhoExited(IMilitary[] BeforeQuery, IMilitary[] afterQuery)
+    {
+        //donde despues de hacer la query, la entidad ya no esta
+        foreach (var item in BeforeQuery.Distinct().Where(x => !afterQuery.Contains(x)).OfType<IZoneEntity>())
+        {
+            item.ZoneExit(this);
+        }
+    }
+
+
 
     private void Update()
     {
@@ -203,7 +247,7 @@ public class CapturePoint : MonoBehaviour
 
     }
 
-    IEnumerable<IMilitary> ZoneQuery() 
+    IEnumerable<IZoneEntity> ZoneQuery() 
     {
         //creo una "caja" con las dimensiones deseadas, y luego filtro segun distancia para formar el círculo
         var col = _targetGrid.Query(
@@ -215,8 +259,8 @@ public class CapturePoint : MonoBehaviour
                 return distance.sqrMagnitude < _zoneRadius * _zoneRadius;
             });
 
-        Debug.Log("zone query entities: " + col.Select(x => x.Owner).OfType<IMilitary>().ToList().Count);
-        return col.Select(x => x.Owner).OfType<IMilitary>();
+        Debug.Log("zone query entities: " + col.Select(x => x.Owner).OfType<IZoneEntity>().ToList().Count);
+        return col.Select(x => x.Owner).OfType<IZoneEntity>();
     }
 
     public static void DrawCylinder(Vector3 position, Quaternion orientation, float height, float radius, bool drawFromBase = true)
