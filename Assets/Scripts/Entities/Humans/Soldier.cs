@@ -28,7 +28,7 @@ public abstract class Soldier : Human, IMilitary , IZoneEntity
         SoldierAwake();
     }
 
-    protected virtual void SoldierAwake() { }
+    protected abstract void SoldierAwake();
 
 
     public void ZoneEnter(CapturePoint _zone)

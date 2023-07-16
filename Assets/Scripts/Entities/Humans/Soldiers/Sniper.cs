@@ -15,7 +15,7 @@ public class Sniper : Soldier
 
         LOOK_FOR_TARGETS,
         AIM,
-        SHOOT,
+        FOCUS_N_SHOOT,
         DIE
     }
 
@@ -35,21 +35,23 @@ public class Sniper : Soldier
     int timesFocused = 1;
     [SerializeField] float _addPerTimesFocused;
 
-    protected override void EntityAwake()
+   
+    protected override void SoldierAwake()
     {
+       
         base.EntityAwake();
         _shootComponent = GetComponent<ShootComponent>();
         _fovAgent = GetComponent<FOVAgent>();
         _laser = GetComponent<LineRenderer>();
         _laser.enabled = false;
-
+        CreateFSM();
     }
 
     void CreateFSM()
     {
         var lookEnemies = LookForEnemies();
         var aimEnemy = AimAtEnemy();
-        var shootAtEnemy = ShootAtEnemy();
+        var focus_n_shoot = ShootAtEnemy();
         var die = Die();
 
         StateConfigurer.Create(lookEnemies)
@@ -58,12 +60,21 @@ public class Sniper : Soldier
 
         StateConfigurer.Create(aimEnemy)
            .SetTransition(SNIPER_STATES.LOOK_FOR_TARGETS, lookEnemies)
-           .SetTransition(SNIPER_STATES.SHOOT, shootAtEnemy)
+           .SetTransition(SNIPER_STATES.FOCUS_N_SHOOT, focus_n_shoot)
+           .SetTransition(SNIPER_STATES.DIE, die)
+           .Done();
+
+
+        StateConfigurer.Create(focus_n_shoot)
+           .SetTransition(SNIPER_STATES.AIM, aimEnemy)
+           .SetTransition(SNIPER_STATES.LOOK_FOR_TARGETS, lookEnemies)
            .SetTransition(SNIPER_STATES.DIE, die)
            .Done();
 
         StateConfigurer.Create(die)
             .Done();
+
+        _fsm = new EventFSM<SNIPER_STATES>(lookEnemies);
     }
 
 

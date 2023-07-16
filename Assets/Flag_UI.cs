@@ -43,19 +43,7 @@ public class Flag_UI : MonoBehaviour
             TeamTexts[key].text = col[key].Length.ToString();
         }
     }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
+  
     private void OnValidate()
     {
       

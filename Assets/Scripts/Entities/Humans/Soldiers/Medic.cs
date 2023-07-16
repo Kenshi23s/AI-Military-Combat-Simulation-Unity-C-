@@ -34,7 +34,8 @@ public class Medic : Soldier
 
     State<MedicInputs> _idle, _followLeader, _runTo, _shoot, _heal, _die;
 
-    private void Awake()
+
+    protected override void SoldierAwake()
     {
         _anim = GetComponent<Animator>();
 
@@ -46,7 +47,6 @@ public class Medic : Soldier
         _die = CreateDieState();
 
         ConfigureTransitions();
-
 
     }
 
@@ -287,6 +287,8 @@ public class Medic : Soldier
     private void FixedUpdate() => _fsm.FixedUpdate();
 
     private void SendInputToFSM(MedicInputs inp) => _fsm.SendInput(inp);
+
+    
 }
 
    
