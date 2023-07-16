@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using IA2;
 using System;
+using System.Linq;
 
 [RequireComponent(typeof(NewAIMovement))]
 [RequireComponent(typeof(FOVAgent))]
-public class Medic : GridEntity
+public class Medic : Soldier
 {
     public enum MedicInputs
     {
@@ -49,7 +50,7 @@ public class Medic : GridEntity
 
     }
 
-    public override void GridEntityStart()
+    void Start()
     {
         _fsm = new EventFSM<MedicInputs>(_idle);
     }
@@ -238,7 +239,46 @@ public class Medic : GridEntity
             .SetTransition(MedicInputs.DIE, _die)
             .Done();
 
+        StateConfigurer.Create(_heal)
+            .SetTransition(MedicInputs.RUN_TO, _runTo)
+            .SetTransition(MedicInputs.FOLLOW_LEADER, _followLeader)
+            .SetTransition(MedicInputs.IDLE, _idle)
+            .SetTransition(MedicInputs.DIE, _die)
+            .Done();
+
         StateConfigurer.Create(_die).Done();
+    }
+
+
+    float _scanForShootTargetsTime = 1f, _scanForHealTargetsTime = 1f;
+
+    IEnumerator ScanForShootTargets()
+    {
+        while (true)
+        {
+            var z = _gridEntity.GetEntitiesInRange(_fov.viewRadius)
+               .Where(x => _fov.IN_FOV(x.transform.position))
+               .OfType<IMilitary>()
+               .Where(x => x.Team != Team);
+
+            if (z.Any()) _fsm.SendInput(MedicInputs.SHOOT);
+
+            yield return new WaitForSeconds(_scanForShootTargetsTime);
+        }
+    }
+
+    IEnumerator ScanForHealTargets()
+    {
+        while (true)
+        {
+            var z = _gridEntity.GetEntitiesInRange(_fov.viewRadius)
+               .OfType<IMilitary>()
+               .Where(x => x.Team == Team);
+
+            if (z.Any()) _fsm.SendInput(MedicInputs.RUN_TO);
+
+            yield return new WaitForSeconds(_scanForHealTargetsTime);
+        }
     }
 
     // Update is called once per frame

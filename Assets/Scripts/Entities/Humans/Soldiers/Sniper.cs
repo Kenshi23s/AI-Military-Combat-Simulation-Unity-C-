@@ -4,11 +4,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+
 [RequireComponent(typeof(ShootComponent))]
 [RequireComponent(typeof(FOVAgent))]
 [RequireComponent(typeof(LineRenderer))]
-
-public class Sniper : GridEntity, InitializeUnit
+public class Sniper : Soldier
 {
     public enum SNIPER_STATES
     {
@@ -27,9 +27,9 @@ public class Sniper : GridEntity, InitializeUnit
     [SerializeField] Transform _shootPos;
     FOVAgent _fovAgent;
     LineRenderer _laser;
-    public GridEntity target { get; private set; }
+    public Soldier target { get; private set; }
 
-    [SerializeField] int FramesBetweenSearch = 4 ,maxShootsInRow = 1;
+    [SerializeField] int FramesBetweenSearch = 4, maxShootsInRow = 1;
     [SerializeField] float _requiredFocusTime, _aimSpeed;
     float _currentAimLerp, _currentFocusTime;
     int timesFocused = 1;
@@ -45,35 +45,25 @@ public class Sniper : GridEntity, InitializeUnit
 
     }
 
-    public override void GridEntityStart()
-    {
-
-    }
-
     void CreateFSM()
     {
-
         var lookEnemies = LookForEnemies();
         var aimEnemy = AimAtEnemy();
         var shootAtEnemy = ShootAtEnemy();
         var die = Die();
 
         StateConfigurer.Create(lookEnemies)
-            .SetTransition(SNIPER_STATES.AIM,aimEnemy)
+            .SetTransition(SNIPER_STATES.AIM, aimEnemy)
             .Done();
 
         StateConfigurer.Create(aimEnemy)
            .SetTransition(SNIPER_STATES.LOOK_FOR_TARGETS, lookEnemies)
            .SetTransition(SNIPER_STATES.SHOOT, shootAtEnemy)
-           .SetTransition(SNIPER_STATES.DIE,die)
+           .SetTransition(SNIPER_STATES.DIE, die)
            .Done();
-
-
-
 
         StateConfigurer.Create(die)
             .Done();
-
     }
 
 
@@ -100,13 +90,13 @@ public class Sniper : GridEntity, InitializeUnit
         return state;
     }
 
-    GridEntity GetFurthestEnemy()
+    Soldier GetFurthestEnemy()
     {
-        return GetEntitiesInRange(_fovAgent.viewRadius)
-            .Where(x => x.MyTeam != MyTeam && x.MyTeam != Team.None)
-            .NotOfType<GridEntity,Vehicle>()
+        return _gridEntity.GetEntitiesInRange(_fovAgent.viewRadius)
+            .OfType<Soldier>()
+            .Where(x => x.Team != Team && x.Team != MilitaryTeam.None)
             .Where(x => _fovAgent.IN_FOV(x.transform.position))
-            .Maximum(x => Vector3.Distance(x.transform.position, transform.position));
+            .Maximum(x => Vector3.SqrMagnitude(x.transform.position - transform.position));
     }
 
     IEnumerator LookForEnemiesCoroutine()
@@ -145,11 +135,11 @@ public class Sniper : GridEntity, InitializeUnit
             {
                 _currentAimLerp += Time.deltaTime * _aimSpeed;
                 Vector3 aux = Vector3.Slerp(transform.forward, dir.normalized, _currentAimLerp);
-                transform.forward= new Vector3(aux.x ,transform.forward.y, aux.z);
+                transform.forward = new Vector3(aux.x, transform.forward.y, aux.z);
                 return;
             }
-           
-            
+
+
             _currentAimLerp = 1;
             transform.forward = dir.normalized;
             _currentFocusTime += Time.deltaTime;
@@ -158,8 +148,8 @@ public class Sniper : GridEntity, InitializeUnit
 
             }
 
-            
-            
+
+
 
 
         };
@@ -176,17 +166,19 @@ public class Sniper : GridEntity, InitializeUnit
             if (target == null) _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
             _currentFocusTime = 0;
             timesFocused = 1;
+
         };
-  
+
         state.OnUpdate += () =>
         {
-            
             if (!_fovAgent.IN_FOV(target.transform.position) || !target.Health.isAlive) _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
 
             Vector3 dir = target.transform.position - transform.position;
          
             transform.forward = dir.normalized;
-            _currentFocusTime += Time.deltaTime * (_addPerTimesFocused * timesFocused );
+
+            _currentFocusTime += Time.deltaTime * (_addPerTimesFocused * timesFocused);
+
             if (_currentFocusTime >= _requiredFocusTime)
             {
                 _currentFocusTime = 0;
@@ -196,7 +188,6 @@ public class Sniper : GridEntity, InitializeUnit
                 if (timesFocused > maxShootsInRow) _fsm.SendInput(SNIPER_STATES.AIM);
             }
         };
-
 
         state.OnExit += (x) =>
         {
@@ -219,7 +210,6 @@ public class Sniper : GridEntity, InitializeUnit
         return state;
     }
 
-
     void ActivateLaser()
     {
          if (target == null) return;
@@ -228,8 +218,8 @@ public class Sniper : GridEntity, InitializeUnit
          _laser.SetPosition(1, target.transform.position);
     }
 
-    public void InitializeUnit(Team newTeam)
+    public void InitializeUnit(MilitaryTeam newTeam)
     {
-        MyTeam = newTeam;
+        Team = newTeam;
     }
 }

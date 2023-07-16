@@ -8,19 +8,19 @@ using UnityEngine;
 
 public class CapturePointManager : MonoSingleton<CapturePointManager> 
 {
-    Dictionary<Team,List<CapturePoint>> _capturePoints = new Dictionary<Team, List<CapturePoint>>();
+    Dictionary<MilitaryTeam, List<CapturePoint>> _capturePoints = new Dictionary<MilitaryTeam, List<CapturePoint>>();
 
-    public ReadOnlyDictionary<Team, List<CapturePoint>> CapturePoints;
+    public ReadOnlyDictionary<MilitaryTeam, List<CapturePoint>> CapturePoints;
 
     protected override void SingletonAwake()
     {
-        foreach (Team key in Enum.GetValues(typeof(Team))) _capturePoints.Add(key, new List<CapturePoint>());
+        foreach (MilitaryTeam key in Enum.GetValues(typeof(MilitaryTeam))) _capturePoints.Add(key, new List<CapturePoint>());
 
-        CapturePoints =  new ReadOnlyDictionary<Team,List<CapturePoint>>(_capturePoints);
+        CapturePoints =  new ReadOnlyDictionary<MilitaryTeam, List<CapturePoint>>(_capturePoints);
     }
     public void AddZone(CapturePoint newZone)
     {
-        foreach (Team key in _capturePoints.Keys)        
+        foreach (MilitaryTeam key in _capturePoints.Keys)        
             if (_capturePoints[key].Contains(newZone))          
                 return;
 
@@ -30,7 +30,7 @@ public class CapturePointManager : MonoSingleton<CapturePointManager>
 
     public void ChangeKeyInDictionary(CapturePoint point)
     {
-        foreach (Team key in _capturePoints.Keys.Where(x => point.takenBy != x))       
+        foreach (MilitaryTeam key in _capturePoints.Keys.Where(x => point.takenBy != x))       
           if (_capturePoints[key].Contains(point))
           {
               _capturePoints[key].Remove(point);
@@ -41,12 +41,12 @@ public class CapturePointManager : MonoSingleton<CapturePointManager>
         
     }
 
-    public Team WhosWinning()
+    public MilitaryTeam WhosWinning()
     {      
-        if (_capturePoints[Team.Red].Count > _capturePoints[Team.Blue].Count)  return Team.Red;
+        if (_capturePoints[MilitaryTeam.Red].Count > _capturePoints[MilitaryTeam.Blue].Count)  return MilitaryTeam.Red;
 
-        if (_capturePoints[Team.Red].Count < _capturePoints[Team.Blue].Count)  return Team.Blue;
+        if (_capturePoints[MilitaryTeam.Red].Count < _capturePoints[MilitaryTeam.Blue].Count)  return MilitaryTeam.Blue;
 
-        return Team.None;
+        return MilitaryTeam.None;
     }   
 }

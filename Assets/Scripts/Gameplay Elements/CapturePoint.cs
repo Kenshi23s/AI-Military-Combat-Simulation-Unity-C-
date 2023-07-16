@@ -25,9 +25,9 @@ public class CapturePoint : MonoBehaviour
 
     public UnityEvent onProgressChange;
 
-    public UnityEvent<Dictionary<Team, Entity[]>> onEntitiesAroundUpdate;
+    public UnityEvent<Dictionary<MilitaryTeam, IMilitary[]>> onEntitiesAroundUpdate;
 
-    public event Action<Team> onCaptureComplete;
+    public event Action<MilitaryTeam> onCaptureComplete;
     #endregion
 
     public float TakeProgress { get; private set; }
@@ -60,13 +60,13 @@ public class CapturePoint : MonoBehaviour
   
     public ZoneStates CurrentCaptureState { get; private set; }
     
-    public Team takenBy = Team.None;
-    public Team beingTakenBy { get; private set; }
+    public MilitaryTeam takenBy = MilitaryTeam.None;
+    public MilitaryTeam beingTakenBy { get; private set; }
 
-    Dictionary<Team, Entity[]> _teamSplit = new Dictionary<Team, Entity[]> 
+    Dictionary<MilitaryTeam, IMilitary[]> _teamSplit = new Dictionary<MilitaryTeam, IMilitary[]> 
     {
-        [Team.Blue] = new Entity[0],
-        [Team.Red]  = new Entity[0]
+        [MilitaryTeam.Blue] = new IMilitary[0],
+        [MilitaryTeam.Red]  = new IMilitary[0]
     };
 
     void Awake()
@@ -94,19 +94,28 @@ public class CapturePoint : MonoBehaviour
             //si pasan el predicado, accedo a esos items con [true] y si no
             //accedo a los otros items con [false]
 
+            //var entitiesInZone = ZoneQuery()
+            //    .OfType<IMilitary>()
+            //    .Where(x => x.Team != MilitaryTeam.None)
+            //    .ToLookup(x => x.Team)
+            //    .ToDictionary(x => x.Key, x => x.ToArray());
+
+
+            //foreach (var item in _teamSplit.Where(x => !entitiesInZone.Contains(x)))
+            //{
+
+            //}
+
             _teamSplit = ZoneQuery()
-                .OfType<Entity>()
-                .Where(x => x.MyTeam != Team.None)
-                .ToLookup(x => x.MyTeam)
+                .Where(x => x.Team != MilitaryTeam.None)
+                .ToLookup(x => x.Team)
                 .ToDictionary(x => x.Key, x => x.ToArray());
 
-            foreach (Team item in Enum.GetValues(typeof(Team)))
+            foreach (MilitaryTeam item in Enum.GetValues(typeof(MilitaryTeam)))
             {
                 if (!_teamSplit.ContainsKey(item))
-                    _teamSplit[item] = new Entity[0];
+                    _teamSplit[item] = new IMilitary[0];
             }
-
-
 
             onEntitiesAroundUpdate?.Invoke(_teamSplit);
             yield return new WaitForSeconds(_waitingTimeTilSearch);
@@ -115,7 +124,7 @@ public class CapturePoint : MonoBehaviour
 
     private void Update()
     {
-        if (!_teamSplit[Team.Red].Any() && !_teamSplit[Team.Blue].Any())
+        if (!_teamSplit[MilitaryTeam.Red].Any() && !_teamSplit[MilitaryTeam.Blue].Any())
         {
             _debug.Log("No hay unidades en el area");
             return;
@@ -123,7 +132,7 @@ public class CapturePoint : MonoBehaviour
 
 
         //rojo                    
-        if (_teamSplit[Team.Red].Any() && _teamSplit[Team.Blue].Any())
+        if (_teamSplit[MilitaryTeam.Red].Any() && _teamSplit[MilitaryTeam.Blue].Any())
         {
             CurrentCaptureState = ZoneStates.Disputed;
             _debug.Log("Esta en disputa, hay unidades de ambos equipos");
@@ -132,17 +141,17 @@ public class CapturePoint : MonoBehaviour
 
         string debug = "Esta siendo tomada por el equipo";
 
-        if (_teamSplit[Team.Red].Any() && takenBy != Team.Red)
+        if (_teamSplit[MilitaryTeam.Red].Any() && takenBy != MilitaryTeam.Red)
         {
             debug += " rojo";
-            CaptureProgress += Time.deltaTime * _teamSplit[Team.Red].Count();
-            beingTakenBy = Team.Red;
+            CaptureProgress += Time.deltaTime * _teamSplit[MilitaryTeam.Red].Count();
+            beingTakenBy = MilitaryTeam.Red;
         }
-        else if (_teamSplit[Team.Blue].Any() && takenBy != Team.Blue)
+        else if (_teamSplit[MilitaryTeam.Blue].Any() && takenBy != MilitaryTeam.Blue)
         {
             debug += " azul";
-            CaptureProgress -= Time.deltaTime * _teamSplit[Team.Blue].Count();
-            beingTakenBy = Team.Blue;
+            CaptureProgress -= Time.deltaTime * _teamSplit[MilitaryTeam.Blue].Count();
+            beingTakenBy = MilitaryTeam.Blue;
         }
         debug += $" el progreso es de {captureProgress}";
         _debug.Log(debug);
@@ -158,28 +167,28 @@ public class CapturePoint : MonoBehaviour
 
         switch (beingTakenBy)
         {
-            case Team.Red:
-                if (captureProgress >= ProgressRequiredForCapture && takenBy != Team.Red )
+            case MilitaryTeam.Red:
+                if (captureProgress >= ProgressRequiredForCapture && takenBy != MilitaryTeam.Red )
                 {
                     Debug.Log("tomada por el rojo, invoco evento de captura completada");
-                    takenBy = Team.Red;
+                    takenBy = MilitaryTeam.Red;
                     onCaptureComplete?.Invoke(takenBy);
                     onCaptureComplete = delegate { };
                 }
                     
                 break;
-            case Team.Blue:
-                if (captureProgress <= -ProgressRequiredForCapture && takenBy != Team.Blue)
+            case MilitaryTeam.Blue:
+                if (captureProgress <= -ProgressRequiredForCapture && takenBy != MilitaryTeam.Blue)
                 {
                     Debug.Log("tomada por el rojo, invoco evento de captura completada");
-                    takenBy = Team.Blue;
+                    takenBy = MilitaryTeam.Blue;
                     onCaptureComplete?.Invoke(takenBy);
                     onCaptureComplete = delegate { };
                 }
                     
                 break;
             default:
-                takenBy = Team.None;
+                takenBy = MilitaryTeam.None;
                 break;
         }
 
@@ -194,10 +203,10 @@ public class CapturePoint : MonoBehaviour
 
     }
 
-    IEnumerable<GridEntity> ZoneQuery() 
+    IEnumerable<IMilitary> ZoneQuery() 
     {
         //creo una "caja" con las dimensiones deseadas, y luego filtro segun distancia para formar el círculo
-        return _targetGrid.Query(
+        var col = _targetGrid.Query(
             transform.position + new Vector3(-_zoneRadius, 0, -_zoneRadius),
             transform.position + new Vector3(_zoneRadius, _zoneHeight, _zoneRadius),
             pos => {
@@ -205,6 +214,9 @@ public class CapturePoint : MonoBehaviour
                 distance.y = transform.position.y;
                 return distance.sqrMagnitude < _zoneRadius * _zoneRadius;
             });
+
+        Debug.Log("zone query entities: " + col.Select(x => x.Owner).OfType<IMilitary>().ToList().Count);
+        return col.Select(x => x.Owner).OfType<IMilitary>();
     }
 
     public static void DrawCylinder(Vector3 position, Quaternion orientation, float height, float radius, bool drawFromBase = true)

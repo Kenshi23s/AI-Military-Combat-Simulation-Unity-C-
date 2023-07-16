@@ -77,8 +77,9 @@ GameObject:
   - component: {fileID: 6565769872705145565}
   - component: {fileID: 6565769872705145567}
   - component: {fileID: 6565769872705145560}
-  - component: {fileID: 6565769872705145561}
   - component: {fileID: 3740303564570812394}
+  - component: {fileID: 2175713129737121038}
+  - component: {fileID: 191271609524376827}
   m_Layer: 8
   m_Name: Plane
   m_TagString: Untagged
@@ -221,51 +222,6 @@ MonoBehaviour:
   canTakeDamage: 1
   canBeHealed: 1
   isCrit: 0
---- !u!114 &6565769872705145561
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6565769872705145562}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9fbd691dbdc1a14e940b0d8a717d5ec, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  <MyTeam>k__BackingField: 0
-  onGrid: 1
-  flockingParameters:
-    AlignmentForce: 1.29
-    _separationForce: 1.39
-    _cohesionForce: 1.44
-  sightRadius: 80
-  _loseSightRadius: 100.3
-  vehicleSeats: []
-  EngineOn: 1
-  targetPlane: {fileID: 0}
-  beingChasedBy: {fileID: 0}
-  _cd_OnRandomDir: 4
-  _unitsBehindPlane: 30
-  _collisionCheckDistance: 80
-  misilePos:
-  - {fileID: 5285789855417990210}
-  - {fileID: 3355421752814213245}
-  misileStats:
-    myTeam: 0
-    acceleration: 25
-    maxSpeed: 50
-    rotationSpeed: 180
-    timeBeforeExplosion: 20
-    damage: 15
-    explosionRadius: 30
-    initialVelocity: {x: 0, y: 0, z: 0}
-  misileCD: 2
-  minimumDistanceForStrike: 23
-  bulletsPerBurst: 3
-  burstCD: 1.5
-  BulletCD: 0.3
-  shootPos: {fileID: 9083171063329367226}
 --- !u!65 &3740303564570812394
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -279,6 +235,59 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 4.8147492, y: 1.8005848, z: 3.921864}
   m_Center: {x: -0.14513516, y: -0.4002924, z: -1.460932}
+--- !u!114 &2175713129737121038
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6565769872705145562}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac49b2b6d50c7a749bea4d8294713dac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OnGrid: 0
+--- !u!114 &191271609524376827
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6565769872705145562}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9fbd691dbdc1a14e940b0d8a717d5ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _flockingParameters:
+    AlignmentForce: 2.5
+    _separationForce: 0.6
+    _cohesionForce: 1.9
+  _sightRadius: 80
+  _loseSightRadius: 100.3
+  targetPlane: {fileID: 0}
+  beingChasedBy: {fileID: 0}
+  _cd_OnRandomDir: 4
+  _unitsBehindPlane: 30
+  _collisionCheckDistance: 80
+  misilePos:
+  - {fileID: 5285789855417990210}
+  - {fileID: 3355421752814213245}
+  misileStats:
+    Team: 0
+    acceleration: 25
+    maxSpeed: 50
+    timeBeforeExplosion: 20
+    damage: 15
+    explosionRadius: 30
+    initialVelocity: {x: 0, y: 0, z: 0}
+  misileCD: 2
+  minimumDistanceForStrike: 23
+  bulletsPerBurst: 3
+  burstCD: 1.5
+  BulletCD: 0.3
+  shootPos: {fileID: 9083171063329367226}
 --- !u!1 &8780625543234975819
 GameObject:
   m_ObjectHideFlags: 0

@@ -15,24 +15,30 @@ public struct Seat
 
 [RequireComponent(typeof(NewPhysicsMovement))]
 [RequireComponent(typeof(FOVAgent))]
-public abstract class Vehicle : GridEntity, FlockableEntity
+[RequireComponent(typeof(GridEntity))]
+public abstract class Vehicle : Entity, IMilitary, FlockableEntity
 {
 
     [SerializeField,Header("Vehicle Variables")] 
-    protected FlockingParameters flockingParameters;
-    [SerializeField] protected float sightRadius;
+    protected FlockingParameters _flockingParameters;
+    [SerializeField] protected float _sightRadius;
     [SerializeField] protected float _loseSightRadius;
     protected FOVAgent _fov;
     protected NewPhysicsMovement _movement;
-   
+
+    public MilitaryTeam Team { get; private set; }
+
+    protected GridEntity _gridEntity;
 
     public abstract void VehicleAwake();
 
+    
     protected override void EntityAwake()
     {
+        _gridEntity = GetComponent<GridEntity>();
         _movement = GetComponent<NewPhysicsMovement>();
         _fov = GetComponent<FOVAgent>();
-        flockingParameters.myTransform = transform;
+        _flockingParameters.myTransform = transform;
         VehicleAwake();
     }
 
@@ -106,13 +112,13 @@ public abstract class Vehicle : GridEntity, FlockableEntity
 
     private void OnValidate()
     {
-        sightRadius = Mathf.Clamp(sightRadius, 0, Mathf.Infinity);
-        _loseSightRadius = Mathf.Clamp(_loseSightRadius, sightRadius, Mathf.Infinity);
-        GetComponent<FOVAgent>().SetFov(sightRadius);
+        _sightRadius = Mathf.Clamp(_sightRadius, 0, Mathf.Infinity);
+        _loseSightRadius = Mathf.Clamp(_loseSightRadius, _sightRadius, Mathf.Infinity);
+        GetComponent<FOVAgent>().SetFov(_sightRadius);
     }
-    public void Initialize(Team newTeam)
+    public void Initialize(MilitaryTeam newTeam)
     {
-        MyTeam = newTeam;
+        Team = newTeam;
     }
 
     public Vector3 GetPosition()

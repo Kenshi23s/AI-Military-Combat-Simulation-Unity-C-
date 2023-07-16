@@ -69,9 +69,9 @@ public class Plane : Vehicle
 
 
     #region UnityCalls
-    public override void GridEntityStart()
+    void Start()
     {
-        Vector3 dir = SpatialGrid.GetMidleOfGrid() - transform.position;
+        Vector3 dir = _gridEntity.SpatialGrid.GetMidleOfGrid() - transform.position;
         transform.forward = new Vector3(dir.x, 0, 0);
         _planeFSM = CreateFSM();
     }
@@ -158,7 +158,7 @@ public class Plane : Vehicle
     /// <returns></returns>
     IEnumerable<Plane> GetNearbyPlanes()
     {
-        var z = GetEntitiesInRange(_fov.viewRadius)
+        var z = _gridEntity.GetEntitiesInRange(_fov.viewRadius)
             .OfType<Plane>()
             .Where(x => x != this)
             .Where(x => x._planeFSM.CurrentKey != PlaneStates.ABANDONED);
@@ -223,7 +223,7 @@ public class Plane : Vehicle
                 return _fov.IN_FOV(x.transform.position,PlanesManager.instance.groundMask);
 
             })
-            .Where(x => x.MyTeam != MyTeam);
+            .Where(x => x.Team != Team);
             if (col.Any())
             {
                 DebugEntity.Log($"Aviones enemigos a la vista, elijo el mas cercano de{col.Count()}");
@@ -238,23 +238,23 @@ public class Plane : Vehicle
         {
             Vector3 dir = Vector3.zero;
             //agarro los aviones mas cercanos de mi equipo
-            var col = GetNearbyPlanes().Where(x => x.MyTeam == MyTeam).Where(x => x != this);
+            var col = GetNearbyPlanes().Where(x => x.Team == Team).Where(x => x != this);
 
             //si hay alguno y estoy en zona de combate, hago flocking
-            if (col.Any() && OnGrid)
+            if (col.Any() && _gridEntity.OnGrid)
             {
                 var endPromise = col.ToArray();
-                dir += endPromise.Flocking(flockingParameters);
+                dir += endPromise.Flocking(_flockingParameters);
                 
                 DebugEntity.Log($"hago flocking con {endPromise.Length} aviones aliados");
             }
                 
-            else if (!OnGrid)
+            else if (!_gridEntity.OnGrid)
             {
                 DebugEntity.Log("No estoy en la grilla, me pego la vuelta hacia alla");
 
                 //sino estoy en zona de combate me pego la vuelta
-                Vector3 dirToCenter = SpatialGrid.GetMidleOfGrid() - transform.position;
+                Vector3 dirToCenter = _gridEntity.SpatialGrid.GetMidleOfGrid() - transform.position;
                 dir += dirToCenter.normalized;
             }
 
@@ -325,9 +325,9 @@ public class Plane : Vehicle
 
             dir += (targetPos - transform.position).normalized;
 
-            if (!OnGrid)
+            if (!_gridEntity.OnGrid)
             {
-                Vector3 dirToCenter = SpatialGrid.GetMidleOfGrid() - transform.position;
+                Vector3 dirToCenter = _gridEntity.SpatialGrid.GetMidleOfGrid() - transform.position;
                 Debug.Log("no estoy en la grilla, voy hacia ella");
                 dir += dirToCenter.normalized;
             }
@@ -379,12 +379,12 @@ public class Plane : Vehicle
             dir += beingChasedBy.Evade();
             dir += _evadingDir;
 
-            if (!OnGrid)
+            if (!_gridEntity.OnGrid)
             {
                 DebugEntity.Log("No estoy en la grilla, me pego la vuelta hacia alla");
 
                 //sino estoy en zona de combate me pego la vuelta
-                Vector3 dirToCenter = SpatialGrid.GetMidleOfGrid() - transform.position;
+                Vector3 dirToCenter = _gridEntity.SpatialGrid.GetMidleOfGrid() - transform.position;
                 dir += dirToCenter.normalized;
             }
 

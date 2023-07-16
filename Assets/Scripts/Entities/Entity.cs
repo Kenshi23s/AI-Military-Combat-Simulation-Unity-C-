@@ -6,8 +6,6 @@ using UnityEngine;
 [RequireComponent(typeof(DebugableObject))]
 public abstract class Entity : MonoBehaviour
 {
-
-    [field : SerializeField] public Team MyTeam { get; protected set; }
     public LifeComponent Health { get; private set; }
     public DebugableObject DebugEntity { get; private set; }
     public bool IsCapturing { get; private set; }

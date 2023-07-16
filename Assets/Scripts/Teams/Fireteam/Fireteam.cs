@@ -9,9 +9,9 @@ using static UnityEditor.Progress;
 public class Fireteam
 {
 
-    public Fireteam(Team newTeam, List<Infantry> members)
+    public Fireteam(MilitaryTeam newTeam, List<Infantry> members)
     {
-        MyTeam = newTeam;
+        Team = newTeam;
 
         AddMember(members);
 
@@ -33,7 +33,7 @@ public class Fireteam
    
     public Infantry Leader { get; private set; }
 
-    public Team MyTeam { get; private set; }
+    public MilitaryTeam Team { get; private set; }
  
    
 
@@ -74,14 +74,14 @@ public class Fireteam
     public IEnumerator LookForNearestZone()
     {
         //obtengo mis zonas en disputa
-        var disputedMine = CapturePointManager.instance.CapturePoints.Where(x => x.Key == MyTeam)
+        var disputedMine = CapturePointManager.instance.CapturePoints.Where(x => x.Key == Team)
             .SelectMany(x => x.Value)
             .Where(x => x.CurrentCaptureState == CapturePoint.ZoneStates.Disputed)
             .Select(x => x);
         yield return null;
         //y las zonas del enemigo y neutrales
         var enemyZones = CapturePointManager.instance.CapturePoints
-            .Where(x => x.Key != MyTeam)
+            .Where(x => x.Key != Team)
             .SelectMany(x => x.Value)
             .Select(x => x);
         yield return null;
@@ -95,7 +95,7 @@ public class Fireteam
         
         nearestZone.onCaptureComplete += (captureBy) =>
         {
-            if (captureBy != MyTeam) return;
+            if (captureBy != Team) return;
 
             Leader.WaitOrdersTransition();
             foreach (var unit in _fireteamMembers.Where(x => x != Leader))           
@@ -126,7 +126,7 @@ public class Fireteam
     #region GetMethods
     public IEnumerable<Mechanic> GetMechanics() => _fireteamMembers.OfType<Mechanic>();
 
-    public IEnumerable<Medic> GetMedics() => _fireteamMembers.Select(x => x as GridEntity).OfType<Medic>();
+    public IEnumerable<Medic> GetMedics() => _fireteamMembers.OfType<Medic>();
     #endregion
 
     #region UsefulQuestions
@@ -134,7 +134,7 @@ public class Fireteam
     public bool AlliesWithEnemiesNearby(Entity whoAsks,out Entity neartestInDanger)
     {
         neartestInDanger = null;
-        var col = FireteamMembers.Where(x => x != whoAsks).Where(x => x.GetEntitiesAround().Any(x => x.Health.isAlive && x.MyTeam != MyTeam));
+        var col = FireteamMembers.Where(x => x != whoAsks).Where(x => x.GetMilitaryAround().Any(x => x.Health.isAlive && x.Team != Team));
         //si tiene algun aliado de la escuadra que no sea el con enemigo cerca que tengan vida
         if (col.Any())
         {
@@ -173,7 +173,7 @@ public class Fireteam
      
      
         //si hay un avion cercano para bombardeo
-        var planes = TeamsManager.instance.GetTeamPlanes(MyTeam).Where(x => x.actualState == PlaneStates.FLY_AROUND);
+        var planes = TeamsManager.instance.GetTeamPlanes(Team).Where(x => x.actualState == PlaneStates.FLY_AROUND);
         if (planes.Any())
         {       //lo pido
             _debug += ",hay un avion esta disponible, viene a bombardear!";
@@ -183,7 +183,7 @@ public class Fireteam
                   
         //sino, pido apoyo a alguna escuadra que no este en combate
         var nearestFireteam = TeamsManager.instance
-            .GetAllyFireteams(MyTeam)
+            .GetAllyFireteams(Team)
             .Where(x => !x.FireteamInCombat())
             .Minimum(x => Vector3.Distance(x.Leader.transform.position,Leader.transform.position));
         if (nearestFireteam != null)
@@ -207,7 +207,7 @@ public class Fireteam
         
         foreach (var item in FireteamMembers.Where(x => x != Leader))
         {
-            Gizmos.color = MyTeam == Team.Red ? Color.red : Color.blue;
+            Gizmos.color = Team == MilitaryTeam.Red ? Color.red : Color.blue;
             Gizmos.DrawLine(Leader.transform.position,item.transform.position);
         }
    }

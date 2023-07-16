@@ -3,12 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+
 [RequireComponent(typeof(NewAIMovement))]
 [RequireComponent(typeof(FOVAgent))]
 [RequireComponent(typeof(ShootComponent))]
-[RequireComponent(typeof(DebugableObject))]
 [SelectionBase]
-public class Infantry : GridEntity, InitializeUnit
+public class Infantry : Soldier
 {
     public enum INFANTRY_STATES
     {
@@ -43,14 +43,14 @@ public class Infantry : GridEntity, InitializeUnit
     [field: SerializeField] public float MinDistanceFromDestination { get; private set; }
 
  
-    public void InitializeUnit(Team newTeam)
+    public void InitializeUnit(MilitaryTeam newTeam)
     {     
-        MyTeam = newTeam;
+        Team = newTeam;
         SetFSM();
         InCombat = false;
     }
 
-    public override void GridEntityStart()
+    void Start()
     {
         Health.OnTakeDamage += (x) =>
         {
@@ -63,7 +63,7 @@ public class Infantry : GridEntity, InitializeUnit
         this.MyFireteam = MyFireteam;
     }
 
-    protected override void EntityAwake()
+    protected override void SoldierAwake()
     {
         _infantry_AI = GetComponent<NewAIMovement>();
         _fov = GetComponent<FOVAgent>();
@@ -84,7 +84,7 @@ public class Infantry : GridEntity, InitializeUnit
             .SetTransition(INFANTRY_STATES.MOVE_TOWARDS, moveTowards)
             .SetTransition(INFANTRY_STATES.FOLLOW_LEADER, followLeader)
             .SetTransition(INFANTRY_STATES.FIRE_AT_WILL, fireAtWill)
-            .SetTransition(INFANTRY_STATES.DIE,die)
+            .SetTransition(INFANTRY_STATES.DIE, die)
             .Done();
 
         StateConfigurer.Create(moveTowards)
@@ -297,8 +297,8 @@ public class Infantry : GridEntity, InitializeUnit
     {
         while (true)
         {
-            var z = GetEntitiesAround()                               
-           .Where(x => x.MyTeam != MyTeam)
+            var z = GetMilitaryAround()                               
+           .Where(x => x.Team != Team)
            .Where(x => _fov.IN_FOV(x.transform.position));
 
             if (z.Any()) Infantry_FSM.SendInput(INFANTRY_STATES.FIRE_AT_WILL);
@@ -309,13 +309,11 @@ public class Infantry : GridEntity, InitializeUnit
     }
 
 
-   public IEnumerable<Entity> GetEntitiesAround()
+   public IEnumerable<Soldier> GetMilitaryAround()
     {
-        var col = GetEntitiesInRange(_fov.viewRadius)
+        var col = _gridEntity.GetEntitiesInRange(_fov.viewRadius)
          .Where(x => x != this)
-         .OfType<Entity>()
-         .Where(x => x.GetType() != typeof(Civilian))
-         .Where(x => x != null);
+         .OfType<Soldier>();
 
         return col;
     }
@@ -358,7 +356,7 @@ public class Infantry : GridEntity, InitializeUnit
 
     IEnumerable<Entity> LookForEnemiesAlive()
     {
-        return GetEntitiesAround().Where(x => x.MyTeam != MyTeam)
+        return GetMilitaryAround().Where(x => x.Team != Team)
                   .Where(x => x.Health.isAlive);
     }
     #endregion

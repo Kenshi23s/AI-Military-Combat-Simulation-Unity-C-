@@ -6,25 +6,29 @@ using System.Linq;
 using System;
 
 [RequireComponent(typeof(NewPhysicsMovement))]
-public class Misile : GridEntity
+[RequireComponent(typeof(GridEntity))]
+public class Misile : Entity, IMilitary
 {  
     NewPhysicsMovement _movement;
 
     public Transform target { get; private set; }
 
+    public MilitaryTeam Team { get; protected set; }
+
     [SerializeField] ParticleHold explosionParticle;
     [SerializeField] ParticleHold explosionParticleonGround;
 
     [NonSerialized] public MisileStats myStats;
-    [System.Serializable]
+
+    protected GridEntity _gridEntity;
+    [Serializable]
     public struct MisileStats
     {
         [NonSerialized]
         public GameObject owner;
-        public Team myTeam;
+        public MilitaryTeam Team;
         public float acceleration;
         public float maxSpeed;
-        public float rotationSpeed;
         public float timeBeforeExplosion;
         public int damage;
         public float explosionRadius;
@@ -33,6 +37,7 @@ public class Misile : GridEntity
 
     private void Awake()
     {
+        _gridEntity = GetComponent<GridEntity>();
         _movement = GetComponent<NewPhysicsMovement>();
 
         GetComponent<Collider>().isTrigger = true;
@@ -40,7 +45,7 @@ public class Misile : GridEntity
        
     }
 
-    public override void GridEntityStart()
+    void Start()
     {
         explosionParticle.key = ParticlePool.instance.CreateVFXPool(explosionParticle.particle);
         explosionParticleonGround.key = ParticlePool.instance.CreateVFXPool(explosionParticleonGround.particle);
@@ -57,7 +62,7 @@ public class Misile : GridEntity
         myStats = newStats;
         SetMovementStats();
         StartCoroutine(CountdownForExplosion());
-        MyTeam = newStats.myTeam;
+        Team = newStats.Team;
         target = newTarget;
         transform.parent = null;
         enabled = true;
@@ -67,7 +72,6 @@ public class Misile : GridEntity
     {
         _movement.Acceleration = myStats.acceleration;
         _movement.MaxSpeed = myStats.maxSpeed;
-        //_movement.RotationSpeed = myStats.rotationSpeed;
         _movement.Velocity = myStats.initialVelocity;
     }
 
@@ -88,12 +92,10 @@ public class Misile : GridEntity
 
     void Explosion()
     {
-        var damagables = GetEntitiesInRange(myStats.explosionRadius)
-            .OfType<Entity>()
-            .Where(x => x.MyTeam != myStats.myTeam)
-            .Select(x => x.GetComponent<IDamagable>())
-            .Where(x  => x != null);
-
+        var damagables = _gridEntity.GetEntitiesInRange(myStats.explosionRadius)
+            .OfType<IMilitary>()
+            .Where(x => x.Team != Team)
+            .OfType<IDamagable>();
 
         foreach (var entity in damagables) 
             entity.TakeDamage(myStats.damage);
@@ -110,9 +112,9 @@ public class Misile : GridEntity
     }
     private void OnDestroy()
     {
-        if (SpatialGrid!=null)
+        if (_gridEntity.SpatialGrid!=null)
         {
-            SpatialGrid.RemoveEntity(this);
+            _gridEntity.SpatialGrid.RemoveEntity(_gridEntity);
         }
     
     }

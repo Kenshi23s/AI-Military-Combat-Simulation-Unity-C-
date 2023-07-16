@@ -1,44 +1,49 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
-//[ExecuteInEditMode]
-public abstract class GridEntity : Entity
+[RequireComponent(typeof(Entity))]
+public class GridEntity : MonoBehaviour
 {
 	public event Action<GridEntity> OnMove = delegate {};
     Vector3 _previousPos;
     public bool OnGrid;
 
-    SpatialGrid3D _spatialGrid;
-    public SpatialGrid3D SpatialGrid => _spatialGrid;
+    public Entity Owner { get; private set; }
 
-    public abstract void GridEntityStart();
+    public SpatialGrid3D SpatialGrid { get; private set; }
+
+    private void Awake()
+    {
+        Owner = GetComponent<Entity>();
+    }
 
     private void Start()
     {
-        _spatialGrid = FindObjectOfType<SpatialGrid3D>();
-        _spatialGrid.AddEntity(this);
-        GridEntityStart();
+        SpatialGrid = FindObjectOfType<SpatialGrid3D>();
+        SpatialGrid.AddEntity(this);
     }
 
-    public IEnumerable<GridEntity> GetEntitiesInRange(float range) 
+    public IEnumerable<Entity> GetEntitiesInRange(float range)
     {
         //creo una "caja" con las dimensiones deseadas, y luego filtro segun distancia para formar el círculo
-        if (!OnGrid) return new List<GridEntity>();
-       
+        if (!OnGrid) return new List<Entity>();
+
         float sqrDistance = range * range;
-        return _spatialGrid.Query(
+        return SpatialGrid.Query(
             transform.position + new Vector3(-range, -range, -range),
             transform.position + new Vector3(range, range, range),
             x => {
                 var position3d = x - transform.position;
                 return position3d.sqrMagnitude < sqrDistance;
-            });
+            })
+            .Select(x => x.Owner);
     }
 
     public void SetSpatialGrid(SpatialGrid3D spatialGrid) 
     {
-        _spatialGrid = spatialGrid;
+        SpatialGrid = spatialGrid;
     }
 
     private void LateUpdate()

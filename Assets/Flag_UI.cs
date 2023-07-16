@@ -5,11 +5,12 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+
 public class Flag_UI : MonoBehaviour
 {
     [SerializeField] Gradient _gradientFlag;
     [SerializeField] Image _flagOwner;
-    [SerializeField,SerializedDictionary("Team","TextMesh")] SerializedDictionary<Team, TextMeshProUGUI> TeamTexts;
+    [SerializeField,SerializedDictionary("Team","TextMesh")] SerializedDictionary<MilitaryTeam, TextMeshProUGUI> TeamTexts;
 
     [Range(0,1)]public float SliderTest;
     CapturePoint _myCapturePoint;
@@ -36,7 +37,7 @@ public class Flag_UI : MonoBehaviour
     }
 
 
-    void SetTexts(Dictionary<Team, Entity[]> col)
+    void SetTexts(Dictionary<MilitaryTeam, IMilitary[]> col)
     {
         foreach (var key in TeamTexts.Keys.Where(x => col[x] != null ))
         {

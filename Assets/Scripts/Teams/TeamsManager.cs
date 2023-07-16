@@ -8,16 +8,6 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
 
-public enum Team
-{
-    Red,
-    Blue,
-    None
-}
-public interface InitializeUnit
-{
-    void InitializeUnit(Team newTeam);
-}
 [System.Serializable]
 public struct TeamParameters
 {
@@ -42,16 +32,16 @@ public class TeamsManager : MonoSingleton<TeamsManager>
    [field: SerializeField] public float SeparationRadiusBetweenUnits { get; private set; }
 
     #region TeamsDictionary
-    Dictionary<Team, List<Entity>> _teams = new Dictionary<Team, List<Entity>>();
+    Dictionary<MilitaryTeam, List<Entity>> _teams = new Dictionary<MilitaryTeam, List<Entity>>();
 
     [SerializeField,SerializedDictionary("Team","Parameters")]
-    SerializedDictionary<Team, TeamParameters> _matchParameters = new SerializedDictionary<Team, TeamParameters>();
+    SerializedDictionary<MilitaryTeam, TeamParameters> _matchParameters = new SerializedDictionary<MilitaryTeam, TeamParameters>();
     int _watchDog;
 
     public bool canDebug;
     #region MemberAdd
 
-    public void AddToTeam(Team key,Entity value)
+    public void AddToTeam(MilitaryTeam key,Entity value)
     {
         if (!_teams[key].Contains(value))
         {
@@ -60,7 +50,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
        
     }
 
-    public void AddToTeam(Team key, IEnumerable<Entity> values)
+    public void AddToTeam(MilitaryTeam key, IEnumerable<Entity> values)
     {
         foreach (var item in values.Where(x=> !_teams[key].Contains(x)))
         {            
@@ -70,7 +60,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
     }
 
-    public void RemoveFromTeam(Team key, Entity value)
+    public void RemoveFromTeam(MilitaryTeam key, Entity value)
     {
         if (_teams[key].Contains(value))
         {
@@ -78,7 +68,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
         }
     }
 
-    public void RemoveFromTeam(Team key, IEnumerable<Entity> values)
+    public void RemoveFromTeam(MilitaryTeam key, IEnumerable<Entity> values)
     {
         foreach (var item in values.Where(x => _teams[key].Contains(x)))       
             _teams[key].Remove(item);
@@ -95,9 +85,9 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
     private void Start()
     {
-        foreach (Team key in Enum.GetValues(typeof(Team)))
+        foreach (MilitaryTeam key in Enum.GetValues(typeof(MilitaryTeam)))
         {
-            if (key == Team.None) continue;
+            if (key == MilitaryTeam.None) continue;
 
             _teams.Add(key, new List<Entity>());
             SpawnFireteams(key, _matchParameters[key]);
@@ -106,7 +96,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     }
 
 
-    void SpawnFireteams(Team team,TeamParameters param)
+    void SpawnFireteams(MilitaryTeam team, TeamParameters param)
     {
         List<Fireteam> fireteams = new List<Fireteam>();
         
@@ -130,7 +120,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
         AddToTeam(team, col);
     }
 
-    void SpawnPlanes(Team team, TeamParameters parameters)
+    void SpawnPlanes(MilitaryTeam team, TeamParameters parameters)
     {
         for (int i = 0; i < parameters.planesQuantity; i++)
         {
@@ -222,12 +212,12 @@ public class TeamsManager : MonoSingleton<TeamsManager>
         return GetRandomFreePosOnGround(parameters, out pos);
     }
 
-    public IEnumerable<Fireteam> GetAllyFireteams(Team team)
+    public IEnumerable<Fireteam> GetAllyFireteams(MilitaryTeam team)
     {
         return _teams[team].OfType<Infantry>().Select(x => x.MyFireteam).Where(x => x != null).Distinct();       
     }
 
-    public IEnumerable<Plane> GetTeamPlanes(Team team)
+    public IEnumerable<Plane> GetTeamPlanes(MilitaryTeam team)
     {
         return _teams[team]
             .OfType<Plane>()
@@ -236,9 +226,9 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
     private void OnValidate()
     {
-        if (_matchParameters.ContainsKey(Team.None))
+        if (_matchParameters.ContainsKey(MilitaryTeam.None))
         {
-            _matchParameters.Remove(Team.None);
+            _matchParameters.Remove(MilitaryTeam.None);
         }
 
     }
@@ -250,7 +240,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
         foreach (var item in _matchParameters)
         {
-            Gizmos.color = item.Key == Team.Red ? Color.red : Color.blue;
+            Gizmos.color = item.Key == MilitaryTeam.Red ? Color.red : Color.blue;
             float width = (float)item.Value.width;
             float height = (float)item.Value.height;
             if (item.Value.SpawnArea == null) continue;
