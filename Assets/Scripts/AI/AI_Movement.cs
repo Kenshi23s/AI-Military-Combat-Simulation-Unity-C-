@@ -64,7 +64,9 @@ public class AI_Movement : MonoBehaviour
     private void FixedUpdate() => _fixedUpdate?.Invoke();
 
     public void SetMaxSpeed(float newSpeed) =>  Movement.MaxSpeed = newSpeed;
-      
+
+    Transform _lookAtTarget;
+
     #region Pathfinding Methods
     /// <summary>
     /// Se mueve hasta esa ubicacion usando Theta* (aplicando flocking y obstacle avoidance)
@@ -112,7 +114,9 @@ public class AI_Movement : MonoBehaviour
         }
     }
 
-    Transform _lookAtTarget;
+
+
+   
 
     public void SetDestinationButLookAt(Vector3 destination, Transform lookAtTarget)
     {

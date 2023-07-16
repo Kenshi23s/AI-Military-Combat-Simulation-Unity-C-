@@ -11,11 +11,14 @@ using static UnityEngine.UI.GridLayoutGroup;
 public class NewAIMovement : MonoBehaviour
 {
     public NewPhysicsMovement ManualMovement { get; private set; }
-    public GridEntity owner { get; private set; }
-    public event Action OnDestinationReached, OnDestinationChanged, OnMovementCanceled;
+    public GridEntity Owner { get; private set; }
+
+    public event Action OnAnyDestinationReached, OnDestinationChanged, OnMovementCanceled;
+    Action OnCurrentDestinationReach;
+
     DebugableObject _debug;
 
-    public float destinationArriveDistance;
+    public float DestinationArriveDistance;
 
     Action _update, _fixedUpdate;
 
@@ -23,24 +26,28 @@ public class NewAIMovement : MonoBehaviour
 
     [SerializeField] LayerMask obstacleMask;
 
-    public Vector3 destination { get; private set; }
+    public Vector3 Destination { get; private set; }
 
 
     private void Awake()
     {
         ManualMovement = GetComponent<NewPhysicsMovement>();
-        owner = GetComponent<GridEntity>();
+        Owner = GetComponent<GridEntity>();
         _debug = GetComponent<DebugableObject>();
+
         _debug.AddGizmoAction(DrawPath);
+
+        OnDestinationChanged += () => { OnCurrentDestinationReach = delegate { }; };
+        OnMovementCanceled +=   () => { OnCurrentDestinationReach = delegate { }; };
     }
 
-    public void Update() => _update?.Invoke();
+  
 
     public void SetDestination(Vector3 newDestination)
     {
-        if (_path.Any() && newDestination != destination) OnDestinationChanged?.Invoke();
+        if (newDestination != Destination) OnDestinationChanged?.Invoke();
 
-        destination = newDestination;
+        Destination = newDestination;
 
         if (transform.position.InLineOffSight(newDestination, AI_Manager.instance.wall_Mask))
         {
@@ -52,22 +59,41 @@ public class NewAIMovement : MonoBehaviour
         }
     }
 
+ 
+    public void SetDestination(Vector3 newDestination, Action<bool> OnFinishCalculating, Action onDestinationReach)
+    {
+        if (_path.Any() && newDestination != Destination) OnDestinationChanged?.Invoke();
+
+        if (onDestinationReach != null) OnCurrentDestinationReach += onDestinationReach;
+
+        Destination = newDestination;
+
+        Action<bool, List<Vector3>> onCalculate = (boolean,list) => OnFinishCalculating(boolean);
+
+        if (transform.position.InLineOffSight(newDestination, AI_Manager.instance.wall_Mask))      
+            OnDesinationAtSight(newDestination);        
+        else       
+            CalculatePath(newDestination, onCalculate);
+        
+    }
+
     void OnDesinationAtSight(Vector3 newDestination)
     {
         // Conseguir la posicion en el piso
         if (Physics.Raycast(newDestination, Vector3.down, out RaycastHit hitInfo, 10f, AI_Manager.instance.wall_Mask))
         {
             newDestination = hitInfo.point;
-            destination = newDestination;
+            Destination = newDestination;
         }
 
         _fixedUpdate = () =>
         {
             _debug.Log("Veo el destino, voy directo.");
 
-            if (Vector3.Distance(newDestination, transform.position) < destinationArriveDistance)
+            if (Vector3.Distance(newDestination, transform.position) < DestinationArriveDistance)
             {
-                OnDestinationReached?.Invoke();
+                OnCurrentDestinationReach?.Invoke();
+                OnAnyDestinationReached?.Invoke();
                 ClearPath();
             }
             else
@@ -86,7 +112,7 @@ public class NewAIMovement : MonoBehaviour
         Tuple<Node, Node> keyNodes = Tuple.Create(I.GetNearestNode(transform.position), I.GetNearestNode(newDestination));
 
         if (keyNodes.Item1 != null && keyNodes.Item2 != null)
-            StartCoroutine(keyNodes.CalculateLazyThetaStar(I.wall_Mask, OnFinishCalculatingPath, destination, 200));
+            StartCoroutine(keyNodes.CalculateLazyThetaStar(I.wall_Mask, CanPlayPath, Destination, 200));
         else
         {
             string node1 =  keyNodes.Item1 != null ? " NO es null " : "ES null ";
@@ -97,17 +123,37 @@ public class NewAIMovement : MonoBehaviour
             
     }
 
-    void OnFinishCalculatingPath(bool pathmade,List<Vector3> newPath)
+    void CalculatePath(Vector3 newDestination,Action<bool,List<Vector3>> OnFinishCalculating)
     {
-        if (!pathmade && !newPath.Any())
+        _debug.Log("No veo el destino, calculo el camino.");
+
+        AI_Manager I = AI_Manager.instance;
+        OnFinishCalculating += CanPlayPath;
+        Tuple<Node, Node> keyNodes = Tuple.Create(I.GetNearestNode(transform.position), I.GetNearestNode(newDestination));
+
+        OnFinishCalculating += CanPlayPath;
+        if (keyNodes.Item1 != null && keyNodes.Item2 != null)
+            StartCoroutine(keyNodes.CalculateLazyThetaStar(I.wall_Mask, OnFinishCalculating, Destination, 200));
+        else
+        {
+            string node1 = keyNodes.Item1 != null ? " NO es null " : "ES null ";
+            string node2 = keyNodes.Item2 != null ? " NO es null " : "ES null ";
+
+            _debug.Log("El nodo INICIAL" + node1 + " y El nodo FINAL" + node2);
+        }
+
+    }
+
+
+
+    void CanPlayPath(bool pathmade,List<Vector3> newPath)
+    {
+        if (!pathmade)
         {
             _debug.Log("No se pudo armar el camino");
             return;
         }
-
-
         _path = newPath;
-
         _debug.Log("Arme el camino, lo reproduzo ");
         _fixedUpdate = PlayPath;
     }
@@ -115,7 +161,7 @@ public class NewAIMovement : MonoBehaviour
     void PlayPath()
     {
         // Si llegamos al waypoint mas cercano, quitarlo para pasar al siguiente
-        if (Vector3.Distance(_path[0], transform.position) < destinationArriveDistance)      
+        if (Vector3.Distance(_path[0], transform.position) < DestinationArriveDistance)      
             _path.RemoveAt(0);
         
 
@@ -128,7 +174,8 @@ public class NewAIMovement : MonoBehaviour
         else // Si no quedan, finalizar el recorrido
         {
             _debug.Log("no hay mas nodos, corto pathfinding");
-            OnDestinationReached?.Invoke();
+            OnAnyDestinationReached?.Invoke();
+            OnCurrentDestinationReach?.Invoke();
             ClearPath();
             return;
         }
@@ -144,13 +191,10 @@ public class NewAIMovement : MonoBehaviour
     }
 
     public void CancelMovement()
-    {
-       
+    {     
         ClearPath();
         OnMovementCanceled?.Invoke();
     }
-
-    private void FixedUpdate() => _fixedUpdate?.Invoke();
 
     void DrawPath()
     {
@@ -183,4 +227,7 @@ public class NewAIMovement : MonoBehaviour
         return Vector3.zero;
     }
 
+    private void FixedUpdate() => _fixedUpdate?.Invoke();
+
+    public void Update() => _update?.Invoke();
 }
