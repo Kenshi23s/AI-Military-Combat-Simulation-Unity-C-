@@ -15,8 +15,7 @@ public abstract class Soldier : Human, IMilitary , IZoneEntity
     public bool CanCapture => Health.isAlive;
 
     public CapturePoint Zone { get; protected set; }
-
-   
+ 
     public event Action onZoneEnter;
     public event Action onZoneStay;
     public event Action onZoneExit;

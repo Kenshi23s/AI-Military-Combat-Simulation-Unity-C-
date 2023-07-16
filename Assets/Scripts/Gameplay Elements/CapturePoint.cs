@@ -87,25 +87,16 @@ public class CapturePoint : MonoBehaviour
   
     IEnumerator SearchEntitiesAround()
     {
+      
+
         while (true) 
         {
             //divido la lista entre equipo rojo y verde con el lookup
             //si pasan el predicado, accedo a esos items con [true] y si no
             //accedo a los otros items con [false]
 
-            //var entitiesInZone = ZoneQuery()
-            //    .OfType<IMilitary>()
-            //    .Where(x => x.Team != MilitaryTeam.None)
-            //    .ToLookup(x => x.Team)
-            //    .ToDictionary(x => x.Key, x => x.ToArray());
-
-
-            //foreach (var item in _teamSplit.Where(x => !entitiesInZone.Contains(x)))
-            //{
-
-            //}
-            //antes de la query
             var BeforeQueryCol = _teamSplit.SelectMany(x => x.Value).ToArray();
+
             yield return null;
 
             _teamSplit = ZoneQuery()
@@ -115,50 +106,33 @@ public class CapturePoint : MonoBehaviour
                 .ToLookup(x => x.Team)
                 .ToDictionary(x => x.Key, x => x.ToArray());
 
-
             foreach (MilitaryTeam item in Enum.GetValues(typeof(MilitaryTeam)))
-            {
-                if (!_teamSplit.ContainsKey(item))
-                    _teamSplit[item] = new IMilitary[0];
-            }
-
-            yield return null;
-            //despues de query
-            var AfterQueryCol = _teamSplit.SelectMany(x => x.Value).ToArray();
-
-            CheckWhoEntered(BeforeQueryCol, AfterQueryCol); yield return null;
-            CheckWhoStayed(BeforeQueryCol, AfterQueryCol);  yield return null;
-            CheckWhoExited(BeforeQueryCol, AfterQueryCol);  yield return null;
+                if (!_teamSplit.ContainsKey(item)) _teamSplit[item] = new IMilitary[0];
 
 
+
+            CheckWhoEntered(BeforeQueryCol); yield return null;
+            CheckWhoExited(BeforeQueryCol);  yield return null;
 
             onEntitiesAroundUpdate?.Invoke(_teamSplit);
             yield return new WaitForSeconds(_waitingTimeTilSearch);
         }    
     }
 
-    void CheckWhoEntered(IMilitary[] BeforeQuery, IMilitary[] afterQuery)
+    void CheckWhoEntered(IMilitary[] BeforeQuery)
     {
         //donde despues de hacer la query hay nuevo
-        foreach (var item in afterQuery.Distinct().Where(x => !BeforeQuery.Contains(x)).OfType<IZoneEntity>())
+        foreach (var item in _teamSplit.SelectMany(x => x.Value).Distinct().Where(x => !BeforeQuery.Contains(x)).OfType<IZoneEntity>())
         {
             item.ZoneEnter(this);
         }
     }
 
-    void CheckWhoStayed(IMilitary[] beforeQuery, IMilitary[] afterQuery)
-    {
-        //donde despues de hacer la query sigue estando la entidad
-        foreach (var item in beforeQuery.Distinct().Where(x => afterQuery.Contains(x)).OfType<IZoneEntity>())
-        {
-            item.ZoneStay(this);
-        }
-    }
 
-    void CheckWhoExited(IMilitary[] BeforeQuery, IMilitary[] afterQuery)
+    void CheckWhoExited(IMilitary[] BeforeQuery)
     {
         //donde despues de hacer la query, la entidad ya no esta
-        foreach (var item in BeforeQuery.Distinct().Where(x => !afterQuery.Contains(x)).OfType<IZoneEntity>())
+        foreach (var item in BeforeQuery.Distinct().Where(x => !_teamSplit.SelectMany(x => x.Value).Contains(x)).OfType<IZoneEntity>())
         {
             item.ZoneExit(this);
         }
@@ -168,12 +142,24 @@ public class CapturePoint : MonoBehaviour
 
     private void Update()
     {
+        CheckUnits();
+        if (_teamSplit.Any())
+        {
+            foreach (var unit in _teamSplit.SelectMany(x => x.Value).OfType<IZoneEntity>())
+                unit.ZoneStay(this);
+        }
+      
+        
+      
+    }
+
+    void CheckUnits()
+    {
         if (!_teamSplit[MilitaryTeam.Red].Any() && !_teamSplit[MilitaryTeam.Blue].Any())
         {
             _debug.Log("No hay unidades en el area");
             return;
         }
-
 
         //rojo                    
         if (_teamSplit[MilitaryTeam.Red].Any() && _teamSplit[MilitaryTeam.Blue].Any())

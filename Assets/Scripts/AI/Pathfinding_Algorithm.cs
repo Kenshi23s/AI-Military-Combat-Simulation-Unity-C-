@@ -211,7 +211,7 @@ public static class Pathfinding_Algorithm
         List<Vector3> myPathList = x;
     }
 
-    public static IEnumerator CalculateLazyAStar(this Tuple<Node, Node> nodes, Action<bool,List<Node>> onFinish, int stepsPerFrame = 30)
+    public static IEnumerator CalculateLazyAStar(this Tuple<Node, Node> nodes, Action<bool,List<Node>> onFinish, int stepsPerFrame = 6)
     {
         int stepCount = 0;
         bool pathMade = false;
@@ -271,6 +271,7 @@ public static class Pathfinding_Algorithm
             }
 
             stepCount++;
+            
             if (stepCount >= stepsPerFrame)
             {
                 Debug.LogWarning("Espero 1 frame");

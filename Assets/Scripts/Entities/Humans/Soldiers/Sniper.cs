@@ -37,8 +37,7 @@ public class Sniper : Soldier
 
    
     protected override void SoldierAwake()
-    {
-       
+    {       
         base.EntityAwake();
         _shootComponent = GetComponent<ShootComponent>();
         _fovAgent = GetComponent<FOVAgent>();

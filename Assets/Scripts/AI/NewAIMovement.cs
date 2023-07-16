@@ -89,8 +89,8 @@ public class NewAIMovement : MonoBehaviour
             StartCoroutine(keyNodes.CalculateLazyThetaStar(I.wall_Mask, OnFinishCalculatingPath, destination, 200));
         else
         {
-            string node1 =  keyNodes.Item1 != null ? "NO es null " : "ES null ";
-            string node2 =  keyNodes.Item2 != null ? "NO es null " : "ES null ";
+            string node1 =  keyNodes.Item1 != null ? " NO es null " : "ES null ";
+            string node2 =  keyNodes.Item2 != null ? " NO es null " : "ES null ";
 
             _debug.Log("El nodo INICIAL" + node1+ " y El nodo FINAL" + node2);
         }
