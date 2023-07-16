@@ -124,7 +124,7 @@ public class Fireteam
     }
 
     #region GetMethods
-    public IEnumerable<Mechanic> GetMechanics() => _fireteamMembers.OfType<Mechanic>();
+  
 
     public IEnumerable<Medic> GetMedics() => _fireteamMembers.OfType<Medic>();
     #endregion
