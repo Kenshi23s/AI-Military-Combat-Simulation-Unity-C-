@@ -38,6 +38,10 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     int _watchDog;
 
     public bool canDebug;
+
+    public event Action OnLateUpdate;
+
+
     #region MemberAdd
 
     public void AddToTeam(MilitaryTeam key,Entity value)
@@ -96,6 +100,11 @@ public class TeamsManager : MonoSingleton<TeamsManager>
             SpawnFireteams(key, _matchParameters[key]);
             SpawnPlanes(key, _matchParameters[key]);
         }
+    }
+
+    private void LateUpdate()
+    {
+        OnLateUpdate?.Invoke();
     }
 
 
