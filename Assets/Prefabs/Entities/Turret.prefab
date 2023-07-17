@@ -10,6 +10,11 @@ GameObject:
   m_Component:
   - component: {fileID: 316507671084638808}
   - component: {fileID: 5187970687975772065}
+  - component: {fileID: 7233517434944596159}
+  - component: {fileID: 7064974271161359213}
+  - component: {fileID: 2223344353686896317}
+  - component: {fileID: 258830618167770180}
+  - component: {fileID: 1761918910852370943}
   m_Layer: 0
   m_Name: Turret
   m_TagString: Untagged
@@ -46,11 +51,103 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b17e25cc610ba449a58f9c9268fbb22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  AimingPoint: {fileID: 0}
+  AimingPoint: {fileID: 316507671084638808}
   <Team>k__BackingField: 0
-  CD_BetweenSearch: 0
-  ShootPos: []
-  pos: 0
+  _pivotTurret: {fileID: 6487522459118895905}
+  _pivotCanon: {fileID: 7177914541589611830}
+  _baseMinAngle: 3
+  _canonMinAngle: 4
+  _cd_BetweenSearch: 2
+  _shootPos:
+  - {fileID: 760970452639734747}
+  - {fileID: 8749848918761836064}
+  _cd_BetweenShots: 3
+--- !u!114 &7233517434944596159
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1094276442161674466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac49b2b6d50c7a749bea4d8294713dac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OnGrid: 0
+--- !u!114 &7064974271161359213
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1094276442161674466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 360ca867e48780448a1401b7fc47e037, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  canDebug: 1
+  gizmoDraw:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &2223344353686896317
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1094276442161674466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5747d27ef88acac41acc7cc0ef883ab2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <ViewRadius>k__BackingField: 0
+  _viewAngle: 0
+  _eyes: {fileID: 0}
+--- !u!114 &258830618167770180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1094276442161674466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9c8b9bb2e7803e418e7eb18ca7d9b0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _life: 100
+  _maxLife: 100
+  _dmgMultiplier: 1
+  dmgResist: 1
+  canTakeDamage: 1
+  canBeHealed: 1
+  isCrit: 0
+--- !u!114 &1761918910852370943
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1094276442161674466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e93288dfe4ea0034a841e74b4b20ce22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _bulletspread: 45
+  _bulletdamage: 20
+  shootableLayers:
+    serializedVersion: 2
+    m_Bits: 448
+  trailSample: {fileID: 2610780281482316935, guid: ece5188b7e398c345a64fc3091428e05,
+    type: 3}
+  _bulletsPerBurst: 0
+  _burstCD: 3
+  _bulletCD: 0.3
+  _shootPos: {fileID: 0}
 --- !u!1 &2489283009966324446
 GameObject:
   m_ObjectHideFlags: 0
