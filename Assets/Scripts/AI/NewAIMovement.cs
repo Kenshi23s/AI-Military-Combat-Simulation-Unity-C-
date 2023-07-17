@@ -59,7 +59,25 @@ public class NewAIMovement : MonoBehaviour
         }
     }
 
- 
+    public void SetDestination(Vector3 newDestination, Action onDestinationReach)
+    {
+        if (newDestination != Destination) OnDestinationChanged?.Invoke();
+
+        Destination = newDestination;
+
+        if (onDestinationReach != null) OnCurrentDestinationReach += onDestinationReach;
+
+        if (transform.position.InLineOffSight(newDestination, AI_Manager.instance.wall_Mask))
+        {
+            OnDesinationAtSight(newDestination);
+        }
+        else
+        {
+            CalculatePath(newDestination);
+        }
+    }
+
+
     public void SetDestination(Vector3 newDestination, Action<bool> OnFinishCalculating, Action onDestinationReach)
     {
         if (_path.Any() && newDestination != Destination) OnDestinationChanged?.Invoke();

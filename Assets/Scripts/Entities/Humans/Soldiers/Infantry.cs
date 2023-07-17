@@ -159,13 +159,12 @@ public class Infantry : Soldier
             StopMoving();
             DebugEntity.Log("Me muevo hacia posicion x");
 
-            _infantry_AI.SetDestination(Destination);
-            _infantry_AI.OnDestinationReached += () =>
+            _infantry_AI.SetDestination(Destination, () =>
             {
                 Infantry_FSM.SendInput(INFANTRY_STATES.WAITING_ORDERS);
-            };
+            });
+           
             _anim.SetBool("Running", true);
-
             StartCoroutine(LookForTargets());
         };
 
@@ -230,11 +229,11 @@ public class Infantry : Soldier
     void GoToLeader()
     {
 
-        _infantry_AI.SetDestination(MyFireteam.Leader.transform.position);
-        _infantry_AI.OnDestinationReached += () =>
+        _infantry_AI.SetDestination(MyFireteam.Leader.transform.position, () =>
         {
             Infantry_FSM.SendInput(INFANTRY_STATES.WAITING_ORDERS);
-        };
+        });
+     
     }
 
     State<INFANTRY_STATES> FireAtWill()
@@ -248,6 +247,7 @@ public class Infantry : Soldier
             InCombat=true;
             DebugEntity.Log("Sigo al lider");
             StartCoroutine(SetTarget());
+
             if (MyFireteam.Leader != this) return;
             
             var enemiesAlive = LookForEnemiesAlive().ToArray();
