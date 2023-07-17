@@ -17,6 +17,7 @@ public class GridEntity : MonoBehaviour
     private void Awake()
     {
         Owner = GetComponent<Entity>();
+        
     }
 
     private void Start()
@@ -25,6 +26,16 @@ public class GridEntity : MonoBehaviour
         SpatialGrid.AddEntity(this);
     }
 
+
+    public void LookGrid()
+    {
+        if (SpatialGrid == null)
+        {
+            SpatialGrid = FindObjectOfType<SpatialGrid3D>();
+            SpatialGrid.AddEntity(this);
+        }
+       
+    }
     public IEnumerable<Entity> GetEntitiesInRange(float range)
     {
         //creo una "caja" con las dimensiones deseadas, y luego filtro segun distancia para formar el círculo

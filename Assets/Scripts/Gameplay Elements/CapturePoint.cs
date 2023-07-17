@@ -251,7 +251,7 @@ public class CapturePoint : MonoBehaviour
                 return distance.sqrMagnitude < _zoneRadius * _zoneRadius;
             });
 
-        Debug.Log("zone query entities: " + col.Select(x => x.Owner).OfType<IZoneEntity>().ToList().Count);
+        _debug.Log("zone query entities: " + col.Select(x => x.Owner).OfType<IZoneEntity>().ToList().Count);
         return col.Select(x => x.Owner).OfType<IZoneEntity>();
     }
 

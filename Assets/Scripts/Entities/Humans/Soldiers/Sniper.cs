@@ -148,7 +148,7 @@ public class Sniper : Soldier
                 DebugEntity.Log("El Target es null, paso a buscar otro enemigo");
                
             }
-            _anim.SetBool("Shooting", false);
+            _anim.SetBool("Shooting", true);
             _currentAimLerp = 0;
         };
 
@@ -160,16 +160,20 @@ public class Sniper : Soldier
                 DebugEntity.Log("El objetivo murio o ya no lo veo, cambio a LOOK_FOR_TARGETS");
             } 
 
-            Vector3 dir = target.transform.position - transform.position;
+            Vector3 dir = target.AimPoint - transform.position;
             if (_currentAimLerp < 1)
             {
+                DebugEntity.Log("Apunto al Objetivo");
                 _currentAimLerp += Time.deltaTime * _aimSpeed;
+               
                 Vector3 aux = Vector3.Slerp(transform.forward, dir.normalized, _currentAimLerp);
                 transform.forward = new Vector3(aux.x, transform.forward.y, aux.z);
                 return;
             }
+            DebugEntity.Log("Tengo al enemigo en la mira!");
             _currentAimLerp = 1;
             transform.forward = dir.normalized;
+            _fsm.SendInput(SNIPER_STATES.FOCUS_N_SHOOT);
         };
 
         return state;
@@ -179,6 +183,7 @@ public class Sniper : Soldier
     {
         var state = new State<SNIPER_STATES>("Aim At Enemy");
 
+       
         state.OnEnter += (x) =>
         {
             if (target == null) _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
@@ -193,9 +198,9 @@ public class Sniper : Soldier
             // si no lo veo o ya no esta vivo, paso a buscar otro objetivo
             if (!_fovAgent.IN_FOV(target.transform.position) || !target.Health.isAlive) _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
 
-            Vector3 dir = target.transform.position - transform.position;
+            Vector3 dir = target.AimPoint - transform.position;
          
-            transform.forward = dir.normalized;
+            transform.forward = new Vector3(dir.x,0,dir.z).normalized;
             //tiempo entre frames * incremento en la velocidad que se puede concentrar * las veces que se concentro
             //(queria darle como un toque unico al sniper con esto, quedo medio raro?)
             _currentFocusTime += Time.deltaTime * (_addPerTimesFocused * timesFocused);
@@ -204,11 +209,16 @@ public class Sniper : Soldier
             if (_currentFocusTime >= _requiredFocusTime)
             {
                 _currentFocusTime = 0;
-                _shootComponent.Shoot(_shootPos);
+                _shootComponent.Shoot(_shootPos,dir);
                 timesFocused++;
+                DebugEntity.Log("Disparo al target");
 
                 //si disparo x tiros tiene que volver a apuntar
-                if (timesFocused > maxShootsInRow) _fsm.SendInput(SNIPER_STATES.AIM);
+                if (timesFocused > maxShootsInRow) 
+                {
+                    DebugEntity.Log("Tengo que volver a apuntar :C");
+                    _fsm.SendInput(SNIPER_STATES.AIM);
+                } 
             }
             UpdateLaser();
         };
@@ -245,7 +255,7 @@ public class Sniper : Soldier
         }
          _laser.enabled = true;
          _laser.SetPosition(0,_shootPos.position);
-         _laser.SetPosition(1, target.transform.position);
+         _laser.SetPosition(1, target.AimPoint);
     }
 
     public void InitializeUnit(MilitaryTeam newTeam)

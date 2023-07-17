@@ -46,6 +46,27 @@ public class ShootComponent : MonoBehaviour
         StartCoroutine(SpawnTrail(trail, finalTrailPos));
     }
 
+    public void Shoot(Transform shootPos,Vector3 dir)
+    {
+        Vector3 finalTrailPos = Vector3.zero;
+
+        if (Physics.Raycast(shootPos.position, dir, out RaycastHit hit, Mathf.Infinity, shootableLayers))
+        {
+            if (hit.transform.TryGetComponent(out IDamagable victim))
+            {
+                victim.TakeDamage(_bulletdamage);
+                Debug.Log($"Hit! le hice daño a {victim}");
+                onHit?.Invoke(victim);
+            }
+            finalTrailPos = hit.point;
+        }
+
+        if (finalTrailPos == Vector3.zero) finalTrailPos = dir.normalized * maxTravelDistance;
+
+        var trail = Instantiate(trailSample, shootPos.position, Quaternion.identity);
+        StartCoroutine(SpawnTrail(trail, finalTrailPos));
+    }
+
     IEnumerator SpawnTrail(TrailRenderer trail, Vector3 impactPos)
     {
         Vector3 startPos = trail.transform.position;

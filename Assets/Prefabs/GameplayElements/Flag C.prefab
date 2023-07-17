@@ -675,7 +675,6 @@ MonoBehaviour:
       Value: {fileID: 295457195}
     - Key: 1
       Value: {fileID: 1705782565}
-  SliderTest: 0
 --- !u!1 &7439353184476601513
 GameObject:
   m_ObjectHideFlags: 0

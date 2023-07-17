@@ -23,7 +23,6 @@ public abstract class Soldier : Human, IMilitary , IZoneEntity
     protected override void EntityAwake()
     {
         _gridEntity = GetComponent<GridEntity>();
-
         SoldierAwake();
     }
 
@@ -33,7 +32,6 @@ public abstract class Soldier : Human, IMilitary , IZoneEntity
     public void ZoneEnter(CapturePoint _zone)
     {
         Zone = _zone;
-
         onZoneEnter?.Invoke();
         DebugEntity.Log("ZoneEnter");
     }

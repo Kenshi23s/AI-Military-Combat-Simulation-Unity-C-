@@ -598,6 +598,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: Sniper
       objectReference: {fileID: 0}
+    - target: {fileID: 5673067206364739106, guid: 5c69a824fe0e44d479879926d759160b,
+        type: 3}
+      propertyPath: _aimSpeed
+      value: 150
+      objectReference: {fileID: 0}
+    - target: {fileID: 5673067206364739106, guid: 5c69a824fe0e44d479879926d759160b,
+        type: 3}
+      propertyPath: _requiredFocusTime
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 8309585079942525626, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
       propertyPath: m_RootOrder

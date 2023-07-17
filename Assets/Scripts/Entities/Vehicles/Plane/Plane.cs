@@ -16,6 +16,7 @@ public enum PlaneStates
 
 [SelectionBase]
 [RequireComponent(typeof(ShootComponent))]
+
 public class Plane : Vehicle
 {
 
@@ -57,10 +58,16 @@ public class Plane : Vehicle
 
     public override void VehicleAwake()
     {
+        _gridEntity.LookGrid();
+
         shootComponent = GetComponent<ShootComponent>();
         DebugEntity.AddGizmoAction(DrawTowardsTarget); DebugEntity.AddGizmoAction(DrawAirstrikeZone);
         Health.OnKilled += () => _planeFSM.SendInput(PlaneStates.ABANDONED);
 
+        Vector3 dir = _gridEntity.SpatialGrid.GetMidleOfGrid() - transform.position;
+        transform.forward = new Vector3(dir.x, 0, 0);
+        _planeFSM = CreateFSM();
+        
         misileStats.owner = gameObject;
     }
 

@@ -201,8 +201,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5747d27ef88acac41acc7cc0ef883ab2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _viewRadius: 80
-  viewAngle: 157
+  <ViewRadius>k__BackingField: 80
+  _viewAngle: 0
+  _eyes: {fileID: 0}
 --- !u!114 &6565769872705145560
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -260,6 +261,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9fbd691dbdc1a14e940b0d8a717d5ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AimingPoint: {fileID: 6565769872705145537}
   _flockingParameters:
     AlignmentForce: 2.5
     _separationForce: 0.6
