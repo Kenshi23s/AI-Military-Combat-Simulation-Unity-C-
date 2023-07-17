@@ -256,7 +256,7 @@ public class Medic : Soldier
     {
         while (true)
         {
-            var z = _gridEntity.GetEntitiesInRange(_fov.viewRadius)
+            var z = _gridEntity.GetEntitiesInRange(_fov.ViewRadius)
                .Where(x => _fov.IN_FOV(x.transform.position))
                .OfType<IMilitary>()
                .Where(x => x.Team != Team);
@@ -271,7 +271,7 @@ public class Medic : Soldier
     {
         while (true)
         {
-            var z = _gridEntity.GetEntitiesInRange(_fov.viewRadius)
+            var z = _gridEntity.GetEntitiesInRange(_fov.ViewRadius)
                .OfType<IMilitary>()
                .Where(x => x.Team == Team);
 

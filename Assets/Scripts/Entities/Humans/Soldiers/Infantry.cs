@@ -313,7 +313,7 @@ public class Infantry : Soldier
 
    public IEnumerable<Soldier> GetMilitaryAround()
     {
-        var col = _gridEntity.GetEntitiesInRange(_fov.viewRadius)
+        var col = _gridEntity.GetEntitiesInRange(_fov.ViewRadius)
          .Where(x => x != this)
          .OfType<Soldier>();
 

@@ -52,7 +52,7 @@ public class AI_Movement : MonoBehaviour
        
        
         _flockingParameters.myTransform = transform;
-        _flockingParameters.viewRadius= FOV.viewRadius;
+        _flockingParameters.viewRadius = FOV.ViewRadius;
     }
 
     public void SetTargets(IEnumerable<FlockableEntity> targets)

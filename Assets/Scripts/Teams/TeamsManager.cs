@@ -77,18 +77,22 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     #endregion
 
     protected override void SingletonAwake()
-    {    
-        //inicializo las listas del diccionario
-        
-    }
-
-    private void Start()
     {
         foreach (MilitaryTeam key in Enum.GetValues(typeof(MilitaryTeam)))
         {
             if (key == MilitaryTeam.None) continue;
 
             _teams.Add(key, new List<Entity>());
+        }
+
+    }
+
+    private void Start()
+    {
+        foreach (MilitaryTeam key in _teams.Keys)
+        {      
+
+       
             SpawnFireteams(key, _matchParameters[key]);
             SpawnPlanes(key, _matchParameters[key]);
         }

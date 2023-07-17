@@ -6,7 +6,7 @@ using UnityEngine;
 [RequireComponent(typeof(GridEntity))]
 public abstract class Soldier : Human, IMilitary , IZoneEntity
 {
-    [field : SerializeField]public MilitaryTeam Team { get; protected set; }
+    [field : SerializeField,Header("Soldier")]public MilitaryTeam Team { get; protected set; }
 
     protected GridEntity _gridEntity;
 

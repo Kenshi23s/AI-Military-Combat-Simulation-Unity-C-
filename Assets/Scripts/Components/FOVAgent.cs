@@ -7,64 +7,70 @@ public class FOVAgent : MonoBehaviour
 {
    
   
-    [SerializeField]float _viewRadius;
-    public float viewRadius => _viewRadius;
+
+    [field : SerializeField]public float ViewRadius { get; private set; }
+    [SerializeField,Range(0,360)]float _viewAngle;
+    [SerializeField] Transform _eyes;
     float _sqrViewRadius;
-    [SerializeField,Range(0,360)]float viewAngle;
 
 
     public void SetFov(float newRadius)
     {
-        _viewRadius = newRadius;
+        ViewRadius = newRadius;
     }
     private void Awake()
     {
         GetComponent<DebugableObject>().AddGizmoAction(FovGizmos);
+        if (_eyes == null)
+        {
+            _eyes = transform;
+            Debug.LogWarning(name +": La variable EYES DE Fov no fue asignada, se recomienda asignar para evitar problemas a futuro, por ahora EYES es el transform del componente");
+        }
     }
     public bool IN_FOV(Vector3 target)
     {
-        Vector3 dir = target - transform.position;
+        Vector3 dir = target - _eyes.position;
 
-        if (dir.magnitude <= _viewRadius)
+        if (dir.magnitude <= ViewRadius)
         {
-            if (Vector3.Angle(transform.forward, dir) <= viewAngle / 2)                     
-                return ColomboMethods.InLineOffSight(transform.position, target, AI_Manager.instance.wall_Mask);      
+            if (Vector3.Angle(_eyes.forward, dir) <= _viewAngle / 2)                     
+                return ColomboMethods.InLineOffSight(_eyes.position, target, AI_Manager.instance.wall_Mask);      
         }
         return false;
     }
 
     public bool IN_FOV(Vector3 target,LayerMask mask)
     {
-        Vector3 dir = target - transform.position;
+        Vector3 dir = target - _eyes.position;
 
-        if (dir.magnitude <= _viewRadius)
+        if (dir.magnitude <= ViewRadius)
         {
-            if (Vector3.Angle(transform.forward, dir) <= viewAngle / 2)
-                return ColomboMethods.InLineOffSight(transform.position, target, mask);
+            if (Vector3.Angle(_eyes.forward, dir) <= _viewAngle / 2)
+                return ColomboMethods.InLineOffSight(_eyes.position, target, mask);
         }
         return false;
     }
 
     public bool IN_FOV(Vector3 target, float viewRadius,LayerMask mask)
     {
-        Vector3 dir = target - transform.position;
+        Vector3 dir = target - _eyes.position;
 
-        if (dir.magnitude <= _viewRadius)
+        if (dir.magnitude <= ViewRadius)
         {
-            if (Vector3.Angle(transform.forward, dir) <= viewAngle / 2)
-                return ColomboMethods.InLineOffSight(transform.position, target, mask);
+            if (Vector3.Angle(_eyes.forward, dir) <= _viewAngle / 2)
+                return ColomboMethods.InLineOffSight(_eyes.position, target, mask);
         }
         return false;
     }
 
     public bool IN_FOV(Vector3 target, float viewRadius)
     {
-        Vector3 dir = target - transform.position;
+        Vector3 dir = target - _eyes.position;
 
         if (dir.magnitude <= viewRadius)
         {
-            if (Vector3.Angle(transform.forward, dir) <= viewAngle / 2)
-                return ColomboMethods.InLineOffSight(transform.position, target, AI_Manager.instance.wall_Mask);
+            if (Vector3.Angle(_eyes.forward, dir) <= _viewAngle / 2)
+                return ColomboMethods.InLineOffSight(_eyes.position, target, AI_Manager.instance.wall_Mask);
         }
 
         return false;
@@ -73,17 +79,17 @@ public class FOVAgent : MonoBehaviour
     public void FovGizmos()
     {        
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, _viewRadius);
+        Gizmos.DrawWireSphere(_eyes.position, ViewRadius);
         
         Gizmos.color = Color.white;
         
-        Gizmos.DrawWireSphere(transform.position, _viewRadius);
+        Gizmos.DrawWireSphere(transform.position, ViewRadius);
         
-        Vector3 lineA = GetVectorFromAngle(viewAngle / 2 + transform.eulerAngles.y);
-        Vector3 lineB = GetVectorFromAngle(-viewAngle / 2 + transform.eulerAngles.y);
+        Vector3 lineA = GetVectorFromAngle(_viewAngle / 2 + transform.eulerAngles.y);
+        Vector3 lineB = GetVectorFromAngle(-_viewAngle / 2 + transform.eulerAngles.y);
         
-        Gizmos.DrawLine(transform.position, transform.position + lineA * _viewRadius);
-        Gizmos.DrawLine(transform.position, transform.position + lineB * _viewRadius);    
+        Gizmos.DrawLine(_eyes.position, _eyes.position + lineA * ViewRadius);
+        Gizmos.DrawLine(_eyes.position, _eyes.position + lineB * ViewRadius);    
     }
 
     

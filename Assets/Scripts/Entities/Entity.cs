@@ -11,6 +11,13 @@ public abstract class Entity : MonoBehaviour
     public bool IsCapturing { get; private set; }
 
 
+    // Donde es mi punto donde deben apuntar las otras unidades
+    // (porque algunas cosas no tienen el pivote en el centro)
+    public Vector3 AimPoint => AimingPoint != null 
+        ? AimingPoint.position 
+        : transform.position;
+    [SerializeField,Header("Entity")] Transform AimingPoint;
+
     public void SetCaptureState(bool arg)
     {
         IsCapturing = arg;

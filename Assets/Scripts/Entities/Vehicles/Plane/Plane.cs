@@ -158,7 +158,7 @@ public class Plane : Vehicle
     /// <returns></returns>
     IEnumerable<Plane> GetNearbyPlanes()
     {
-        var z = _gridEntity.GetEntitiesInRange(_fov.viewRadius)
+        var z = _gridEntity.GetEntitiesInRange(_fov.ViewRadius)
             .OfType<Plane>()
             .Where(x => x != this)
             .Where(x => x._planeFSM.CurrentKey != PlaneStates.ABANDONED);

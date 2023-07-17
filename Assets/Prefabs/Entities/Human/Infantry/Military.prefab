@@ -141,6 +141,37 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Weight: 1
   m_Effectors: []
+--- !u!1 &4615976737911067488
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 55934488066917095}
+  m_Layer: 0
+  m_Name: Eyes
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &55934488066917095
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4615976737911067488}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.637, z: 0.196}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7684651609810558666}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5890867525795967259
 GameObject:
   m_ObjectHideFlags: 0
@@ -1794,6 +1825,7 @@ GameObject:
   - component: {fileID: 7684651609810558656}
   - component: {fileID: 7684651609810558659}
   - component: {fileID: 6308491211211733762}
+  - component: {fileID: 6064664604643365114}
   m_Layer: 0
   m_Name: Military
   m_TagString: Untagged
@@ -1815,6 +1847,7 @@ Transform:
   m_Children:
   - {fileID: 7689263609785862917}
   - {fileID: 7684651611259997070}
+  - {fileID: 55934488066917095}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1890,7 +1923,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26e164ce1119c5a4b97d9c825076c88c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  destinationArriveDistance: 1.5
+  DestinationArriveDistance: 2
   obstacleMask:
     serializedVersion: 2
     m_Bits: 0
@@ -1925,8 +1958,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5747d27ef88acac41acc7cc0ef883ab2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _viewRadius: 50
-  viewAngle: 160
+  <ViewRadius>k__BackingField: 200
+  _viewAngle: 90
+  _eyes: {fileID: 55934488066917095}
 --- !u!114 &7684651609810558659
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1939,8 +1973,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3bce0032b7fe6b468f60a42b0e5bb97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <MyTeam>k__BackingField: 0
-  OnGrid: 0
+  AimingPoint: {fileID: 7686234030039808085}
+  <Team>k__BackingField: 0
   <Center>k__BackingField: {fileID: 7686234030039808085}
   _anim: {fileID: 7779844200561149171}
   _timeBeforeSelectingTarget: 2
@@ -1968,7 +2002,20 @@ MonoBehaviour:
   _bulletsPerBurst: 0
   _burstCD: 3
   _bulletCD: 0.3
-  _shootPos: {fileID: 0}
+  _shootPos: {fileID: 2889329660706087394}
+--- !u!114 &6064664604643365114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7684651609810558658}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac49b2b6d50c7a749bea4d8294713dac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OnGrid: 0
 --- !u!1 &7684651611259997065
 GameObject:
   m_ObjectHideFlags: 0

@@ -155,13 +155,14 @@ public class CapturePoint : MonoBehaviour
 
     void CheckUnits()
     {
+        //si no hay ninguno en la zona
         if (!_teamSplit[MilitaryTeam.Red].Any() && !_teamSplit[MilitaryTeam.Blue].Any())
         {
             _debug.Log("No hay unidades en el area");
             return;
         }
 
-        //rojo                    
+        //si estan el rojo y el azul en la zona                  
         if (_teamSplit[MilitaryTeam.Red].Any() && _teamSplit[MilitaryTeam.Blue].Any())
         {
             CurrentCaptureState = ZoneStates.Disputed;
@@ -170,18 +171,21 @@ public class CapturePoint : MonoBehaviour
         }
 
         string debug = "Esta siendo tomada por el equipo";
-
+     
+        //si solo esta el rojo y no esta tomada por ellos
         if (_teamSplit[MilitaryTeam.Red].Any() && takenBy != MilitaryTeam.Red)
         {
             debug += " rojo";
             CaptureProgress += Time.deltaTime * _teamSplit[MilitaryTeam.Red].Count();
             beingTakenBy = MilitaryTeam.Red;
-        }
+            CurrentCaptureState = ZoneStates.BeingTaken;
+        }//si solo estan los azules y no esta tomada por ellos
         else if (_teamSplit[MilitaryTeam.Blue].Any() && takenBy != MilitaryTeam.Blue)
         {
             debug += " azul";
             CaptureProgress -= Time.deltaTime * _teamSplit[MilitaryTeam.Blue].Count();
             beingTakenBy = MilitaryTeam.Blue;
+            CurrentCaptureState = ZoneStates.BeingTaken;
         }
         debug += $" el progreso es de {captureProgress}";
         _debug.Log(debug);
@@ -200,8 +204,10 @@ public class CapturePoint : MonoBehaviour
             case MilitaryTeam.Red:
                 if (captureProgress >= ProgressRequiredForCapture && takenBy != MilitaryTeam.Red )
                 {
-                    Debug.Log("tomada por el rojo, invoco evento de captura completada");
+                    _debug.Log("tomada por el rojo, invoco evento de captura completada");
                     takenBy = MilitaryTeam.Red;
+                    CurrentCaptureState = ZoneStates.Taken;
+
                     onCaptureComplete?.Invoke(takenBy);
                     onCaptureComplete = delegate { };
                 }
@@ -210,8 +216,10 @@ public class CapturePoint : MonoBehaviour
             case MilitaryTeam.Blue:
                 if (captureProgress <= -ProgressRequiredForCapture && takenBy != MilitaryTeam.Blue)
                 {
-                    Debug.Log("tomada por el rojo, invoco evento de captura completada");
+                    _debug.Log("tomada por el rojo, invoco evento de captura completada");
                     takenBy = MilitaryTeam.Blue;
+                    CurrentCaptureState = ZoneStates.Taken;
+
                     onCaptureComplete?.Invoke(takenBy);
                     onCaptureComplete = delegate { };
                 }
@@ -228,9 +236,7 @@ public class CapturePoint : MonoBehaviour
     private void DrawRadius()
     {
         Gizmos.color = new Color(243, 58, 106, 255) / 255;
-
         DrawCylinder(transform.position, Quaternion.identity, _zoneHeight, _zoneRadius);
-
     }
 
     IEnumerable<IZoneEntity> ZoneQuery() 
