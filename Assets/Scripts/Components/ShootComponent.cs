@@ -49,8 +49,9 @@ public class ShootComponent : MonoBehaviour
     public void Shoot(Transform shootPos,Vector3 dir)
     {
         Vector3 finalTrailPos = Vector3.zero;
+        var randomDir = dir.RandomDirFrom(Random.Range(0,_bulletspread)); 
 
-        if (Physics.Raycast(shootPos.position, dir, out RaycastHit hit, Mathf.Infinity, shootableLayers))
+        if (Physics.Raycast(shootPos.position, randomDir, out RaycastHit hit, Mathf.Infinity, shootableLayers))
         {
             if (hit.transform.TryGetComponent(out IDamagable victim))
             {
@@ -61,7 +62,7 @@ public class ShootComponent : MonoBehaviour
             finalTrailPos = hit.point;
         }
 
-        if (finalTrailPos == Vector3.zero) finalTrailPos = dir.normalized * maxTravelDistance;
+        if (finalTrailPos == Vector3.zero) finalTrailPos = randomDir.normalized * maxTravelDistance;
 
         var trail = Instantiate(trailSample, shootPos.position, Quaternion.identity);
         StartCoroutine(SpawnTrail(trail, finalTrailPos));
