@@ -6,6 +6,7 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static UnityEditor.Progress;
 using Random = UnityEngine.Random;
 
 [System.Serializable]
@@ -35,11 +36,26 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
     [SerializeField,SerializedDictionary("Team","Parameters")]
     SerializedDictionary<MilitaryTeam, TeamParameters> _matchParameters = new SerializedDictionary<MilitaryTeam, TeamParameters>();
+
+    [SerializeField, SerializedDictionary("Type", "Sprite")]
+    SerializedDictionary<string, SpriteRenderer> sprites = new SerializedDictionary<string, SpriteRenderer>() 
+    {
+        {typeof(Plane).ToString(),default },
+        {typeof(Sniper).ToString(),default },
+        {typeof(Turret).ToString(),default },
+        {typeof(IMilitary).ToString(),default },
+
+    };
     int _watchDog;
 
-    public bool canDebug;
+    [SerializeField] bool _canDebug;
 
     public event Action OnLateUpdate;
+
+    [SerializeField,Header("Team Indicator")]
+    TeamIndicator _prefab;
+    [SerializeField] SpriteRenderer icon;
+    [SerializeField] float _unitsAboveMilitary;
 
 
     #region MemberAdd
@@ -49,6 +65,9 @@ public class TeamsManager : MonoSingleton<TeamsManager>
         if (!_teams[key].Contains(value))
         {
             _teams[key].Add(value);
+            var indicator = Instantiate(_prefab, value.transform.position + Vector3.up * _unitsAboveMilitary, Quaternion.identity);
+            indicator.transform.SetParent(value.transform);
+            indicator.AssignOwner(value as IMilitary, icon);
         }
        
     }
@@ -57,7 +76,10 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     {
         foreach (var item in values.Where(x=> !_teams[key].Contains(x)))
         {            
-            _teams[key].Add(item);           
+            _teams[key].Add(item);
+            var indicator = Instantiate(_prefab, item.transform.position + Vector3.up * _unitsAboveMilitary,Quaternion.identity);
+            indicator.transform.SetParent(item.transform);
+            indicator.AssignOwner(item as IMilitary, icon);
         }
        
 
@@ -80,6 +102,8 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     #endregion
     #endregion
 
+   
+
     protected override void SingletonAwake()
     {
         foreach (MilitaryTeam key in Enum.GetValues(typeof(MilitaryTeam)))
@@ -95,8 +119,6 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     {
         foreach (MilitaryTeam key in _teams.Keys)
         {      
-
-       
             SpawnFireteams(key, _matchParameters[key]);
             SpawnPlanes(key, _matchParameters[key]);
         }
@@ -159,7 +181,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
         if (_watchDog >= 1000)
         {
             pos = Vector3.zero;
-            canDebug = false;
+            _canDebug = false;
             Debug.LogError("STACK OVERFLOW AL BUSCAR POSICIONES RANDOMS EN EL AIRE");
             return false;
         }
@@ -248,7 +270,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     private void OnDrawGizmos()
     {
 
-        if (Application.isPlaying || !canDebug) return;
+        if (Application.isPlaying || !_canDebug) return;
 
         foreach (var item in _matchParameters)
         {

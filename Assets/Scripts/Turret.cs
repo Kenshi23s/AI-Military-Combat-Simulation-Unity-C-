@@ -43,7 +43,14 @@ public class Turret : Entity, IMilitary
     {
         _myGridEntity = GetComponent<GridEntity>();
         _ShootHandler = GetComponent<ShootComponent>();
-        _fov = GetComponent<FOVAgent>(); 
+        _fov = GetComponent<FOVAgent>();
+  
+        if (Physics.Raycast(transform.position,Vector3.down,out var hit,5f))
+        {
+            transform.position = hit.point;
+            transform.up = hit.normal;
+        }
+        
     }
 
     private void Start()
