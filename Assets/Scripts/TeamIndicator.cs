@@ -12,7 +12,7 @@ public class TeamIndicator : MonoBehaviour
     Image Image;
     bool alreadyIn = false;
 
-    public void AssignOwner(IMilitary NewOwner,SpriteRenderer icon)
+    public void AssignOwner(IMilitary NewOwner,Sprite icon)
     {
         Owner = NewOwner;
      
@@ -26,8 +26,9 @@ public class TeamIndicator : MonoBehaviour
                 color = Color.red;
                 break;     
         }
-        icon.color = color;
-        Image.sprite = icon.sprite;
+        
+        Image.sprite = icon;
+        Image.color = color;
         enabled = false;
     }
 
@@ -40,7 +41,7 @@ public class TeamIndicator : MonoBehaviour
 
     private void OnBecameVisible()
     {
-        if (alreadyIn) { return; }
+        if (alreadyIn) return;
 
         TeamsManager.instance.OnLateUpdate += LookCamera;
         alreadyIn = true;
@@ -49,6 +50,7 @@ public class TeamIndicator : MonoBehaviour
     private void OnBecameInvisible()
     {
         TeamsManager.instance.OnLateUpdate -= LookCamera;
+        alreadyIn = false;
     }
 
   

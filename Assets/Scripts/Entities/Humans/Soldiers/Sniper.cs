@@ -266,7 +266,7 @@ public class Sniper : Soldier
     private void Start()
     {
         CreateFSM();
-        TeamsManager.instance.AddToTeam(Team,this);
+        TeamsManager.instance.AddToTeam(Team,this,default);
     }
 
     private void Update()

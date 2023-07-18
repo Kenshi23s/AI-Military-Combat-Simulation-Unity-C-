@@ -37,13 +37,15 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     [SerializeField,SerializedDictionary("Team","Parameters")]
     SerializedDictionary<MilitaryTeam, TeamParameters> _matchParameters = new SerializedDictionary<MilitaryTeam, TeamParameters>();
 
+
+    [Header("Team Indicator")]
     [SerializeField, SerializedDictionary("Type", "Sprite")]
-    SerializedDictionary<string, SpriteRenderer> sprites = new SerializedDictionary<string, SpriteRenderer>() 
+    SerializedDictionary<SerializableType, Sprite> sprites = new SerializedDictionary<SerializableType, Sprite>()
     {
-        {typeof(Plane).ToString(),default },
-        {typeof(Sniper).ToString(),default },
-        {typeof(Turret).ToString(),default },
-        {typeof(IMilitary).ToString(),default },
+        {new SerializableType(typeof(Plane)),default },
+        {new SerializableType(typeof(Sniper)),default },
+        {new SerializableType(typeof(Turret)),default },
+        {new SerializableType(typeof(IMilitary)),default }
 
     };
     int _watchDog;
@@ -52,21 +54,24 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
     public event Action OnLateUpdate;
 
-    [SerializeField,Header("Team Indicator")]
+  
     TeamIndicator _prefab;
-    [SerializeField] SpriteRenderer icon;
     [SerializeField] float _unitsAboveMilitary;
 
 
     #region MemberAdd
 
-    public void AddToTeam(MilitaryTeam key,Entity value)
+    public void AddToTeam(MilitaryTeam key,Entity value,Sprite icon)
     {
         if (!_teams[key].Contains(value))
         {
             _teams[key].Add(value);
             var indicator = Instantiate(_prefab, value.transform.position + Vector3.up * _unitsAboveMilitary, Quaternion.identity);
             indicator.transform.SetParent(value.transform);
+            if (icon == null)
+            {
+                icon = sprites[new SerializableType(typeof(IMilitary))];
+            }
             indicator.AssignOwner(value as IMilitary, icon);
         }
        
@@ -79,7 +84,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
             _teams[key].Add(item);
             var indicator = Instantiate(_prefab, item.transform.position + Vector3.up * _unitsAboveMilitary,Quaternion.identity);
             indicator.transform.SetParent(item.transform);
-            indicator.AssignOwner(item as IMilitary, icon);
+            indicator.AssignOwner(item as IMilitary, default);
         }
        
 

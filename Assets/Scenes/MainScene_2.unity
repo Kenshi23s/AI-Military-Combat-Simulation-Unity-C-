@@ -2268,8 +2268,21 @@ MonoBehaviour:
         SpawnArea: {fileID: 1020563752}
         width: 20
         height: 20
+  sprites:
+    _serializedList:
+    - Key:
+        name: Plane
+      Value: {fileID: 21300000, guid: 6331173cc6ae3154e805a0b6ec8a9a41, type: 3}
+    - Key:
+        name: Sniper
+      Value: {fileID: 21300000, guid: e2443a4c9183b8c4581516b98cf4dfb0, type: 3}
+    - Key:
+        name: Turret
+      Value: {fileID: 21300000, guid: 44941ff6735232c4f945798274ae617c, type: 3}
+    - Key:
+        name: IMilitary
+      Value: {fileID: 21300000, guid: faf8ca996f9b32742bd45c73694827b2, type: 3}
   _canDebug: 0
-  _prefab: {fileID: 2757783013167010051, guid: 75e6314f8f7326b49a4813e495247918, type: 3}
   _unitsAboveMilitary: 3
 --- !u!114 &658754924
 MonoBehaviour:

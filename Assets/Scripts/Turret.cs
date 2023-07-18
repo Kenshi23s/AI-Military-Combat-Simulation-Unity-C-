@@ -56,7 +56,7 @@ public class Turret : Entity, IMilitary
     private void Start()
     {
         SetFSM();
-        TeamsManager.instance.AddToTeam(Team,this);
+        TeamsManager.instance.AddToTeam(Team,this, default);
     }
     void SetFSM()
     {
