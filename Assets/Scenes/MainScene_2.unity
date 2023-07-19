@@ -2283,6 +2283,8 @@ MonoBehaviour:
         name: IMilitary
       Value: {fileID: 21300000, guid: faf8ca996f9b32742bd45c73694827b2, type: 3}
   _canDebug: 0
+  _prefabTeamIndicator: {fileID: 2757783013167010051, guid: 75e6314f8f7326b49a4813e495247918,
+    type: 3}
   _unitsAboveMilitary: 3
 --- !u!114 &658754924
 MonoBehaviour:
