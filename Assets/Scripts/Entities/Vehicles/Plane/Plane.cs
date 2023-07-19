@@ -226,7 +226,7 @@ public class Plane : Vehicle
             .Where(x => x != this)
             .Where(x => 
             {
-                Debug.Log(x);
+                
                 return _fov.IN_FOV(x.transform.position,PlanesManager.instance.groundMask);
 
             })

@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [RequireComponent(typeof(ShootComponent))]
@@ -52,6 +53,13 @@ public class Sniper : Soldier
         _laser.enabled = false;
       
     }
+    private void Start()
+    {
+        CreateFSM();
+        var sprite = TeamsManager.instance.GetSprite(typeof(Sniper));
+        TeamsManager.instance.AddToTeam(Team, this, sprite);
+    }
+
 
     #region FSM SET AND STATES
     void CreateFSM()
@@ -263,11 +271,7 @@ public class Sniper : Soldier
         Team = newTeam;
     }
 
-    private void Start()
-    {
-        CreateFSM();
-        TeamsManager.instance.AddToTeam(Team,this,default);
-    }
+   
 
     private void Update()
     {

@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [RequireComponent(typeof(GridEntity))]
@@ -26,7 +27,7 @@ public class Turret : Entity, IMilitary
 
     GridEntity _myGridEntity;
     FOVAgent _fov;
- 
+    [SerializeField] float rotationSpeed;
     [SerializeField] float _cd_BetweenSearch;
 
     [SerializeField,Header("Shooting")] 
@@ -37,26 +38,27 @@ public class Turret : Entity, IMilitary
 
     EventFSM<TurretStates> _turretFSM;
 
-
+    [SerializeField]float fixedCanonPos;
 
     protected override void EntityAwake()
     {
         _myGridEntity = GetComponent<GridEntity>();
         _ShootHandler = GetComponent<ShootComponent>();
         _fov = GetComponent<FOVAgent>();
-  
-        if (Physics.Raycast(transform.position,Vector3.down,out var hit,5f))
-        {
-            transform.position = hit.point;
-            transform.up = hit.normal;
-        }
-        
+
+        //if (Physics.Raycast(transform.position,Vector3.down,out var hit,5f))
+        //{
+        //    transform.position = hit.point;
+        //    transform.up = hit.normal;
+        //}
+        fixedCanonPos = _pivotCanon.transform.localRotation.eulerAngles.y;
     }
 
     private void Start()
     {
         SetFSM();
-        TeamsManager.instance.AddToTeam(Team,this, default);
+        var sprite = TeamsManager.instance.GetSprite(typeof(Turret));
+        TeamsManager.instance.AddToTeam(Team,this, sprite);
     }
     void SetFSM()
     {
@@ -89,20 +91,35 @@ public class Turret : Entity, IMilitary
         _turretFSM = new EventFSM<TurretStates>(restState);
     }
 
-
+    void LateUpdate()
+    {
+        //var fixPos = new Vector3(_pivotCanon.localRotation.eulerAngles.x,fixedCanonPos,_pivotCanon.localRotation.y);
+        //_pivotCanon.localRotation = Quaternion.LookRotation(fixPos); 
+    }
 
     State<TurretStates> Rest_State()
     {
         var state = new State<TurretStates>("Rest");
 
+        state.OnEnter += (x) => DebugEntity.Log("Entro en Rest State");
+
+
         state.OnUpdate += () =>
         {
-            if (!AlignBase(Vector3.zero) || !AlignCanon(Vector3.zero)) return;
+            DebugEntity.Log("Descansando");
+            var Acanon = AlignCanon(Vector3.zero);         
+            var Abase = AlignBase(Vector3.zero);
+           
+          
+            if (!Abase || !Acanon) return;
 
+            DebugEntity.Log("Ya descanse, vuelvo a search");
             _pivotTurret.forward = Vector3.zero;
             _pivotCanon.forward  = Vector3.zero;
             _turretFSM.SendInput(TurretStates.SEARCH_TARGETS);         
         };
+
+
 
 
         return state;
@@ -112,6 +129,10 @@ public class Turret : Entity, IMilitary
     State<TurretStates> SearchTargets_State()
     {
         var state = new State<TurretStates>("SEARCH");
+
+        state.OnEnter += (x) => DebugEntity.Log("Entro en "+ state.Name);
+
+        state.OnExit += (x) => DebugEntity.Log("Salgo de  " + state.Name);
 
         state.OnEnter += (x) => StartCoroutine(LookForHostilePlane());
 
@@ -123,6 +144,10 @@ public class Turret : Entity, IMilitary
     State<TurretStates> Align_State()
     {
         var state = new State<TurretStates>("ALIGN");
+
+        state.OnEnter += (x) => DebugEntity.Log("Entro en " + state.Name);
+
+        state.OnExit += (x) => DebugEntity.Log("Salgo de  " + state.Name);
 
         state.OnUpdate += () =>
         {
@@ -148,6 +173,9 @@ public class Turret : Entity, IMilitary
     State<TurretStates> Shoot_State()
     {
         var state = new State<TurretStates>("SHOOT");
+
+        state.OnEnter += (x) => DebugEntity.Log("Entro en " + state.Name);
+        state.OnExit += (x) => DebugEntity.Log("Salgo de  " + state.Name);
 
         state.OnEnter += (x) => StartCoroutine(ShootBullets());
 
@@ -178,8 +206,8 @@ public class Turret : Entity, IMilitary
     Transform GetShootPos()
     {
         _pos++;
-        if (_pos > _shootPos.Length) _pos = 0;
-
+        if (_pos > _shootPos.Length - 1) _pos = 0;
+       
         return _shootPos[_pos];
     }
 
@@ -193,6 +221,7 @@ public class Turret : Entity, IMilitary
             Vector3 dir = Target.AimPoint - shootPos.position;
 
             _ShootHandler.Shoot(shootPos,dir);
+            DebugEntity.Log("Shoot");
 
             yield return wait;
         }
@@ -204,13 +233,15 @@ public class Turret : Entity, IMilitary
         while (true) 
         {
 
-            Target = _myGridEntity.GetEntitiesInRange(_pos)
+            Target = _myGridEntity.GetEntitiesInRange(_fov.ViewRadius)
                 .OfType<Plane>()
                 .Where(x => _fov.IN_FOV(x.transform.position))
                 .Minimum(x => Vector3.Distance(x.transform.position,transform.position));
+
             if (Target!=null)
             {
                 _turretFSM.SendInput(TurretStates.ALIGN);
+                DebugEntity.Log("Veo un enemigo, alineo");
                 break;
             }
 
@@ -220,26 +251,37 @@ public class Turret : Entity, IMilitary
 
     bool AlignBase(Vector3 dir)
     {
-        var dirXZ = new Vector3(dir.x, 0, dir.z).normalized;
-        _pivotTurret.forward += dirXZ * Time.deltaTime;
+        var desiredLookRotation = new Vector3(dir.x ,0 , 0).normalized;
+        Quaternion target = Quaternion.LookRotation(desiredLookRotation);
+        _pivotTurret.localRotation = Quaternion.Lerp(_pivotTurret.localRotation, target, Time.deltaTime * rotationSpeed);
 
-        return _canonMinAngle < Vector3.Angle(transform.forward,dir);
+      
+        return _baseMinAngle > Quaternion.Angle(_pivotTurret.localRotation, target);
 
     }
 
     bool AlignCanon(Vector3 dir)
     {
-        var dirY = new Vector3(0,dir.y,0).normalized;
-        _pivotCanon.forward += dirY * Time.deltaTime;
+       
+        var desiredLookRotation = new Vector3(0, dir.y, 0).normalized;
+        Quaternion target = Quaternion.LookRotation(desiredLookRotation);
+        _pivotCanon.localRotation = Quaternion.Lerp(_pivotCanon.localRotation, target, Time.deltaTime * rotationSpeed);
 
-        return _canonMinAngle < Vector3.Angle(transform.forward, dirY);
+
+        return _canonMinAngle > Quaternion.Angle(_pivotCanon.localRotation, target);
 
     }
 
+   
 
     private void Update()
     {
         _turretFSM?.Update();
     }
 
+    private void OnValidate()
+    {
+        fixedCanonPos = _pivotCanon.transform.localRotation.eulerAngles.y;
+       
+    }
 }
