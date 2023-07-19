@@ -29,33 +29,37 @@ public class TeamIndicator : MonoBehaviour
         
         Image.sprite = icon;
         Image.color = color;
-        enabled = false;
+       
     }
 
 
 
     void LookCamera()
     {
-        transform.forward = Camera.main.transform.position - transform.position;
+        transform.forward = (Camera.main.transform.position - transform.position).normalized;
     }
-
-    private void OnBecameVisible()
+    private void LateUpdate()
     {
-        if (alreadyIn) return;
-
-        TeamsManager.instance.OnLateUpdate += LookCamera;
-        alreadyIn = true;
+        LookCamera();
     }
 
-    private void OnBecameInvisible()
-    {
-        TeamsManager.instance.OnLateUpdate -= LookCamera;
-        alreadyIn = false;
-    }
+    //private void OnBecameVisible()
+    //{
+    //    if (alreadyIn) return;
 
-  
+    //    TeamsManager.instance.OnLateUpdate += LookCamera;
+    //    alreadyIn = true;
+    //}
 
-   
+    //private void OnBecameInvisible()
+    //{
+    //    TeamsManager.instance.OnLateUpdate -= LookCamera;
+    //    alreadyIn = false;
+    //}
+
+
+
+
 
 
 }

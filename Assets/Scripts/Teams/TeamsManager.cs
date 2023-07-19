@@ -40,7 +40,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
     [Header("Team Indicator")]
     [SerializeField, SerializedDictionary("Type", "Sprite")]
-    SerializedDictionary<SerializableType, Sprite> sprites = new SerializedDictionary<SerializableType, Sprite>()
+    public SerializedDictionary<SerializableType, Sprite> sprites = new SerializedDictionary<SerializableType, Sprite>()
     {
         {new SerializableType(typeof(Plane)),default },
         {new SerializableType(typeof(Sniper)),default },
@@ -48,6 +48,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
         {new SerializableType(typeof(IMilitary)),default }
 
     };
+
     int _watchDog;
 
     [SerializeField] bool _canDebug;
@@ -55,39 +56,44 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     public event Action OnLateUpdate;
 
   
-    TeamIndicator _prefab;
+    [SerializeField] TeamIndicator _prefabTeamIndicator;
     [SerializeField] float _unitsAboveMilitary;
 
 
     #region MemberAdd
 
-    public void AddToTeam(MilitaryTeam key,Entity value,Sprite icon)
+    public void AddToTeam(MilitaryTeam key,Entity value,Sprite icon = default)
     {
         if (!_teams[key].Contains(value))
         {
             _teams[key].Add(value);
-            var indicator = Instantiate(_prefab, value.transform.position + Vector3.up * _unitsAboveMilitary, Quaternion.identity);
+            var indicator = Instantiate(_prefabTeamIndicator, value.transform.position + Vector3.up * _unitsAboveMilitary, Quaternion.identity);
             indicator.transform.SetParent(value.transform);
-            if (icon == null)
-            {
-                icon = sprites[new SerializableType(typeof(IMilitary))];
-            }
+
+            if (icon == default)
+                icon = GetSprite(typeof(IMilitary));
+
+
             indicator.AssignOwner(value as IMilitary, icon);
         }
        
     }
 
-    public void AddToTeam(MilitaryTeam key, IEnumerable<Entity> values)
+    public void AddToTeam(MilitaryTeam key, IEnumerable<Entity> values,Sprite icon = default)
     {
-        foreach (var item in values.Where(x=> !_teams[key].Contains(x)))
+        foreach (var item in values.Where(x => !_teams[key].Contains(x)))
         {            
             _teams[key].Add(item);
-            var indicator = Instantiate(_prefab, item.transform.position + Vector3.up * _unitsAboveMilitary,Quaternion.identity);
+            var indicator = Instantiate(_prefabTeamIndicator, item.transform.position + Vector3.up * _unitsAboveMilitary,Quaternion.identity);
             indicator.transform.SetParent(item.transform);
-            indicator.AssignOwner(item as IMilitary, default);
-        }
-       
 
+
+         
+            if (icon == default)
+                icon = GetSprite(typeof(IMilitary));
+
+            indicator.AssignOwner(item as IMilitary, icon);
+        }
     }
 
     public void RemoveFromTeam(MilitaryTeam key, Entity value)
@@ -109,6 +115,18 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
    
 
+    public Sprite GetSprite(Type targetType)
+    {
+
+        foreach (var keys in sprites.Keys)
+        {
+            if (targetType == keys.type)           
+                return sprites[keys];
+            
+        }
+        return sprites.Where(x => x.Key.type == typeof(IMilitary)).First().Value;
+    }
+
     protected override void SingletonAwake()
     {
         foreach (MilitaryTeam key in Enum.GetValues(typeof(MilitaryTeam)))
@@ -117,6 +135,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
             _teams.Add(key, new List<Entity>());
         }
+       
 
     }
 
@@ -161,12 +180,13 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
     void SpawnPlanes(MilitaryTeam team, TeamParameters parameters)
     {
+        var type = new SerializableType(typeof(Plane));
         for (int i = 0; i < parameters.planesQuantity; i++)
         {
             if (GetRandomFreePosOnAir(parameters,out Vector3 pos))
             {
                 var x = Instantiate(_planePrefab,pos,Quaternion.identity);
-                _teams[team].Add(x);
+                AddToTeam(team, x, GetSprite(typeof(Plane)));
             }
             else           
                 return;                               
