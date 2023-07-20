@@ -184,12 +184,16 @@ public class Turret : Entity, IMilitary
             if (_fov.IN_FOV(Target.AimPoint) && Target.Health.isAlive) return;
             
                 Target = null;
-                _turretFSM.SendInput(TurretStates.ALIGN);         
+                _turretFSM.SendInput(TurretStates.REST);         
         };
 
         state.OnUpdate += () =>
         {
-            if (Target == null) return;
+            if (Target == null) 
+            {
+                DebugEntity.Log("perdi al target de vista,paso a rest");
+                return;
+            } 
 
             Vector3 dir = Target.AimPoint - transform.position;
 
@@ -238,7 +242,7 @@ public class Turret : Entity, IMilitary
                 .Where(x => _fov.IN_FOV(x.transform.position))
                 .Minimum(x => Vector3.Distance(x.transform.position,transform.position));
 
-            if (Target!=null)
+            if (Target != null)
             {
                 _turretFSM.SendInput(TurretStates.ALIGN);
                 DebugEntity.Log("Veo un enemigo, alineo");
@@ -251,24 +255,23 @@ public class Turret : Entity, IMilitary
 
     bool AlignBase(Vector3 dir)
     {
-        var desiredLookRotation = new Vector3(dir.x ,0 , 0).normalized;
+        var desiredLookRotation = new Vector3(dir.x ,0 , dir.z);
         Quaternion target = Quaternion.LookRotation(desiredLookRotation);
-        _pivotTurret.localRotation = Quaternion.Lerp(_pivotTurret.localRotation, target, Time.deltaTime * rotationSpeed);
+        _pivotTurret.rotation = Quaternion.Lerp(_pivotTurret.rotation, target, Time.deltaTime * rotationSpeed);
 
       
-        return _baseMinAngle > Quaternion.Angle(_pivotTurret.localRotation, target);
+        return _baseMinAngle > Quaternion.Angle(_pivotTurret.rotation, target);
 
     }
 
     bool AlignCanon(Vector3 dir)
-    {
-       
-        var desiredLookRotation = new Vector3(0, dir.y, 0).normalized;
+    {     
+        var desiredLookRotation = dir;
         Quaternion target = Quaternion.LookRotation(desiredLookRotation);
-        _pivotCanon.localRotation = Quaternion.Lerp(_pivotCanon.localRotation, target, Time.deltaTime * rotationSpeed);
+        _pivotCanon.rotation = Quaternion.Lerp(_pivotCanon.rotation, target, Time.deltaTime * rotationSpeed);
+        
 
-
-        return _canonMinAngle > Quaternion.Angle(_pivotCanon.localRotation, target);
+        return _canonMinAngle > Quaternion.Angle(_pivotCanon.rotation, target);
 
     }
 
@@ -283,5 +286,14 @@ public class Turret : Entity, IMilitary
     {
         fixedCanonPos = _pivotCanon.transform.localRotation.eulerAngles.y;
        
+    }
+    private void OnDrawGizmos()
+    {
+        if (Target == null) return;
+        Debug.Log("Gizmo Draw");
+        Gizmos.color = new Color(255, 165, 0)/255  + new Color(0, 0, 0, 1);
+        Gizmos.DrawLine(transform.position, Target.transform.position);
+        Gizmos.DrawWireSphere(Target.transform.position,2f);
+        
     }
 }

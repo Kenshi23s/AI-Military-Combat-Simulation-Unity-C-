@@ -49,7 +49,7 @@ public class ShootComponent : MonoBehaviour
     public void Shoot(Transform shootPos,Vector3 dir)
     {
         Vector3 finalTrailPos = Vector3.zero;
-        var randomDir = dir.RandomDirFrom(Random.Range(0,_bulletspread)); 
+        var randomDir = dir.normalized.RandomDirFrom(Random.Range(0,_bulletspread)); 
 
         if (Physics.Raycast(shootPos.position, randomDir, out RaycastHit hit, Mathf.Infinity, shootableLayers))
         {
