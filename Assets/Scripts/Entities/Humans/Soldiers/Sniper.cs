@@ -42,6 +42,7 @@ public class Sniper : Soldier
     [SerializeField] float _requiredFocusTime, maxShootsInRow = 1;
     int timesFocused = 1;
 
+
     [SerializeField] Animator _anim;
 
     protected override void SoldierAwake()
@@ -169,23 +170,33 @@ public class Sniper : Soldier
             } 
 
             Vector3 dir = target.AimPoint - transform.position;
+
             if (_currentAimLerp < 1)
             {
                 DebugEntity.Log("Apunto al Objetivo");
+
                 _currentAimLerp += Time.deltaTime * _aimSpeed;
-               
-                Vector3 aux = Vector3.Slerp(transform.forward, dir.normalized, _currentAimLerp);
-                transform.forward = new Vector3(aux.x, transform.forward.y, aux.z);
+
+                transform.rotation = Quaternion.Lerp(transform.rotation, GetTargetRotation(dir), _currentAimLerp);
+
+              
                 return;
             }
+
             DebugEntity.Log("Tengo al enemigo en la mira!");
+
             _currentAimLerp = 1;
+
             transform.forward = dir.normalized;
+
             _fsm.SendInput(SNIPER_STATES.FOCUS_N_SHOOT);
         };
 
         return state;
     }
+
+
+    
 
     State<SNIPER_STATES> ShootAtEnemy()
     {
@@ -208,7 +219,8 @@ public class Sniper : Soldier
 
             Vector3 dir = target.AimPoint - transform.position;
          
-            transform.forward = new Vector3(dir.x,0,dir.z).normalized;
+            transform.rotation = GetTargetRotation(dir + Vector3.zero);
+
             //tiempo entre frames * incremento en la velocidad que se puede concentrar * las veces que se concentro
             //(queria darle como un toque unico al sniper con esto, quedo medio raro?)
             _currentFocusTime += Time.deltaTime * (_addPerTimesFocused * timesFocused);
@@ -217,7 +229,7 @@ public class Sniper : Soldier
             if (_currentFocusTime >= _requiredFocusTime)
             {
                 _currentFocusTime = 0;
-                _shootComponent.Shoot(_shootPos,dir);
+                _shootComponent.Shoot(_shootPos, target.AimPoint - _shootPos.position);
                 timesFocused++;
                 DebugEntity.Log("Disparo al target");
 
@@ -264,6 +276,19 @@ public class Sniper : Soldier
          _laser.enabled = true;
          _laser.SetPosition(0,_shootPos.position);
          _laser.SetPosition(1, target.AimPoint);
+    }
+
+    Quaternion GetTargetRotation(Vector3 dir)
+    {
+        Vector3 gunForward = _shootPos.forward; gunForward.y = 0;
+
+        dir.y = 0;
+
+        Quaternion fromToRotation = Quaternion.FromToRotation(gunForward.normalized, dir.normalized);
+
+        Quaternion targetRotation = transform.rotation * fromToRotation;
+
+        return targetRotation;
     }
 
     public void InitializeUnit(MilitaryTeam newTeam)
