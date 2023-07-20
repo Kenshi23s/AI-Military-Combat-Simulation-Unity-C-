@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using FacundoColomboMethods;
 
 namespace IA2
 {
@@ -31,6 +32,12 @@ namespace IA2
         {
 			return transitions[input];
 	    }
+
+		public Dictionary<T, Transition<T>> GetAllTransitions()
+		{
+			return new Dictionary<T, Transition<T>>(transitions);
+
+        }
 
 		public bool CheckInput(T input, out State<T> next)
         {

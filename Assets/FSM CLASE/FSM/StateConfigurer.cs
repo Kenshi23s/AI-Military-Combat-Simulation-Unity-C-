@@ -6,19 +6,33 @@ namespace IA2 {
 		State<T> instance;
 		Dictionary<T, Transition<T>> transitions = new Dictionary<T, Transition<T>>();
 
-		public StateConfigurer(State<T> state) {
-			instance = state;
+		public StateConfigurer(State<T> state) => instance = state;
+
+        public StateConfigurer<T> AddOldTransitions()
+		{
+			foreach (var item in instance.GetAllTransitions())		
+				transitions.Add(item.Key,item.Value);
+      
+			return this;
 		}
 
-		public StateConfigurer<T> SetTransition(T input, State<T> target) {
+        public  StateConfigurer<T> RemoveTransition(T key)
+		{
+			if (transitions.ContainsKey(key))			
+				transitions.Remove(key);
+			
+			return this;
+		}
+
+        public StateConfigurer<T> SetTransition(T input, State<T> target) 
+		{
 			transitions.Add(input, new Transition<T>(input, target));
 			return this;
 		}
 
-		public void Done() {
-			instance.Configure(transitions);
-		}
-	}
+		public void Done() => instance.Configure(transitions);
+
+    }
 
 	public static class StateConfigurer
     {
@@ -26,5 +40,6 @@ namespace IA2 {
         {
 			return new StateConfigurer<T>(state);
 		}
-	}
+
+    }
 }
