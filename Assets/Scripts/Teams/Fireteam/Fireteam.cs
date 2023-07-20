@@ -48,9 +48,9 @@ public class Fireteam
                          
     }
 
-    public void AddMember(IEnumerable<Infantry> infantry)
+    public void AddMember(IEnumerable<Infantry> infantryCol)
     {
-        foreach (var item in infantry.Where(x => !_fireteamMembers.Contains(x)))
+        foreach (var item in infantryCol.Where(x => !_fireteamMembers.Contains(x)))
         {
             _fireteamMembers.Add(item);
             item.SetFireteam(this);
@@ -61,13 +61,21 @@ public class Fireteam
     public void RemoveMember(Infantry infantry)
     {
         if (_fireteamMembers.Contains(infantry))        
-            _fireteamMembers.Remove(infantry);       
+            _fireteamMembers.Remove(infantry);
+
+        if (infantry == Leader && !_fireteamMembers.Any()) return;
+
+        Leader = _fireteamMembers.PickRandom();         
     }
 
-    public void RemoveMember(IEnumerable<Infantry> infantry)
+    public void RemoveMember(IEnumerable<Infantry> infantryCol)
     {
-        foreach (var item in infantry.Where(x => _fireteamMembers.Contains(x)))       
+        foreach (var item in infantryCol.Where(x => _fireteamMembers.Contains(x)))       
             _fireteamMembers.Remove(item);
+
+        if (infantryCol.Contains(Leader) && !_fireteamMembers.Any()) return;
+
+        Leader = _fireteamMembers.PickRandom();
     }
     #endregion
 
