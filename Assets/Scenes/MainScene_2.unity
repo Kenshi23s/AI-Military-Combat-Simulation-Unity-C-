@@ -2254,7 +2254,7 @@ MonoBehaviour:
       Value:
         FireteamQuantity: 1
         membersPerFireteam: 3
-        planesQuantity: 5
+        planesQuantity: 0
         tanksQuantity: 0
         SpawnArea: {fileID: 1823427471}
         width: 20
@@ -2263,7 +2263,7 @@ MonoBehaviour:
       Value:
         FireteamQuantity: 0
         membersPerFireteam: 0
-        planesQuantity: 5
+        planesQuantity: 0
         tanksQuantity: 0
         SpawnArea: {fileID: 1020563752}
         width: 20
