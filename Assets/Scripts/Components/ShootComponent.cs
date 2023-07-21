@@ -56,7 +56,7 @@ public class ShootComponent : MonoBehaviour
             if (hit.transform.TryGetComponent(out IDamagable victim))
             {
                 victim.TakeDamage(_bulletdamage);
-                Debug.Log($"Hit! le hice daño a {victim}");
+                Debug.Log($"{gameObject.name} le hizo daño a {victim}");
                 onHit?.Invoke(victim);
             }
             finalTrailPos = hit.point;

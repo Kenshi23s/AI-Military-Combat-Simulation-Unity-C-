@@ -296,17 +296,20 @@ public class Infantry : Soldier
             InCombat = false;
 
 
-            var colliders = FList.Create<Collider>(GetComponent<Collider>()) + GetComponentsInChildren<Collider>();
-            foreach (var item in colliders.Where(x => x != null))
-            {
-                item.enabled = false;
-            }
+            var colliders = FList.Create(GetComponent<Collider>()) + GetComponentsInChildren<Collider>();
 
+            foreach (var item in colliders.Where(x => x != null)) item.enabled = false;
+
+            GetComponent<Rigidbody>().useGravity = false;
+
+            _infantry_AI.CancelMovement();
+            _infantry_AI.ManualMovement.UseGravity(false);
+            _infantry_AI.ManualMovement.DeactivateMovement();
             _anim.SetBool("Die",true);
 
+            DebugEntity.Log("Mori");
             MyFireteam.RemoveMember(this);
 
-            DebugEntity.Log("Mori");
         };
 
         return state;

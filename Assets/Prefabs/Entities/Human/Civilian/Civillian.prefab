@@ -452,10 +452,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26e164ce1119c5a4b97d9c825076c88c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  destinationArriveDistance: 3
+  DestinationArriveDistance: 0
   obstacleMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1024
 --- !u!114 &4015529176650051654
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -487,7 +487,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 551c73c40b1595d48849dae5f4eee502, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <MyTeam>k__BackingField: 0
+  AimingPoint: {fileID: 4014297498884675600}
 --- !u!1 &4016105130084220768
 GameObject:
   m_ObjectHideFlags: 0

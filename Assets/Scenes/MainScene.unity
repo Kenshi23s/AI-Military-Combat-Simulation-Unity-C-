@@ -972,6 +972,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: Sniper
       objectReference: {fileID: 0}
+    - target: {fileID: 777312752516997949, guid: 5c69a824fe0e44d479879926d759160b,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5673067206364739106, guid: 5c69a824fe0e44d479879926d759160b,
+        type: 3}
+      propertyPath: _aimSpeed
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5673067206364739106, guid: 5c69a824fe0e44d479879926d759160b,
+        type: 3}
+      propertyPath: _requiredFocusTime
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 8309585079942525626, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
       propertyPath: m_RootOrder
@@ -980,17 +995,17 @@ PrefabInstance:
     - target: {fileID: 8309585079942525626, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -8.1
+      value: -9.26
       objectReference: {fileID: 0}
     - target: {fileID: 8309585079942525626, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 3.208
+      value: 0.492
       objectReference: {fileID: 0}
     - target: {fileID: 8309585079942525626, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -153.5
+      value: -172.07
       objectReference: {fileID: 0}
     - target: {fileID: 8309585079942525626, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}

@@ -309,7 +309,7 @@ MonoBehaviour:
   - {fileID: 5285789855417990210}
   - {fileID: 3355421752814213245}
   misileStats:
-    Team: 0
+    Team: 2
     acceleration: 25
     maxSpeed: 50
     timeBeforeExplosion: 20

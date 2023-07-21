@@ -343,6 +343,15 @@ public class NewPhysicsMovement : MonoBehaviour
         }
     }
 
+
+    public void DeactivateMovement()
+    {
+        _acceleration = 0;
+        Rigidbody.Sleep();   
+        Rigidbody.constraints = RigidbodyConstraints.FreezeAll;
+        Rigidbody.velocity = Vector3.zero;
+    }
+
     bool SnapToGround() 
     {
         if (!GroundSnapping) 

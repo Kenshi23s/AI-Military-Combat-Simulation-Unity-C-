@@ -35,14 +35,14 @@ public class NewAIMovement : MonoBehaviour
         Owner = GetComponent<GridEntity>();
         _debug = GetComponent<DebugableObject>();
 
-        _debug.AddGizmoAction(DrawPath);
+        _debug.AddGizmoAction(DrawPath); _debug.AddGizmoAction(DrawDestination);
 
         OnDestinationChanged += () => { OnCurrentDestinationReach = delegate { }; };
         OnMovementCanceled +=   () => { OnCurrentDestinationReach = delegate { }; };
     }
 
-  
 
+    #region SetDestinations
     public void SetDestination(Vector3 newDestination)
     {
         if (newDestination != Destination) OnDestinationChanged?.Invoke();
@@ -77,7 +77,6 @@ public class NewAIMovement : MonoBehaviour
         }
     }
 
-
     public void SetDestination(Vector3 newDestination, Action<bool> OnFinishCalculating, Action onDestinationReach)
     {
         if (_path.Any() && newDestination != Destination) OnDestinationChanged?.Invoke();
@@ -94,6 +93,7 @@ public class NewAIMovement : MonoBehaviour
             CalculatePath(newDestination, onCalculate);
         
     }
+    #endregion
 
     void OnDesinationAtSight(Vector3 newDestination)
     {
@@ -116,11 +116,13 @@ public class NewAIMovement : MonoBehaviour
             }
             else
             {
-                ManualMovement.AccelerateTowardsTarget(newDestination);
+                newDestination += ObstacleAvoidance();
+                ManualMovement.AccelerateTowards(newDestination);
             }
         };
     }
 
+    #region CalculatePath
     void CalculatePath(Vector3 newDestination)
     {
         _debug.Log("No veo el destino, calculo el camino.");
@@ -161,9 +163,10 @@ public class NewAIMovement : MonoBehaviour
         }
 
     }
+    #endregion
 
 
-
+    #region PathPlay
     void CanPlayPath(bool pathmade,List<Vector3> newPath)
     {
         if (!pathmade)
@@ -187,7 +190,9 @@ public class NewAIMovement : MonoBehaviour
         if (_path.Any())
         {
             _debug.Log("Se mueve hacia el siguiente nodo, me faltan " + _path.Count);
-            ManualMovement.AccelerateTowardsTarget(_path[0]);
+            var dir = _path[0] - transform.position;
+            dir += ObstacleAvoidance();
+            ManualMovement.AccelerateTowards(dir);
         }
         else // Si no quedan, finalizar el recorrido
         {
@@ -207,12 +212,15 @@ public class NewAIMovement : MonoBehaviour
         ManualMovement.AccelerateTowards(Vector3.zero);
         _path.Clear();
     }
+    #endregion
 
     public void CancelMovement()
     {     
         ClearPath();
         OnMovementCanceled?.Invoke();
     }
+
+
 
     void DrawPath()
     {
@@ -225,12 +233,20 @@ public class NewAIMovement : MonoBehaviour
         }
     }
 
+    void DrawDestination()
+    {
+        if (Destination != Vector3.zero)
+        {
+            Gizmos.DrawWireSphere(Destination,3f);
+        }
+    }
+
     Vector3 ObstacleAvoidance()
     {
 
         float dist = ManualMovement.CurrentSpeed;
 
-        if (Physics.SphereCast(transform.position, 1.5f, transform.forward, out RaycastHit hit, dist, obstacleMask))
+        if (Physics.SphereCast(transform.position, 1.5f, ManualMovement.Velocity, out RaycastHit hit, dist, obstacleMask))
         {
             //_debug.Log("ESTOY HACIENDO OBSTACLE AVOIDANCE!");
             Vector3 obstacle = hit.transform.position;

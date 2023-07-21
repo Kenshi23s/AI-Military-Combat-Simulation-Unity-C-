@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 33711826234905054}
   - component: {fileID: 23948654574207452}
   - component: {fileID: 727451904135410813}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: SM_Prop_Barrel_02
   m_TagString: Untagged
   m_Icon: {fileID: 0}

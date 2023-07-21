@@ -1828,7 +1828,7 @@ GameObject:
   - component: {fileID: 7684651609810558656}
   - component: {fileID: 6308491211211733762}
   m_Layer: 9
-  m_Name: Military
+  m_Name: Infantry
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1895,7 +1895,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AimingPoint: {fileID: 7686234030039808085}
-  <Team>k__BackingField: 0
+  <Team>k__BackingField: 2
   _anim: {fileID: 7779844200561149171}
   _timeBeforeSelectingTarget: 2
   _shootPos: {fileID: 2889329660706087394}
@@ -1969,7 +1969,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 360ca867e48780448a1401b7fc47e037, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  canDebug: 0
+  canDebug: 1
   gizmoDraw:
     m_PersistentCalls:
       m_Calls: []
