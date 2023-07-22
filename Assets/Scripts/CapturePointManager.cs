@@ -8,44 +8,51 @@ using UnityEngine;
 
 public class CapturePointManager : MonoSingleton<CapturePointManager> 
 {
-    Dictionary<MilitaryTeam, List<CapturePoint>> _capturePoints = new Dictionary<MilitaryTeam, List<CapturePoint>>();
+    List<CapturePoint> _capturePoints = new List<CapturePoint>();
 
-    public ReadOnlyDictionary<MilitaryTeam, List<CapturePoint>> CapturePoints;
+    public ReadOnlyCollection<CapturePoint> CapturePoints { get; private set; }
 
     protected override void SingletonAwake()
     {
-        foreach (MilitaryTeam key in Enum.GetValues(typeof(MilitaryTeam))) _capturePoints.Add(key, new List<CapturePoint>());
+        CapturePoints = _capturePoints.AsReadOnly();
 
-        CapturePoints =  new ReadOnlyDictionary<MilitaryTeam, List<CapturePoint>>(_capturePoints);
-    }
-    public void AddZone(CapturePoint newZone)
-    {
-        foreach (MilitaryTeam key in _capturePoints.Keys)        
-            if (_capturePoints[key].Contains(newZone))          
-                return;
-
-        _capturePoints[newZone.takenBy].Add(newZone);
-        newZone.onPointOwnerChange.AddListener(() => ChangeKeyInDictionary(newZone));
     }
 
-    public void ChangeKeyInDictionary(CapturePoint point)
+    public void Add(CapturePoint capturePoint) 
     {
-        foreach (MilitaryTeam key in _capturePoints.Keys.Where(x => point.takenBy != x))       
-          if (_capturePoints[key].Contains(point))
-          {
-              _capturePoints[key].Remove(point);
-              break;
-          }
+        if (!_capturePoints.Contains(capturePoint))
+            _capturePoints.Add(capturePoint);
+    }
 
-        _capturePoints[point.takenBy].Add(point);
-        
+    public void Remove(CapturePoint capturePoint)
+    {
+        if (_capturePoints.Contains(capturePoint))
+            _capturePoints.Remove(capturePoint);
     }
 
     public MilitaryTeam WhosWinning()
-    {      
-        if (_capturePoints[MilitaryTeam.Red].Count > _capturePoints[MilitaryTeam.Blue].Count)  return MilitaryTeam.Red;
+    {
+        int blue = 0;
+        int red = 0;
 
-        if (_capturePoints[MilitaryTeam.Red].Count < _capturePoints[MilitaryTeam.Blue].Count)  return MilitaryTeam.Blue;
+        foreach (var item in _capturePoints)
+        {
+            switch (item.CapturedBy)
+            {
+                case MilitaryTeam.Blue:
+                    blue++;
+                    break;
+                case MilitaryTeam.Red:
+                    red++;
+                    break;
+            }
+        }
+
+        if (blue > red)
+            return MilitaryTeam.Blue;
+
+        if (red > blue)
+            return MilitaryTeam.Red;
 
         return MilitaryTeam.None;
     }   

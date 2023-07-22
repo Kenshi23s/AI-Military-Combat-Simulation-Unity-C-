@@ -4,21 +4,21 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(GridEntity))]
-public abstract class Soldier : Human, IMilitary , IZoneEntity
+public abstract class Soldier : Human, IMilitary, ICapturePointEntity
 {
-    [field : SerializeField,Header("Soldier")]public MilitaryTeam Team { get; protected set; }
+    [field : SerializeField, Header("Soldier")] public MilitaryTeam Team { get; protected set; }
 
     protected GridEntity _gridEntity;
 
     public bool InCombat { get; protected set; }
 
-    public bool CanCapture => Health.isAlive;
+    public bool CanCapture => Health.IsAlive;
 
     public CapturePoint Zone { get; protected set; }
  
-    public event Action onZoneEnter;
-    public event Action onZoneStay;
-    public event Action onZoneExit;
+    public event Action OnZoneEnter = delegate { };
+    public event Action OnZoneStay = delegate { };
+    public event Action OnZoneExit = delegate { };
 
     protected override void EntityAwake()
     {
@@ -29,26 +29,23 @@ public abstract class Soldier : Human, IMilitary , IZoneEntity
     protected abstract void SoldierAwake();
 
 
-    public void ZoneEnter(CapturePoint _zone)
+    public void ZoneEnter(CapturePoint zone)
     {
-        Zone = _zone;
-        onZoneEnter?.Invoke();
+        Zone = zone;
         DebugEntity.Log("ZoneEnter");
+        OnZoneEnter();
     }
 
-    public void ZoneStay(CapturePoint _zone)
+    public void ZoneStay()
     {
-        if (Zone != _zone) return;
         DebugEntity.Log("ZoneStay");
-        onZoneStay?.Invoke();
+        OnZoneStay();        
     }
 
-    public void ZoneExit(CapturePoint _zone)
+    public void ZoneExit(CapturePoint zone)
     {
-        if (Zone != _zone) return;        
-            Zone = null;
+        Zone = null;
         DebugEntity.Log("ZoneExit");
-
-        onZoneExit?.Invoke();
+        OnZoneExit();
     }
 }

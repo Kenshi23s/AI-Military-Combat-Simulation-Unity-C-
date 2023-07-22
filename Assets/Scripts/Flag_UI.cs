@@ -8,41 +8,66 @@ using UnityEngine.UI;
 
 public class Flag_UI : MonoBehaviour
 {
-    [SerializeField] Gradient _gradientFlag;
     [SerializeField] Image _flagOwner;
-    [SerializeField,SerializedDictionary("Team","TextMesh")] SerializedDictionary<MilitaryTeam, TextMeshProUGUI> TeamTexts;
+    [SerializeField, SerializedDictionary("Team","TextMesh")] SerializedDictionary<MilitaryTeam, TextMeshProUGUI> TeamTexts;
 
+    Material _mat;
     CapturePoint _myCapturePoint;
     private void Awake()
     {
          _myCapturePoint = GetComponentInParent<CapturePoint>();
+        _mat = _flagOwner.material;
 
-        if (_myCapturePoint == null) Destroy(gameObject);
+        if (_myCapturePoint == null) 
+            Destroy(gameObject);
 
-        _myCapturePoint.onProgressChange.AddListener(SetImageValue);
+        _myCapturePoint.OnProgressChange.AddListener(UpdateProgressUI);
+        _myCapturePoint.OnTeamsInPointUpdate.AddListener(SetTexts);
+        _myCapturePoint.OnPointOwnerChange.AddListener(SetLetterColor);
 
-        _myCapturePoint.onEntitiesAroundUpdate.AddListener(SetTexts);
-        SetImageValue();
+        UpdateProgressUI(_myCapturePoint.CaptureProgress);
     }
 
     private void LateUpdate()
     {
-        transform.forward = (Camera.main.transform.position - transform.position).normalized;
+        transform.forward = Camera.main.transform.position - transform.position;
     }
 
-    void SetImageValue()
+    void UpdateProgressUI(float progress)
     {
-        _flagOwner.color = _gradientFlag.Evaluate(_myCapturePoint.ZoneProgressNormalized);
-    }
+        _mat.SetFloat("_CaptureProgress", progress);
 
+        Color color = progress >= 0 ? Color.red : Color.blue;
+
+        _mat.SetColor("_ProgressFillColor", color);
+    }
 
     void SetTexts(Dictionary<MilitaryTeam, IMilitary[]> col)
     {
-        foreach (var key in TeamTexts.Keys.Where(x => col[x] != null ))
+        foreach (var key in TeamTexts.Keys.Where(x => col.ContainsKey(x)))
         {
             TeamTexts[key].text = col[key].Length.ToString();
         }
     }
+
+    void SetLetterColor(MilitaryTeam team) 
+    {
+        Color color;
+        switch (team)
+        {
+            case MilitaryTeam.Blue:
+                color = Color.blue;
+                break;
+            case MilitaryTeam.Red:
+                color = Color.red;
+                break;
+            default:
+                color = Color.white;
+                break;
+        }
+
+        _mat.SetColor("_LetterColor", color);
+    } 
   
     private void OnValidate()
     {

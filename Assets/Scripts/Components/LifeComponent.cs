@@ -8,43 +8,43 @@ public class LifeComponent : MonoBehaviour, IDamagable, IHealable
 
     [SerializeField] int _life = 100;
     [SerializeField] int _maxLife = 100;
-    public bool isAlive => life > 0;
-    public int life => _life;
-    public int maxLife => _maxLife;
+    public bool IsAlive => Life > 0;
+    public int Life => _life;
+    public int MaxLife => _maxLife;
 
     [SerializeField, Range(0.1f, 2)]
     float _dmgMultiplier = 1f;
 
     public int dmgResist = 1;
 
-    public bool ShowdamageNumber
+    public bool ShowDamageNumber
     {
         get
         {
-            return _showdamageNumber;
+            return _showDamageNumber;
         }
 
         set
         {
-            if (_showdamageNumber == value) return;
+            if (_showDamageNumber == value) return;
 
             if (value)
-                OnTakeDamage += ShowDamageNumber;
+                OnTakeDamage += DisplayDamageNumber;
             else
-                OnTakeDamage -= ShowDamageNumber;
+                OnTakeDamage -= DisplayDamageNumber;
 
-            _showdamageNumber = value;
+            _showDamageNumber = value;
 
         }
     }
-    bool _showdamageNumber = true;
+    bool _showDamageNumber = true;
 
     
-    [SerializeField] public bool canTakeDamage = true;
-    [SerializeField] public bool canBeHealed = true;
+    [SerializeField] public bool CanTakeDamage = true;
+    [SerializeField] public bool CanBeHealed = true;
 
     #region Events
-    public event Action<Vector3> onKnockBack;
+    public event Action<Vector3> OnKnockBack;
     public event Action<int, int> OnHealthChange;
     public event Action OnHeal;
 
@@ -62,24 +62,24 @@ public class LifeComponent : MonoBehaviour, IDamagable, IHealable
         // por si tenes hijos que pueden hacer de 
         //foreach (var item in GetComponentsInChildren<HitableObject>()) item.SetOwner(this);
         #region SetEvents
-        OnHeal += () => OnHealthChange?.Invoke(life, maxLife);
-        OnTakeDamage += (x) => OnHealthChange?.Invoke(life, maxLife);
-        OnTakeDamage += ShowDamageNumber;
-        OnHealthChange?.Invoke(life, maxLife);
+        OnHeal += () => OnHealthChange?.Invoke(Life, MaxLife);
+        OnTakeDamage += (x) => OnHealthChange?.Invoke(Life, MaxLife);
+        OnTakeDamage += DisplayDamageNumber;
+        OnHealthChange?.Invoke(Life, MaxLife);
         #endregion
         enabled = false;
 
     }
 
-    public bool isCrit;
-    public void ShowDamageNumber(int x)
+    public bool IsCrit;
+    public void DisplayDamageNumber(int x)
     {
         if (FloatingTextManager.instance==null)
         {
             Debug.Log("es Null");
         }
         
-        FloatingTextManager.instance.PopUpText(x.ToString(), hitPos != Vector3.zero? hitPos : transform.position, isCrit);
+        FloatingTextManager.instance.PopUpText(x.ToString(), hitPos != Vector3.zero? hitPos : transform.position, IsCrit);
         hitPos = Vector3.zero;
     }
     Vector3 hitPos = Vector3.zero;
@@ -105,7 +105,7 @@ public class LifeComponent : MonoBehaviour, IDamagable, IHealable
     public virtual DamageData TakeDamage(int dmgDealt)
     {
         DamageData data = new DamageData();
-        if (!canTakeDamage) return data;
+        if (!CanTakeDamage) return data;
 
          dmgDealt = (int)(Mathf.Abs(dmgDealt) * _dmgMultiplier) / dmgResist;
         _life -= dmgDealt; OnTakeDamage?.Invoke(dmgDealt);
@@ -130,7 +130,7 @@ public class LifeComponent : MonoBehaviour, IDamagable, IHealable
     /// <returns></returns>
     public virtual int Heal(int HealAmount)
     {
-        if (!canBeHealed) return 0;
+        if (!CanBeHealed) return 0;
 
         _debug.Log($" se curo {HealAmount} de vida ");
         _life += Mathf.Abs(HealAmount);
@@ -155,13 +155,13 @@ public class LifeComponent : MonoBehaviour, IDamagable, IHealable
    
     private void OnValidate()
     {
-        _maxLife = Mathf.Max(0, maxLife);
-        _life = maxLife;
+        _maxLife = Mathf.Max(0, MaxLife);
+        _life = MaxLife;
     }
 
     public void AddKnockBack(Vector3 force)
     {
-        onKnockBack?.Invoke(force);
+        OnKnockBack?.Invoke(force);
     }
 
     public Vector3 Position()

@@ -151,7 +151,7 @@ public class Turret : Entity, IMilitary
 
         state.OnUpdate += () =>
         {
-            if (_fov.IN_FOV(Target.AimPoint) && Target.Health.isAlive) return;       
+            if (_fov.IN_FOV(Target.AimPoint) && Target.Health.IsAlive) return;       
 
                Target = null;
                _turretFSM.SendInput(TurretStates.REST);         
@@ -181,7 +181,7 @@ public class Turret : Entity, IMilitary
 
         state.OnUpdate += () =>
         {
-            if (_fov.IN_FOV(Target.AimPoint) && Target.Health.isAlive) return;
+            if (_fov.IN_FOV(Target.AimPoint) && Target.Health.IsAlive) return;
             
                 Target = null;
                 _turretFSM.SendInput(TurretStates.REST);         

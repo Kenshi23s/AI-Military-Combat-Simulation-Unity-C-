@@ -506,8 +506,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.09281969, b: 1, a: 1}
+  m_Material: {fileID: 2100000, guid: d41644be733677e459e3dda58b6945c8, type: 2}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -639,42 +639,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ac1926693a5def41b165a214c8eb56e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _gradientFlag:
-    serializedVersion: 2
-    key0: {r: 0, g: 0.09281969, b: 1, a: 1}
-    key1: {r: 1, g: 1, b: 1, a: 1}
-    key2: {r: 1, g: 0, b: 0, a: 0}
-    key3: {r: 0, g: 0, b: 0, a: 0}
-    key4: {r: 0, g: 0, b: 0, a: 0}
-    key5: {r: 0, g: 0, b: 0, a: 0}
-    key6: {r: 0, g: 0, b: 0, a: 0}
-    key7: {r: 0, g: 0, b: 0, a: 0}
-    ctime0: 0
-    ctime1: 32768
-    ctime2: 65535
-    ctime3: 0
-    ctime4: 0
-    ctime5: 0
-    ctime6: 0
-    ctime7: 0
-    atime0: 0
-    atime1: 65535
-    atime2: 0
-    atime3: 0
-    atime4: 0
-    atime5: 0
-    atime6: 0
-    atime7: 0
-    m_Mode: 0
-    m_NumColorKeys: 3
-    m_NumAlphaKeys: 2
   _flagOwner: {fileID: 2924360612466307839}
   TeamTexts:
     _serializedList:
     - Key: 0
-      Value: {fileID: 295457195}
-    - Key: 1
       Value: {fileID: 1705782565}
+    - Key: 1
+      Value: {fileID: 295457195}
 --- !u!1 &7439353184476601513
 GameObject:
   m_ObjectHideFlags: 0
@@ -717,7 +688,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7439353184476601513}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 360ca867e48780448a1401b7fc47e037, type: 3}
   m_Name: 
@@ -735,24 +706,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 7439353184476601513}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6eeb1dd3f05737a4f98be9c9aa108d80, type: 3}
+  m_Script: {fileID: 11500000, guid: 449f34ac09b1422438773e4ebefc861c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _waitingTimeTilSearch: 0.2
-  _zoneRadius: 15
-  _zoneHeight: 3
-  onPointOwnerChange:
+  _searchTime: 0.2
+  _pointRadius: 15
+  _pointHeight: 8
+  OnPointOwnerChange:
     m_PersistentCalls:
       m_Calls: []
-  onProgressChange:
+  OnPointNeutralized:
     m_PersistentCalls:
       m_Calls: []
-  onEntitiesAroundUpdate:
+  OnProgressChange:
     m_PersistentCalls:
       m_Calls: []
-  _targetGrid: {fileID: 0}
+  OnTeamsInPointUpdate:
+    m_PersistentCalls:
+      m_Calls: []
   <ProgressRequiredForCapture>k__BackingField: 100
-  takenBy: 2
 --- !u!1001 &7439353184931151119
 PrefabInstance:
   m_ObjectHideFlags: 0

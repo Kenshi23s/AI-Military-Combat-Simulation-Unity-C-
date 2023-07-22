@@ -17,10 +17,10 @@ public interface IMilitary
     MilitaryTeam Team { get; }
 }
 
-public interface IZoneEntity 
+public interface ICapturePointEntity 
 {
     void ZoneEnter(CapturePoint zone);
-    void ZoneStay(CapturePoint zone);
+    void ZoneStay();
     void ZoneExit(CapturePoint zone);
 
     public bool CanCapture { get; }

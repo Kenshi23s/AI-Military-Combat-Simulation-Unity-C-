@@ -126,7 +126,7 @@ public class Sniper : Soldier
             .OfType<Soldier>()
             .Where(x => x.Team != Team && x.Team != MilitaryTeam.None)
             .Where(x => _fovAgent.IN_FOV(x.transform.position))
-            .Where(x => x.Health.isAlive)
+            .Where(x => x.Health.IsAlive)
             .Maximum(x => Vector3.SqrMagnitude(x.transform.position - transform.position));
     }
 
@@ -163,7 +163,7 @@ public class Sniper : Soldier
 
         state.OnUpdate += () =>
         {
-            if (!_fovAgent.IN_FOV(target.transform.position) || !target.Health.isAlive) 
+            if (!_fovAgent.IN_FOV(target.transform.position) || !target.Health.IsAlive) 
             {
                 _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
                 DebugEntity.Log("El objetivo murio o ya no lo veo, cambio a LOOK_FOR_TARGETS");
@@ -215,7 +215,7 @@ public class Sniper : Soldier
         state.OnUpdate += () =>
         {
             // si no lo veo o ya no esta vivo, paso a buscar otro objetivo
-            if (!_fovAgent.IN_FOV(target.transform.position) || !target.Health.isAlive) _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
+            if (!_fovAgent.IN_FOV(target.transform.position) || !target.Health.IsAlive) _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
 
             Vector3 dir = target.AimPoint - transform.position;
          

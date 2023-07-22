@@ -97,36 +97,36 @@ public class Infantry : Soldier
     protected virtual void ConfigureStates()
      {
         StateConfigurer.Create(waitOrders)
-          .SetTransition(INFANTRY_STATES.MOVE_TOWARDS, moveTowards)
-          .SetTransition(INFANTRY_STATES.FOLLOW_LEADER, followLeader)
-          .SetTransition(INFANTRY_STATES.FIRE_AT_WILL, fireAtWill)
-          .SetTransition(INFANTRY_STATES.DIE, die)
-          .Done();
+            .SetTransition(INFANTRY_STATES.MOVE_TOWARDS, moveTowards)
+            .SetTransition(INFANTRY_STATES.FOLLOW_LEADER, followLeader)
+            .SetTransition(INFANTRY_STATES.FIRE_AT_WILL, fireAtWill)
+            .SetTransition(INFANTRY_STATES.DIE, die)
+            .Done();
 
 
 
         StateConfigurer.Create(moveTowards)
-           .SetTransition(INFANTRY_STATES.WAITING_ORDERS, waitOrders)
-           .SetTransition(INFANTRY_STATES.FOLLOW_LEADER, followLeader)
-           .SetTransition(INFANTRY_STATES.FIRE_AT_WILL, fireAtWill)
-           .SetTransition(INFANTRY_STATES.DIE, die)
-           .Done();
+            .SetTransition(INFANTRY_STATES.WAITING_ORDERS, waitOrders)
+            .SetTransition(INFANTRY_STATES.FOLLOW_LEADER, followLeader)
+            .SetTransition(INFANTRY_STATES.FIRE_AT_WILL, fireAtWill)
+            .SetTransition(INFANTRY_STATES.DIE, die)
+            .Done();
 
 
         StateConfigurer.Create(followLeader)
-         .SetTransition(INFANTRY_STATES.WAITING_ORDERS, waitOrders)
-         .SetTransition(INFANTRY_STATES.MOVE_TOWARDS, moveTowards)
-         .SetTransition(INFANTRY_STATES.FIRE_AT_WILL, fireAtWill)
-         .SetTransition(INFANTRY_STATES.DIE, die)
-         .Done();
+            .SetTransition(INFANTRY_STATES.WAITING_ORDERS, waitOrders)
+            .SetTransition(INFANTRY_STATES.MOVE_TOWARDS, moveTowards)
+            .SetTransition(INFANTRY_STATES.FIRE_AT_WILL, fireAtWill)
+            .SetTransition(INFANTRY_STATES.DIE, die)
+            .Done();
 
 
         StateConfigurer.Create(fireAtWill)
-         .SetTransition(INFANTRY_STATES.WAITING_ORDERS, waitOrders)
-         .SetTransition(INFANTRY_STATES.FOLLOW_LEADER, followLeader)
-         .SetTransition(INFANTRY_STATES.MOVE_TOWARDS, moveTowards)
-         .SetTransition(INFANTRY_STATES.DIE, die)
-         .Done();
+            .SetTransition(INFANTRY_STATES.WAITING_ORDERS, waitOrders)
+            .SetTransition(INFANTRY_STATES.FOLLOW_LEADER, followLeader)
+            .SetTransition(INFANTRY_STATES.MOVE_TOWARDS, moveTowards)
+            .SetTransition(INFANTRY_STATES.DIE, die)
+            .Done();
 
         StateConfigurer.Create(die)
             .Done();
@@ -147,7 +147,7 @@ public class Infantry : Soldier
 
             if (MyFireteam.Leader != this && !IsCapturing) return;
 
-            StartCoroutine(MyFireteam.LookForNearestZone());
+            StartCoroutine(MyFireteam.FindNearestUntakenPoint());
 
             DebugEntity.Log("Busco la zona mas cercana");
         };
@@ -392,7 +392,7 @@ public class Infantry : Soldier
     IEnumerable<Entity> LookForEnemiesAlive()
     {
         return GetMilitaryAround().Where(x => x.Team != Team)
-                  .Where(x => x.Health.isAlive);
+                  .Where(x => x.Health.IsAlive);
     }
     #endregion
     
@@ -400,7 +400,7 @@ public class Infantry : Soldier
     {
         float result = 0;
         result += Vector3.Distance(transform.position, entity.transform.position);
-        result += entity.Health.life;
+        result += entity.Health.Life;
         return result;
     }
 
