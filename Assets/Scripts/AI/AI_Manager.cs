@@ -8,9 +8,10 @@ using System;
 public class AI_Manager : MonoSingleton<AI_Manager>
 {
     [SerializeField]
-    LayerMask _obstacle, _walls;
-    public LayerMask obstacle => _obstacle;
-    public LayerMask wall_Mask => _walls;
+    LayerMask _obstacle, _walls, _ground;
+    public LayerMask Obstacle => _obstacle;
+    public LayerMask WallMask => _walls;
+    public LayerMask GroundMask => _ground;
 
     public List<AI_Movement> flockingTargets => _flockingTargets; 
     private List<AI_Movement> _flockingTargets = new List<AI_Movement>();
@@ -41,6 +42,6 @@ public class AI_Manager : MonoSingleton<AI_Manager>
 
     public Node GetNearestNode(Vector3 pos)
     {
-        return ColomboMethods.GetNearestOnSigth(pos, nodes, wall_Mask);
+        return ColomboMethods.GetNearestOnSigth(pos, nodes, WallMask);
     }
 }

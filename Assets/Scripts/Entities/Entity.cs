@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using FacundoColomboMethods;
+using System;
 
 [RequireComponent(typeof(LifeComponent))]
 [RequireComponent(typeof(DebugableObject))]
@@ -28,7 +30,7 @@ public abstract class Entity : MonoBehaviour
         Health = GetComponent<LifeComponent>();
         DebugEntity = GetComponent<DebugableObject>();
         IsCapturing = false;
-
+        gameObject.name = GetType().Name + ColomboMethods.GenerateName(6);
         EntityAwake();
     }
 

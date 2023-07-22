@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static NewPhysicsMovement;
 
 [RequireComponent(typeof(NewAIMovement))]
 [RequireComponent(typeof(FOVAgent))]
@@ -136,7 +137,8 @@ public class Infantry : Soldier
         State<INFANTRY_STATES> state = new State<INFANTRY_STATES>("WaitingOrders");
 
         state.OnEnter += (x) =>
-        {       
+        {
+            _infantry_AI.ManualMovement.Alignment = AlignmentType.Velocity;
             StopMoving(); _anim.SetBool("Running", false);
 
             DebugEntity.Log("Espero Ordenes");
@@ -194,6 +196,7 @@ public class Infantry : Soldier
 
         state.OnEnter += (x) =>
         {
+            _infantry_AI.ManualMovement.Alignment = AlignmentType.Velocity;
             if (MyFireteam.IsNearLeader(this, MinDistanceFromDestination))
             {
                 Infantry_FSM.SendInput(INFANTRY_STATES.WAITING_ORDERS);
@@ -225,11 +228,13 @@ public class Infantry : Soldier
         GoToLeader();
         while (true)
         {
-            for (int i = 0; i < 120; i++)
+            for (int frames = 0; frames < 120; frames++) yield return null;
+
+            if (MyFireteam.IsNearLeader(this, MinDistanceFromDestination)) 
             {
-                yield return null;
+                DebugEntity.Log("El lider esta muy cerca, no es necesario calcular camino");
+                continue;
             }
-            if (MyFireteam.IsNearLeader(this, MinDistanceFromDestination)) continue;
 
             GoToLeader();
         }
@@ -238,10 +243,10 @@ public class Infantry : Soldier
 
     void GoToLeader()
     {
-
         _infantry_AI.SetDestination(MyFireteam.Leader.transform.position, () =>
         {
             Infantry_FSM.SendInput(INFANTRY_STATES.WAITING_ORDERS);
+            DebugEntity.Log("Llegue al lider");
         });
      
     }
@@ -252,8 +257,9 @@ public class Infantry : Soldier
 
         state.OnEnter += (x) =>
         {
+
             _infantry_AI.CancelMovement();
-            _infantry_AI.ManualMovement.Alignment = NewPhysicsMovement.AlignmentType.Custom;
+            _infantry_AI.ManualMovement.Alignment = AlignmentType.Target;
 
             _anim.SetBool("Running", false); _anim.SetBool("Shooting", true);
 
@@ -278,7 +284,7 @@ public class Infantry : Soldier
 
         state.OnExit += (x) =>
         {
-            _infantry_AI.ManualMovement.Alignment = NewPhysicsMovement.AlignmentType.Velocity;
+          
             InCombat = false;
             _anim.SetBool("Shooting", false);
             StopCoroutine(SetTarget());
@@ -293,6 +299,7 @@ public class Infantry : Soldier
 
         state.OnEnter += (x) =>
         {
+            _infantry_AI.ManualMovement.Alignment = AlignmentType.Custom;
             InCombat = false;
 
 
@@ -358,8 +365,8 @@ public class Infantry : Soldier
 
             if (ActualTarget != null)
             {
-                Vector3 dir = ActualTarget.transform.position - transform.position;            
-                _infantry_AI.ManualMovement.CustomAlignment = Quaternion.LookRotation(dir);
+                _infantry_AI.ManualMovement.AlignmentTarget = ActualTarget.transform;
+                Vector3 dir = ActualTarget.transform.position - transform.position;
                 _gun.Shoot(_shootPos, dir);
             }
             else

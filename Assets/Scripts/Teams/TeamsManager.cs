@@ -1,12 +1,8 @@
 using AYellowpaper.SerializedCollections;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UIElements;
-using static UnityEditor.Progress;
 using Random = UnityEngine.Random;
 
 [System.Serializable]
@@ -92,6 +88,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
             if (icon == default)
                 icon = GetSprite(typeof(IMilitary));
 
+            indicator.SetName(gameObject.name);
             indicator.AssignOwner(item as IMilitary, icon);
         }
     }
@@ -117,7 +114,6 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
     public Sprite GetSprite(Type targetType)
     {
-
         foreach (var keys in sprites.Keys)
         {
             if (targetType == keys.type)           
@@ -180,12 +176,12 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
     void SpawnPlanes(MilitaryTeam team, TeamParameters parameters)
     {
-        var type = new SerializableType(typeof(Plane));
         for (int i = 0; i < parameters.planesQuantity; i++)
         {
             if (GetRandomFreePosOnAir(parameters,out Vector3 pos))
             {
                 var x = Instantiate(_planePrefab,pos,Quaternion.identity);
+                x.Initialize(team);
                 AddToTeam(team, x, GetSprite(typeof(Plane)));
             }
             else           

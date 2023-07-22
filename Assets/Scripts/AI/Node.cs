@@ -9,7 +9,7 @@ public class Node : MonoBehaviour
 {
 
 
-    public List<Node> Neighbors = new List<Node>();
+    [NonSerialized]public List<Node> Neighbors = new List<Node>();
     [SerializeField] public int cost = 0;
 
     public Vector3 groundPosition;
@@ -20,13 +20,13 @@ public class Node : MonoBehaviour
    
     public void IntializeNode()
     {
-        if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hitInfo, Mathf.Infinity, AI_Manager.instance.wall_Mask))
+        if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hitInfo, Mathf.Infinity, AI_Manager.instance.GroundMask))
             groundPosition = hitInfo.point;
         else
             groundPosition = transform.position;
         
    
-        LayerMask wallMask = AI_Manager.instance.wall_Mask;
+        LayerMask wallMask = AI_Manager.instance.WallMask;
         AI_Manager I = AI_Manager.instance;
 
         Neighbors = I.nodes.GetWhichAreOnSight(transform.position, wallMask, RaycastType.Sphere, 1f)

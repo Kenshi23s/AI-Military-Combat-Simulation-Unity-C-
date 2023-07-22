@@ -49,7 +49,7 @@ public class NewAIMovement : MonoBehaviour
 
         Destination = newDestination;
 
-        if (transform.position.InLineOffSight(newDestination, AI_Manager.instance.wall_Mask))
+        if (transform.position.InLineOffSight(newDestination, AI_Manager.instance.WallMask))
         {
             OnDesinationAtSight(newDestination);
         }
@@ -67,7 +67,7 @@ public class NewAIMovement : MonoBehaviour
 
         if (onDestinationReach != null) OnCurrentDestinationReach += onDestinationReach;
 
-        if (transform.position.InLineOffSight(newDestination, AI_Manager.instance.wall_Mask))
+        if (transform.position.InLineOffSight(newDestination, AI_Manager.instance.WallMask))
         {
             OnDesinationAtSight(newDestination);
         }
@@ -87,7 +87,7 @@ public class NewAIMovement : MonoBehaviour
 
         Action<bool, List<Vector3>> onCalculate = (boolean,list) => OnFinishCalculating(boolean);
 
-        if (transform.position.InLineOffSight(newDestination, AI_Manager.instance.wall_Mask))      
+        if (transform.position.InLineOffSight(newDestination, AI_Manager.instance.WallMask))      
             OnDesinationAtSight(newDestination);        
         else       
             CalculatePath(newDestination, onCalculate);
@@ -98,7 +98,7 @@ public class NewAIMovement : MonoBehaviour
     void OnDesinationAtSight(Vector3 newDestination)
     {
         // Conseguir la posicion en el piso
-        if (Physics.Raycast(newDestination, Vector3.down, out RaycastHit hitInfo, 10f, AI_Manager.instance.wall_Mask))
+        if (Physics.Raycast(newDestination, Vector3.down, out RaycastHit hitInfo, 10f, AI_Manager.instance.WallMask))
         {
             newDestination = hitInfo.point;
             Destination = newDestination;
@@ -107,6 +107,7 @@ public class NewAIMovement : MonoBehaviour
         _fixedUpdate = () =>
         {
             _debug.Log("Veo el destino, voy directo.");
+            _debug.Log(newDestination.ToString());
 
             if (Vector3.Distance(newDestination, transform.position) < DestinationArriveDistance)
             {
@@ -116,8 +117,9 @@ public class NewAIMovement : MonoBehaviour
             }
             else
             {
-                newDestination += ObstacleAvoidance();
-                ManualMovement.AccelerateTowards(newDestination);
+                Vector3 dir  =  newDestination - transform.position;
+                //newDestination += ObstacleAvoidance();
+                ManualMovement.AccelerateTowards(dir + ObstacleAvoidance());
             }
         };
     }
@@ -132,7 +134,7 @@ public class NewAIMovement : MonoBehaviour
         Tuple<Node, Node> keyNodes = Tuple.Create(I.GetNearestNode(transform.position), I.GetNearestNode(newDestination));
 
         if (keyNodes.Item1 != null && keyNodes.Item2 != null)
-            StartCoroutine(keyNodes.CalculateLazyThetaStar(I.wall_Mask, CanPlayPath, Destination, 200));
+            StartCoroutine(keyNodes.CalculateLazyThetaStar(I.WallMask, CanPlayPath, Destination, 200));
         else
         {
             string node1 =  keyNodes.Item1 != null ? " NO es null " : "ES null ";
@@ -153,7 +155,7 @@ public class NewAIMovement : MonoBehaviour
 
         OnFinishCalculating += CanPlayPath;
         if (keyNodes.Item1 != null && keyNodes.Item2 != null)
-            StartCoroutine(keyNodes.CalculateLazyThetaStar(I.wall_Mask, OnFinishCalculating, Destination, 200));
+            StartCoroutine(keyNodes.CalculateLazyThetaStar(I.WallMask, OnFinishCalculating, Destination, 200));
         else
         {
             string node1 = keyNodes.Item1 != null ? " NO es null " : "ES null ";

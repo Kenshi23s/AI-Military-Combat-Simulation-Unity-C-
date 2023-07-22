@@ -1,6 +1,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,7 +11,8 @@ public class TeamIndicator : MonoBehaviour
 
     [SerializeField]
     Image Image;
-    bool alreadyIn = false;
+    [SerializeField] TMP_Text nameText;
+   
 
     public void AssignOwner(IMilitary NewOwner,Sprite icon)
     {
@@ -29,9 +31,13 @@ public class TeamIndicator : MonoBehaviour
         
         Image.sprite = icon;
         Image.color = color;
-       
+      
     }
 
+    public void SetName(string x)
+    {
+        nameText.text = x;
+    }
 
 
     void LookCamera()

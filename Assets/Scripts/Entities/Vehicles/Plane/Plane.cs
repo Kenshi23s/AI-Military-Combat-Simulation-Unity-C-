@@ -114,7 +114,9 @@ public class Plane : Vehicle
     {
         while (true)
         {
-           yield return new WaitForSeconds(misileCD); if (targetPlane == null) break;
+
+            yield return new WaitForSeconds(misileCD); if (targetPlane == null) break;
+            DebugEntity.Log($"Tiro Misil a {targetPlane.name}");
             ShootMisile(targetPlane.transform);          
         }
     }
@@ -128,6 +130,7 @@ public class Plane : Vehicle
         {
             beingChasedBy = null;
             DebugEntity.Log("Me dejaron de seguir, vuelvo a volar");
+
             _planeFSM.SendInput(PlaneStates.FLY_AROUND);
         }
         else
@@ -176,9 +179,9 @@ public class Plane : Vehicle
 
     #region PlaneStates
 
-    public void CallAirStrike(Vector3 new_airStrikePosition)
+    public void CallAirStrike(Vector3 New_AirStrikePosition)
     {
-        airStrikePosition = new_airStrikePosition;
+        airStrikePosition = New_AirStrikePosition;
         _planeFSM.SendInput(PlaneStates.AIRSTRIKE);
     }
 

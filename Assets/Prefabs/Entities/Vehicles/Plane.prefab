@@ -154,7 +154,7 @@ MonoBehaviour:
   _bulletdamage: 30
   shootableLayers:
     serializedVersion: 2
-    m_Bits: 448
+    m_Bits: 1984
   trailSample: {fileID: 2610780281482316935, guid: ece5188b7e398c345a64fc3091428e05,
     type: 3}
   _bulletsPerBurst: 0
@@ -234,7 +234,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <ViewRadius>k__BackingField: 80
-  _viewAngle: 0
+  _viewAngle: 200
   _eyes: {fileID: 8142023552315450797}
 --- !u!114 &6565769872705145560
 MonoBehaviour:

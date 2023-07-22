@@ -175,6 +175,7 @@ public class SpatialGrid3D : MonoBehaviour
         // Iteramos las que queden dentro del criterio
         return cells
             .SelectMany(cell => buckets[cell.Item1, cell.Item2, cell.Item3])
+            .Where(x => x != null)
             .Where(e =>
                 from.x <= e.transform.position.x && e.transform.position.x <= to.x &&
                 from.y <= e.transform.position.y && e.transform.position.y <= to.y &&
