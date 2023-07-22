@@ -22,9 +22,10 @@ public class Plane : Vehicle
 
     EventFSM<PlaneStates> _planeFSM;
     public PlaneStates actualState => _planeFSM.CurrentKey;
-    [Header("Plane Variables")]
-    public Plane targetPlane;
-    public Plane beingChasedBy;
+    [field : Header("Plane Variables"),SerializeField]
+    public Plane targetPlane { get; private set; }
+    [SerializeField] 
+    public Plane beingChasedBy { get; private set; }
 
     //para que el avion que es perseguido se mueva de manera "dinamica" en la dogfight
     //estaria bueno cambiarlo cada x seg con una corrutina cuando se esta en ese estado
@@ -45,7 +46,7 @@ public class Plane : Vehicle
 
     Vector3 airStrikePosition;
     [SerializeField] float minimumDistanceForStrike;
-
+    [SerializeField] float RandomAngleToStart = 90;
     #region ShootingBullets
     [Header("Shooting Parameters")]
     [SerializeField] float bulletsPerBurst;
@@ -79,8 +80,9 @@ public class Plane : Vehicle
     void Start()
     {
         Vector3 dir = _gridEntity.SpatialGrid.GetMidleOfGrid() - transform.position;
-        transform.forward = new Vector3(dir.x, 0, 0);
-        _planeFSM = CreateFSM();
+        dir = dir.RandomDirFrom(RandomAngleToStart);
+        transform.forward = new Vector3(dir.x, 0, dir.z);
+      
     }
 
     private void Update()
@@ -130,7 +132,7 @@ public class Plane : Vehicle
         {
             beingChasedBy = null;
             DebugEntity.Log("Me dejaron de seguir, vuelvo a volar");
-
+          
             _planeFSM.SendInput(PlaneStates.FLY_AROUND);
         }
         else
@@ -191,6 +193,7 @@ public class Plane : Vehicle
         var pursuitTarget = PursuitTarget();
         var fleeDogFight = FleeFromDogFight();
         var abandonPlane = AbandonPlane();
+        var airStrike = AirStrike();
 
         StateConfigurer.Create(flyAround)
             .SetTransition(PlaneStates.PURSUIT_TARGET, pursuitTarget)
@@ -208,6 +211,13 @@ public class Plane : Vehicle
            .SetTransition(PlaneStates.ABANDONED, abandonPlane)
            .SetTransition(PlaneStates.FLY_AROUND, flyAround)
            .Done();
+
+        StateConfigurer.Create(airStrike)
+           .SetTransition(PlaneStates.ABANDONED, abandonPlane)
+           .SetTransition(PlaneStates.FLY_AROUND, flyAround)
+           .SetTransition(PlaneStates.FLEE_FROM_PURSUITER, fleeDogFight)
+           .Done();
+
 
         StateConfigurer.Create(abandonPlane).Done();
 
@@ -227,13 +237,9 @@ public class Plane : Vehicle
             //obtengo los aviones cercanos que no sean de mi equipo y esten en mi fov
             var col = GetNearbyPlanes()
             .Where(x => x != this)
-            .Where(x => 
-            {
-                
-                return _fov.IN_FOV(x.transform.position,PlanesManager.instance.groundMask);
-
-            })
-            .Where(x => x.Team != Team);
+            .Where(x => x.Team != Team)
+            .Where(x => x.beingChasedBy == null)
+            .Where(x => _fov.IN_FOV(x.transform.position, PlanesManager.instance.groundMask));
             if (col.Any())
             {
                 DebugEntity.Log($"Aviones enemigos a la vista, elijo el mas cercano de{col.Count()}");
@@ -402,17 +408,14 @@ public class Plane : Vehicle
 
             if (dir == Vector3.zero)
             {
-                dir = _movement.Velocity !=Vector3.zero ? _movement.Forward : transform.forward;
+                dir = _movement.Velocity != Vector3.zero ? _movement.Forward : transform.forward;
                 dir.y = 0;
             }
 
             _movement.AccelerateTowards(dir);
         };
 
-        state.OnExit += (x) =>
-        {
-            StopCoroutine(RandomEvasionDir());
-        };
+        state.OnExit += (x) => StopCoroutine(RandomEvasionDir());
 
         return state;
     }
@@ -440,19 +443,18 @@ public class Plane : Vehicle
         {
             if (Vector3.Distance(transform.position, airStrikePosition) < minimumDistanceForStrike)
             {
-
                 GameObject create = new GameObject($"Pivot {nameof(airStrikePosition)} [{gameObject.name}]");
                 Transform instantiate = Instantiate(create, airStrikePosition, Quaternion.identity).transform;
+
+                
+                
                 ShootMisile(instantiate);
-                Destroy(instantiate, 60f);
+             
                
             }
         };
-        state.OnFixedUpdate += () =>
-        {
-            _movement.AccelerateTowardsTarget(airStrikePosition);
-        };
 
+        state.OnFixedUpdate += () => _movement.AccelerateTowardsTarget(airStrikePosition);
 
         return state;
     }
@@ -461,21 +463,15 @@ public class Plane : Vehicle
 
     void ShootMisile(Transform target)
     {
-        Misile z = Instantiate(PlanesManager.instance.MisilePrefab, misilePos.PickRandom().transform.position, Quaternion.identity);
+        var misile = ProjectilePool.instance.GetMisile();
+
+        misile.transform.position = misilePos.PickRandom().transform.position;
+
         misileStats.initialVelocity = _movement.Velocity;
-        z.ShootMisile(misileStats, target);
+
+        misile.ShootMisile(misileStats, target);
     }
     
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        //if (_movement.Velocity.magnitude >= _movement.Velocity.magnitude/2)
-        //{
-        //    _debug.Log("choque yendo muy rapido, asi que explote C:");
-        //    Destroy(gameObject);
-        //}
-      
-    }
 
 
     

@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using FacundoColomboMethods;
 using System.Linq;
@@ -10,19 +9,6 @@ using System;
 public class Misile : Entity, IMilitary
 {  
     NewPhysicsMovement _movement;
-
-    public Transform target { get; private set; }
-
-    public MilitaryTeam Team { get; protected set; }
-
-    public bool InCombat => false;
-
-    [SerializeField] ParticleHold explosionParticle;
-    [SerializeField] ParticleHold explosionParticleonGround;
-
-    [NonSerialized] public MisileStats myStats;
-
-    protected GridEntity _gridEntity;
     [Serializable]
     public struct MisileStats
     {
@@ -37,14 +23,38 @@ public class Misile : Entity, IMilitary
         public Vector3 initialVelocity;
     }
 
+    public Transform target { get; private set; }
+
+    public MilitaryTeam Team { get; protected set; }
+
+    public bool InCombat => false;
+
+    [SerializeField] ParticleHold explosionParticle;
+    [SerializeField] ParticleHold explosionParticleonGround;
+
+    [NonSerialized] public MisileStats myStats;
+
+    protected GridEntity _gridEntity;
+ 
+  
+
+    Action<Misile> returnToPool;
+
+  
+    public void PoolObjectInitialize(Action<Misile> HowToReturn)
+    {
+        returnToPool = HowToReturn;
+    }
+
+    
+
     private void Awake()
     {
         _gridEntity = GetComponent<GridEntity>();
         _movement = GetComponent<NewPhysicsMovement>();
 
         GetComponent<Collider>().isTrigger = true;
-        enabled = false;
-       
+        enabled = false;      
     }
 
     void Start()
@@ -56,7 +66,7 @@ public class Misile : Entity, IMilitary
     private void LateUpdate()
     {
         _movement.MaxSpeed += Time.deltaTime;
-        _movement.Acceleration += Time.deltaTime / 2;
+        _movement.Acceleration += Time.deltaTime * 0.5f;
     }
 
     public void ShootMisile(MisileStats newStats, Transform newTarget)
@@ -83,6 +93,7 @@ public class Misile : Entity, IMilitary
     {
         if (other.gameObject == myStats.owner) return;
 
+
         ParticleHold particleToSpawn = explosionParticle;
         if (other.gameObject.layer == PlanesManager.instance.groundMask)       
             particleToSpawn = explosionParticleonGround;
@@ -90,25 +101,31 @@ public class Misile : Entity, IMilitary
        ParticleHolder x = ParticlePool.instance.GetVFX(particleToSpawn.key);
 
         x.transform.localScale = myStats.explosionRadius.ToVector();
-        x.transform.position=transform.position;
+        x.transform.position = transform.position;
+
         Explosion();
     }
 
     void Explosion()
     {
-        //esto tendria que golpear a todos, pq si por ejemplo hay un civil en esa area
-        //chau, cago y muere
-        var damagables = _gridEntity.GetEntitiesInRange(myStats.explosionRadius)
-            .OfType<IMilitary>()
-            .Where(x => x.Team != Team)
-            .OfType<IDamagable>();
+        
+        var _damagables = _gridEntity.GetEntitiesInRange(myStats.explosionRadius)
+        .OfType<IDamagable>()
+        .Where(FilterUnitsByTeam);
 
-        foreach (var entity in damagables) 
+        foreach (var entity in _damagables)
+        {
             entity.TakeDamage(myStats.damage);
-
-        Destroy(gameObject);
+            Debug.Log($"{myStats.owner.name} le hizo daño a {entity}");
+        }
+        returnToPool?.Invoke(this);
     }
 
+    bool FilterUnitsByTeam(IDamagable x)
+    {
+        var cast = x as IMilitary;
+        return cast == null || cast.Team != Team;
+    }
 
     IEnumerator CountdownForExplosion()
     {

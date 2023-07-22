@@ -1899,7 +1899,7 @@ MonoBehaviour:
   _anim: {fileID: 7779844200561149171}
   _timeBeforeSelectingTarget: 2
   _shootPos: {fileID: 2889329660706087394}
-  <MinDistanceFromDestination>k__BackingField: 2
+  <MinDistanceFromDestination>k__BackingField: 4
 --- !u!114 &6064664604643365114
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1989,9 +1989,9 @@ MonoBehaviour:
   _maxLife: 100
   _dmgMultiplier: 1
   dmgResist: 1
-  canTakeDamage: 1
-  canBeHealed: 1
-  isCrit: 0
+  CanTakeDamage: 1
+  CanBeHealed: 1
+  IsCrit: 0
 --- !u!114 &7684651609810558656
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2004,7 +2004,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5747d27ef88acac41acc7cc0ef883ab2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <ViewRadius>k__BackingField: 200
+  <ViewRadius>k__BackingField: 100
   _viewAngle: 90
   _eyes: {fileID: 55934488066917095}
 --- !u!114 &6308491211211733762

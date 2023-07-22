@@ -61,15 +61,9 @@ public class Infantry : Soldier
 
     void Start()
     {
-        Health.OnTakeDamage += (x) =>
-        {
-            Infantry_FSM.SendInput(INFANTRY_STATES.FIRE_AT_WILL);
-        };
+        Health.OnTakeDamage += (x) => Infantry_FSM.SendInput(INFANTRY_STATES.FIRE_AT_WILL);
 
-        Health.OnKilled += () =>
-        {
-            Infantry_FSM.SendInput(INFANTRY_STATES.DIE);
-        };
+        Health.OnKilled += () => Infantry_FSM.SendInput(INFANTRY_STATES.DIE);
     }
 
     protected override void SoldierAwake()
