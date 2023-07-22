@@ -18,6 +18,7 @@ public class CapturePoint : MonoBehaviour
 {
     [SerializeField, Min(0)] float _searchTime = 0.2f;
     [SerializeField, Min(0)] float _pointRadius = 15, _pointHeight = 8;
+    [SerializeField, Min(0)] float _captureSpeed = 5f;
     DebugableObject _debug;
 
     public UnityEvent<MilitaryTeam> OnPointOwnerChange;
@@ -206,7 +207,7 @@ public class CapturePoint : MonoBehaviour
     {
         int sign = BeingCapturedBy == MilitaryTeam.Red ? 1 : -1;
 
-        CaptureProgress += Time.deltaTime * sign * _teamSplit.Count();
+        CaptureProgress += Time.deltaTime * sign * _captureSpeed * _teamSplit.Count();
         OnProgressChange?.Invoke(CaptureProgress);
 
         if (CheckNeutralization())
