@@ -16,7 +16,7 @@ public class Flag_UI : MonoBehaviour
     private void Awake()
     {
          _myCapturePoint = GetComponentInParent<CapturePoint>();
-        _mat = _flagOwner.material;
+        _mat = _flagOwner.material = new Material(_flagOwner.material);
 
         if (_myCapturePoint == null) 
             Destroy(gameObject);
@@ -26,6 +26,7 @@ public class Flag_UI : MonoBehaviour
         _myCapturePoint.OnPointOwnerChange.AddListener(SetLetterColor);
 
         UpdateProgressUI(_myCapturePoint.CaptureProgress);
+        SetLetterColor(_myCapturePoint.CapturedBy);
     }
 
     private void LateUpdate()
