@@ -16,14 +16,19 @@ public class GridEntity : MonoBehaviour
 
     private void Awake()
     {
-        Owner = GetComponent<Entity>();
-        
+        Owner = GetComponent<Entity>();       
     }
 
     private void Start()
     {
         SpatialGrid = FindObjectOfType<SpatialGrid3D>();
         SpatialGrid.AddEntity(this);
+    }
+
+    private void OnDestroy()
+    {
+        if (SpatialGrid != null)
+            SpatialGrid.RemoveEntity(this);
     }
 
 

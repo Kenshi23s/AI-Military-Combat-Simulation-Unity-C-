@@ -252,9 +252,9 @@ MonoBehaviour:
   _maxLife: 100
   _dmgMultiplier: 1
   dmgResist: 1
-  canTakeDamage: 1
-  canBeHealed: 1
-  isCrit: 0
+  CanTakeDamage: 1
+  CanBeHealed: 1
+  IsCrit: 0
 --- !u!65 &3740303564570812394
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -300,9 +300,9 @@ MonoBehaviour:
     _cohesionForce: 1.9
   _sightRadius: 80
   _loseSightRadius: 100.3
-  targetPlane: {fileID: 0}
-  beingChasedBy: {fileID: 0}
+  <targetPlane>k__BackingField: {fileID: 0}
   _cd_OnRandomDir: 4
+  RandomAngleToStart: 90
   _unitsBehindPlane: 30
   _collisionCheckDistance: 80
   misilePos:
@@ -322,6 +322,8 @@ MonoBehaviour:
   burstCD: 1.5
   BulletCD: 0.3
   shootPos: {fileID: 9083171063329367226}
+  ExplosionParticle: {fileID: 2592738608535527766, guid: 92774f5bcd4f0954b84016e50e182d31,
+    type: 3}
 --- !u!1 &8780625543234975819
 GameObject:
   m_ObjectHideFlags: 0

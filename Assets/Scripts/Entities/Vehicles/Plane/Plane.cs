@@ -16,7 +16,6 @@ public enum PlaneStates
 
 [SelectionBase]
 [RequireComponent(typeof(ShootComponent))]
-
 public class Plane : Vehicle
 {
 
@@ -32,7 +31,7 @@ public class Plane : Vehicle
     Vector3 _evadingDir;
 
     [SerializeField] float _cd_OnRandomDir;
-
+    [SerializeField] float RandomAngleToStart = 90;
     [SerializeField, Min(0)] float _unitsBehindPlane = 30f;
     [SerializeField, Min(0)] float _collisionCheckDistance = 30f;
 
@@ -41,12 +40,14 @@ public class Plane : Vehicle
     Transform[] misilePos;
     [SerializeField] Misile.MisileStats misileStats;
     [SerializeField]float misileCD;
- 
+
     #endregion
 
-    Vector3 airStrikePosition;
+    #region AirStrike
+    Vector3 airStrikeCordinates;
     [SerializeField] float minimumDistanceForStrike;
-    [SerializeField] float RandomAngleToStart = 90;
+    #endregion
+
     #region ShootingBullets
     [Header("Shooting Parameters")]
     [SerializeField] float bulletsPerBurst;
@@ -55,6 +56,11 @@ public class Plane : Vehicle
     [SerializeField] Transform shootPos;
     ShootComponent shootComponent;
     #endregion
+
+
+    [Header("VFX")]
+    [SerializeField] ParticleHolder ExplosionParticle;
+    int keyExplosionParticle;
 
 
     public override void VehicleAwake()
@@ -66,34 +72,33 @@ public class Plane : Vehicle
         Health.OnKilled += () => _planeFSM.SendInput(PlaneStates.ABANDONED);
 
         Vector3 dir = _gridEntity.SpatialGrid.GetMidleOfGrid() - transform.position;
-        transform.forward = new Vector3(dir.x, 0, 0);
+        transform.forward = new Vector3(0, 0, dir.z);
         _planeFSM = CreateFSM();
         
         misileStats.owner = gameObject;
     }
 
-
-
-
-
     #region UnityCalls
     void Start()
     {
-        Vector3 dir = _gridEntity.SpatialGrid.GetMidleOfGrid() - transform.position;
-        dir = dir.RandomDirFrom(RandomAngleToStart);
-        transform.forward = new Vector3(dir.x, 0, dir.z);
-      
+        //Vector3 dir = _gridEntity.SpatialGrid.GetMidleOfGrid() - transform.position;
+        ////dir = dir.RandomDirFrom(RandomAngleToStart);
+        //transform.forward = new Vector3(0, 0, dir.z);
+
+        keyExplosionParticle = ParticlePool.instance.CreateVFXPool(ExplosionParticle);
+
     }
 
-    private void Update()
+    private void Update() => _planeFSM.Update();
+  
+    private void FixedUpdate() => _planeFSM.FixedUpdate();
+
+    private void OnDestroy()
     {
-        _planeFSM.Update();
+        if (_gridEntity.SpatialGrid != null)
+            _gridEntity.SpatialGrid.RemoveEntity(_gridEntity);
     }
 
-    private void FixedUpdate()
-    {
-        _planeFSM.FixedUpdate();
-    }
     #endregion
 
     #region ShootingLogic
@@ -164,6 +169,17 @@ public class Plane : Vehicle
         }
     }
 
+    void ShootMisile(Transform target)
+    {
+        var misile = ProjectilePool.instance.GetMisile();
+
+        misile.transform.position = misilePos.PickRandom().transform.position;
+
+        misileStats.initialVelocity = _movement.Velocity;
+
+        misile.ShootMisile(misileStats, target);
+    }
+
     /// <summary>
     /// obtengo los aviones cercanos que no sean yo y que no esten "abandonados"
     /// </summary>
@@ -177,15 +193,15 @@ public class Plane : Vehicle
         
         return z;
     }
-    #endregion 
-
-    #region PlaneStates
 
     public void CallAirStrike(Vector3 New_AirStrikePosition)
     {
-        airStrikePosition = New_AirStrikePosition;
+        airStrikeCordinates = New_AirStrikePosition;
         _planeFSM.SendInput(PlaneStates.AIRSTRIKE);
     }
+    #endregion
+
+    #region PlaneStates
 
     EventFSM<PlaneStates> CreateFSM()
     {
@@ -432,8 +448,6 @@ public class Plane : Vehicle
         return state;
     }
 
- 
-
     State<PlaneStates> AirStrike()
     {
         State<PlaneStates> state = new State<PlaneStates>("AirStrike");
@@ -441,40 +455,22 @@ public class Plane : Vehicle
 
         state.OnUpdate += () =>
         {
-            if (Vector3.Distance(transform.position, airStrikePosition) < minimumDistanceForStrike)
+            if (Vector3.Distance(transform.position, airStrikeCordinates) < minimumDistanceForStrike)
             {
-                GameObject create = new GameObject($"Pivot {nameof(airStrikePosition)} [{gameObject.name}]");
-                Transform instantiate = Instantiate(create, airStrikePosition, Quaternion.identity).transform;
+                GameObject AirStrikePos = new GameObject($"Pivot {nameof(airStrikeCordinates)} [{gameObject.name}]");
+                Transform WorldReference = Instantiate(AirStrikePos, airStrikeCordinates, Quaternion.identity).transform;
+                Destroy(WorldReference,120f); ShootMisile(WorldReference);
 
-                
-                
-                ShootMisile(instantiate);
-             
-               
             }
         };
 
-        state.OnFixedUpdate += () => _movement.AccelerateTowardsTarget(airStrikePosition);
+        state.OnFixedUpdate += () => _movement.AccelerateTowardsTarget(airStrikeCordinates);
 
         return state;
     }
 
     #endregion
 
-    void ShootMisile(Transform target)
-    {
-        var misile = ProjectilePool.instance.GetMisile();
-
-        misile.transform.position = misilePos.PickRandom().transform.position;
-
-        misileStats.initialVelocity = _movement.Velocity;
-
-        misile.ShootMisile(misileStats, target);
-    }
-    
-
-
-    
     void DrawTowardsTarget()
     {
         if (targetPlane == null) return;
@@ -490,15 +486,22 @@ public class Plane : Vehicle
         
     }
 
-
     void DrawAirstrikeZone()
     {
-        if (airStrikePosition == Vector3.zero) return;
+        if (airStrikeCordinates == Vector3.zero) return;
         Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(airStrikePosition, 3f);
-        Gizmos.DrawLine(airStrikePosition, airStrikePosition + Vector3.up * minimumDistanceForStrike);
+        Gizmos.DrawWireSphere(airStrikeCordinates, 3f);
+        Gizmos.DrawLine(airStrikeCordinates, airStrikeCordinates + Vector3.up * minimumDistanceForStrike);
         
     }
 
-   
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (_planeFSM.CurrentKey == PlaneStates.ABANDONED)
+        {
+            var x = ParticlePool.instance.GetVFX(keyExplosionParticle);
+            x.transform.localScale = 20f.ToVector();
+            Destroy(gameObject);
+        }
+    }
 }

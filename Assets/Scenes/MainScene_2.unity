@@ -2785,6 +2785,7 @@ GameObject:
   - component: {fileID: 658754922}
   - component: {fileID: 658754923}
   - component: {fileID: 658754924}
+  - component: {fileID: 658754925}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -2858,9 +2859,9 @@ MonoBehaviour:
     _serializedList:
     - Key: 0
       Value:
-        FireteamQuantity: 2
-        membersPerFireteam: 3
-        planesQuantity: 8
+        FireteamQuantity: 0
+        membersPerFireteam: 0
+        planesQuantity: 12
         tanksQuantity: 0
         SpawnArea: {fileID: 1823427471}
         width: 20
@@ -2868,8 +2869,8 @@ MonoBehaviour:
     - Key: 1
       Value:
         FireteamQuantity: 0
-        membersPerFireteam: 3
-        planesQuantity: 8
+        membersPerFireteam: 0
+        planesQuantity: 12
         tanksQuantity: 0
         SpawnArea: {fileID: 1020563752}
         width: 20
@@ -2904,6 +2905,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2cb7df60bd19584699bbdb8ee2c8610, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &658754925
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658754919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d3acfb490199644d95e3d2786b269d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _prefab: {fileID: 7282944069579428830, guid: 868d19977cfb5f8428e33f33aa49beef, type: 3}
+  _prewarmMisiles: 20
 --- !u!1001 &684684768
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -35,19 +35,13 @@ public class Misile : Entity, IMilitary
     [NonSerialized] public MisileStats myStats;
 
     protected GridEntity _gridEntity;
- 
-  
 
     Action<Misile> returnToPool;
 
   
-    public void PoolObjectInitialize(Action<Misile> HowToReturn)
-    {
-        returnToPool = HowToReturn;
-    }
+    public void PoolObjectInitialize(Action<Misile> HowToReturn) => returnToPool = HowToReturn;
 
-    
-
+    #region UnityCalls
     private void Awake()
     {
         _gridEntity = GetComponent<GridEntity>();
@@ -68,6 +62,32 @@ public class Misile : Entity, IMilitary
         _movement.MaxSpeed += Time.deltaTime;
         _movement.Acceleration += Time.deltaTime * 0.5f;
     }
+
+    private void OnDestroy()
+    {
+        if (_gridEntity.SpatialGrid != null)
+            _gridEntity.SpatialGrid.RemoveEntity(_gridEntity);
+
+    }
+
+    private void FixedUpdate()
+    {
+        if (target == null)
+            _movement.AccelerateTowards(_movement.Forward);
+        else
+            _movement.AccelerateTowardsTarget(target.transform.position);
+
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (target == null) return;
+
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(target.position, myStats.explosionRadius);
+        Gizmos.DrawLine(transform.position, target.position);
+    }
+    #endregion
 
     public void ShootMisile(MisileStats newStats, Transform newTarget)
     {
@@ -107,16 +127,16 @@ public class Misile : Entity, IMilitary
     }
 
     void Explosion()
-    {
-        
+    { 
         var _damagables = _gridEntity.GetEntitiesInRange(myStats.explosionRadius)
+        .Where(x => x != myStats.owner)
         .OfType<IDamagable>()
         .Where(FilterUnitsByTeam);
 
-        foreach (var entity in _damagables)
+        foreach (var entity in _damagables.Where(x => x != null))
         {
-            entity.TakeDamage(myStats.damage);
             Debug.Log($"{myStats.owner.name} le hizo daño a {entity}");
+            entity.TakeDamage(myStats.damage);
         }
         returnToPool?.Invoke(this);
     }
@@ -133,30 +153,7 @@ public class Misile : Entity, IMilitary
         ParticleHolder x = ParticlePool.instance.GetVFX(explosionParticle.key);
         Explosion();
     }
-    private void OnDestroy()
-    {
-        if (_gridEntity.SpatialGrid!=null)     
-            _gridEntity.SpatialGrid.RemoveEntity(_gridEntity);
-         
-    }
-
-    private void FixedUpdate()
-    {
-        if (target == null)       
-            _movement.AccelerateTowards(_movement.Forward);    
-        else
-            _movement.AccelerateTowardsTarget(target.transform.position);
-          
-    }
-
-    private void OnDrawGizmos()
-    {
-        if (target == null) return;
-
-        Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(target.position, myStats.explosionRadius);
-        Gizmos.DrawLine(transform.position, target.position);
-    }
+   
 
   
 }
