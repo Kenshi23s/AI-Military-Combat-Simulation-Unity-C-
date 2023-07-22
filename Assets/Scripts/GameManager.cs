@@ -3,14 +3,19 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Unity.VisualScripting;
 using UnityEngine;
+using static UnityEngine.EventSystems.EventTrigger;
 
+[RequireComponent(typeof(DebugableObject))]
 public class GameManager : MonoSingleton<GameManager>
 {
     List<Bunker> _bunkers=new List<Bunker>();
-    public ReadOnlyCollection<Bunker> bunkers;
+    public ReadOnlyCollection<Bunker> Bunkers;
+    DebugableObject DebugGM;
+
     protected override void SingletonAwake()
     {
-        bunkers = new ReadOnlyCollection<Bunker>(_bunkers);
+        Bunkers = new ReadOnlyCollection<Bunker>(_bunkers);
+        DebugGM = GetComponent<DebugableObject>();
     }
 
     public void AddBunker(Bunker newBunker)
@@ -22,5 +27,19 @@ public class GameManager : MonoSingleton<GameManager>
         };
     }
 
- 
+    public void DebugDamageFeed(GameObject From,IDamagable Victim)
+    {
+        DebugDamageFeed(From.gameObject.name,Victim);
+    }
+
+    public void DebugDamageFeed(string name, IDamagable Victim)
+    {
+        string Text = "Le hizo daño a";
+        if (!Victim.IsAlive)
+        {
+            Text = "Mato a";
+        }
+        DebugGM.Log($"{name} " + Text + $" {Victim}");
+    }
+
 }

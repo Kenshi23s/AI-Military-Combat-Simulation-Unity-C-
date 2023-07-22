@@ -62,7 +62,7 @@ public class Civilian : Entity
 
         run.OnEnter += (x) =>
         {
-            nearestBunker = GameManager.instance.bunkers.Minimum(x => Vector3.Distance(x.transform.position,transform.position));
+            nearestBunker = GameManager.instance.Bunkers.Minimum(x => Vector3.Distance(x.transform.position,transform.position));
             civilian_AI.SetDestination(nearestBunker.transform.position ,TryEnterBunker);
             
             DebugEntity.Log("Corro hacia el refugio");

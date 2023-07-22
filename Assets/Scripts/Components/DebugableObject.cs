@@ -1,4 +1,5 @@
 using System;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
@@ -11,7 +12,7 @@ public class DebugableObject : MonoBehaviour
     [SerializeField]public bool canDebug = true;
     public UnityEvent gizmoDraw;
 
-
+    Action _lateUpdate;
     private void Awake()
     {
 #if !UNITY_EDITOR
@@ -19,13 +20,23 @@ public class DebugableObject : MonoBehaviour
        enabled = false
        
 #endif
-     
+#if UNITY_EDITOR
+        if (!canDebug)
+        {
+            _lateUpdate += () => canDebug = Selection.activeObject == gameObject;
+        }
+#endif
 
     }
 
     private void LateUpdate()
     {
-        canDebug = Selection.activeGameObject == gameObject;
+#if UNITY_EDITOR
+        _lateUpdate?.Invoke();
+         
+       
+#endif
+
     }
 
 

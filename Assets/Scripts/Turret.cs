@@ -38,20 +38,14 @@ public class Turret : Entity, IMilitary
 
     EventFSM<TurretStates> _turretFSM;
 
-    [SerializeField]float fixedCanonPos;
+    float _fixedCanonPos;
 
     protected override void EntityAwake()
     {
         _myGridEntity = GetComponent<GridEntity>();
         _ShootHandler = GetComponent<ShootComponent>();
-        _fov = GetComponent<FOVAgent>();
-
-        //if (Physics.Raycast(transform.position,Vector3.down,out var hit,5f))
-        //{
-        //    transform.position = hit.point;
-        //    transform.up = hit.normal;
-        //}
-        fixedCanonPos = _pivotCanon.transform.localRotation.eulerAngles.y;
+        _fov = GetComponent<FOVAgent>();      
+        _fixedCanonPos = _pivotCanon.transform.localRotation.eulerAngles.y;
     }
 
     private void Start()
@@ -151,6 +145,12 @@ public class Turret : Entity, IMilitary
 
         state.OnUpdate += () =>
         {
+            if (Target == null) 
+            {
+                _turretFSM.SendInput(TurretStates.REST);
+                return;
+            } 
+           
             if (_fov.IN_FOV(Target.AimPoint) && Target.Health.IsAlive) return;       
 
                Target = null;
@@ -284,7 +284,7 @@ public class Turret : Entity, IMilitary
 
     private void OnValidate()
     {
-        fixedCanonPos = _pivotCanon.transform.localRotation.eulerAngles.y;
+        _fixedCanonPos = _pivotCanon.transform.localRotation.eulerAngles.y;
        
     }
     private void OnDrawGizmos()

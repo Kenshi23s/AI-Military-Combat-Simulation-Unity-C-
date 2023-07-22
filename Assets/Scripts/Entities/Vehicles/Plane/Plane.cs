@@ -61,7 +61,7 @@ public class Plane : Vehicle
     [Header("VFX")]
     [SerializeField] ParticleHolder ExplosionParticle;
     int keyExplosionParticle;
-
+    const float explosionRadiusParticle = 20f;
 
     public override void VehicleAwake()
     {
@@ -69,13 +69,15 @@ public class Plane : Vehicle
 
         shootComponent = GetComponent<ShootComponent>();
         DebugEntity.AddGizmoAction(DrawTowardsTarget); DebugEntity.AddGizmoAction(DrawAirstrikeZone);
-        Health.OnKilled += () => _planeFSM.SendInput(PlaneStates.ABANDONED);
+   
 
         Vector3 dir = _gridEntity.SpatialGrid.GetMidleOfGrid() - transform.position;
         transform.forward = new Vector3(0, 0, dir.z);
         _planeFSM = CreateFSM();
         
         misileStats.owner = gameObject;
+
+        Health.OnKilled += () => _planeFSM.SendInput(PlaneStates.ABANDONED);
     }
 
     #region UnityCalls
@@ -500,7 +502,8 @@ public class Plane : Vehicle
         if (_planeFSM.CurrentKey == PlaneStates.ABANDONED)
         {
             var x = ParticlePool.instance.GetVFX(keyExplosionParticle);
-            x.transform.localScale = 20f.ToVector();
+            x.transform.position = transform.position;
+            x.transform.localScale = explosionRadiusParticle.ToVector();
             Destroy(gameObject);
         }
     }

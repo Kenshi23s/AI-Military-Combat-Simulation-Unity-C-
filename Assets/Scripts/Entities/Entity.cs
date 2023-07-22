@@ -18,6 +18,9 @@ public abstract class Entity : MonoBehaviour, IDamagable, IHealable
     public Vector3 AimPoint => AimingPoint != null
         ? AimingPoint.position
         : transform.position;
+
+  
+
     [SerializeField, Header("Entity")] Transform AimingPoint;
 
     public void SetCaptureState(bool arg)
@@ -36,6 +39,9 @@ public abstract class Entity : MonoBehaviour, IDamagable, IHealable
 
     protected virtual void EntityAwake() { }
 
+    #region Redirect To Health Component
+    public bool IsAlive => Health.IsAlive;
+
     public DamageData TakeDamage(int dmgToDeal) => Health.TakeDamage(dmgToDeal);
 
     public DamageData TakeDamage(int dmgToDeal, Vector3 hitPoint) => Health.TakeDamage(dmgToDeal, hitPoint);
@@ -45,5 +51,6 @@ public abstract class Entity : MonoBehaviour, IDamagable, IHealable
     public Vector3 Position() => Health.Position();
 
     public int Heal(int HealAmount) => Health.Heal(HealAmount);
+    #endregion;
 }
-   
+

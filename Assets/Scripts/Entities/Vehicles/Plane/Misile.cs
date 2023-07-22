@@ -38,6 +38,7 @@ public class Misile : Entity, IMilitary
 
     Action<Misile> returnToPool;
 
+    string ownerName;
   
     public void PoolObjectInitialize(Action<Misile> HowToReturn) => returnToPool = HowToReturn;
 
@@ -92,7 +93,7 @@ public class Misile : Entity, IMilitary
     public void ShootMisile(MisileStats newStats, Transform newTarget)
     {
         myStats = newStats;
-
+        ownerName = myStats.owner.name;
         SetMovementStats();
         StartCoroutine(CountdownForExplosion());
 
@@ -130,12 +131,13 @@ public class Misile : Entity, IMilitary
     { 
         var _damagables = _gridEntity.GetEntitiesInRange(myStats.explosionRadius)
         .Where(x => x != myStats.owner)
+        .Where(x => x != null)
         .OfType<IDamagable>()
         .Where(FilterUnitsByTeam);
 
-        foreach (var entity in _damagables.Where(x => x != null))
+        foreach (var entity in _damagables)
         {
-            Debug.Log($"{myStats.owner.name} le hizo daño a {entity}");
+            GameManager.instance.DebugDamageFeed(ownerName,entity);
             entity.TakeDamage(myStats.damage);
         }
         returnToPool?.Invoke(this);

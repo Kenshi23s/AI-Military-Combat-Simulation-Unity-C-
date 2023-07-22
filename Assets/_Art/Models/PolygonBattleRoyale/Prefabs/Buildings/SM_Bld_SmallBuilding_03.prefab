@@ -11,12 +11,12 @@ GameObject:
   - component: {fileID: 4375085187067150}
   - component: {fileID: 33740081777887608}
   - component: {fileID: 23363799275057334}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SM_Bld_SmallBuilding_03_Glass
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &4375085187067150
 Transform:
@@ -25,7 +25,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1065615932318172}
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 3.4999995, y: 0.3656367, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -95,12 +95,12 @@ GameObject:
   - component: {fileID: 33432677975586516}
   - component: {fileID: 23633913055065732}
   - component: {fileID: 8978158552574794961}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SM_Bld_SmallBuilding_03
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &4869742442354714
 Transform:
@@ -109,7 +109,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1083701314518772}
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -149,7 +149,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a74066172cf19cd4bacae3c6600a7217, type: 2}
+  - {fileID: 2100000, guid: 97a96693c2c6e934cb4c090fe8d0d36c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -182,8 +182,8 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 10.697142, y: 3.886676, z: 7.0972395}
-  m_Center: {x: -0.0000009536743, y: 1.9433383, z: -0.0000013113022}
+  m_Size: {x: 10.697142, y: 2.9389892, z: 7.0972395}
+  m_Center: {x: -0.0000009536743, y: 1.4694948, z: -0.0000014305115}
 --- !u!1 &1355535989010746
 GameObject:
   m_ObjectHideFlags: 0
@@ -196,12 +196,12 @@ GameObject:
   - component: {fileID: 33862403500605276}
   - component: {fileID: 23743623389434092}
   - component: {fileID: 65745421387328786}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SM_Bld_SmallBuilding_03_Door_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &4373163366761480
 Transform:
@@ -210,7 +210,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1355535989010746}
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -5, y: 0.3656367, z: -0.51264954}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -293,12 +293,12 @@ GameObject:
   - component: {fileID: 33607362952828100}
   - component: {fileID: 23105768916904818}
   - component: {fileID: 65834019813496438}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SM_Bld_SmallBuilding_03_Door_02
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &4562336158561796
 Transform:
@@ -307,7 +307,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1493013577906968}
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 4.9999995, y: 0.36563674, z: -0.5126494}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -389,12 +389,12 @@ GameObject:
   - component: {fileID: 4804721813411166}
   - component: {fileID: 33100688047357148}
   - component: {fileID: 23881344996831644}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SM_Bld_SmallBuilding_03_Bars_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &4804721813411166
 Transform:
@@ -403,7 +403,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1878565130367144}
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.00000059219605, y: 1.9141746, z: -0.00000063201287}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0

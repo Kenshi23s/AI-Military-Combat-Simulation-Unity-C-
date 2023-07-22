@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static UnityEditor.Progress;
+using static UnityEngine.Rendering.DebugUI;
 using Random = UnityEngine.Random;
 
 [System.Serializable]
@@ -19,9 +21,10 @@ public struct TeamParameters
 
 public class TeamsManager : MonoSingleton<TeamsManager>
 {
-
+    [SerializeField] bool _canDebug;
     [SerializeField] Infantry _infantryPrefab;
     [SerializeField] Plane _planePrefab;
+    [SerializeField] Civilian civilian;
  
     public LayerMask NotSpawnable,Ground;
 
@@ -47,14 +50,17 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
     int _watchDog;
 
-    [SerializeField] bool _canDebug;
-
     public event Action OnLateUpdate;
-
   
     [SerializeField] TeamIndicator _prefabTeamIndicator;
     [SerializeField] float _unitsAboveMilitary;
 
+    #region Civilian
+    [Header("Civilian Spawn")]
+    [SerializeField] Transform _civilianPos;
+    [SerializeField] int _civiliansQuantity;
+    [SerializeField] float _width_CivilianSpawn, _height_CivilianSpawn;
+    #endregion
 
     #region MemberAdd
 
@@ -68,8 +74,9 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
             if (icon == default)
                 icon = GetSprite(typeof(IMilitary));
-
-
+            //agarro solamente el nombre con esto
+            var z = value.gameObject.name.Split("-");
+            indicator.SetName(z.Last());
             indicator.AssignOwner(value as IMilitary, icon);
         }
        
@@ -88,7 +95,8 @@ public class TeamsManager : MonoSingleton<TeamsManager>
             if (icon == default)
                 icon = GetSprite(typeof(IMilitary));
 
-            indicator.SetName(item.name);
+            var z = item.gameObject.name.Split("-");
+            indicator.SetName(z.Last());
             indicator.AssignOwner(item as IMilitary, icon);
         }
     }
@@ -123,6 +131,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
         return sprites.Where(x => x.Key.type == typeof(IMilitary)).First().Value;
     }
 
+    #region UnityCalls
     protected override void SingletonAwake()
     {
         foreach (MilitaryTeam key in Enum.GetValues(typeof(MilitaryTeam)))
@@ -149,7 +158,19 @@ public class TeamsManager : MonoSingleton<TeamsManager>
         OnLateUpdate?.Invoke();
     }
 
+    private void OnValidate()
+    {
+        if (_matchParameters.ContainsKey(MilitaryTeam.None))
+        {
+            _matchParameters.Remove(MilitaryTeam.None);
+        }
 
+    }
+    #endregion
+
+    #region SpawnMethds
+
+    #region EntitySpawn
     void SpawnFireteams(MilitaryTeam team, TeamParameters param)
     {
         List<Fireteam> fireteams = new List<Fireteam>();
@@ -189,14 +210,19 @@ public class TeamsManager : MonoSingleton<TeamsManager>
         }
     }
 
+    void SpawnCivilians()
+    {
+
+    }
+    #endregion
+
+    #region GetRandomPos
     /// <summary>
     /// obtiene una posicion random en la que no haya ninguna grid entity cerca
     /// </summary>
     /// <param name="parameters"></param>
     /// <returns></returns>
     /// 
-
-  
     bool GetRandomFreePosOnAir(TeamParameters parameters,out Vector3 pos)
     {  
         if (_watchDog >= 1000)
@@ -225,7 +251,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
         return GetRandomFreePosOnAir(parameters,out pos);
     }
 
-    bool GetRandomFreePosOnGround(TeamParameters parameters, out Vector3 pos)
+    bool GetRandomFreePosOnGround(TeamParameters  parameters, out Vector3 pos)
     {
         if (_watchDog >= 200)
         {
@@ -267,6 +293,50 @@ public class TeamsManager : MonoSingleton<TeamsManager>
         return GetRandomFreePosOnGround(parameters, out pos);
     }
 
+    bool GetRandomFreePosOnGround(Vector3 spawnArea,float width,float height, out Vector3 pos)
+    {
+        if (_watchDog >= 200)
+        {
+            pos = Vector3.zero;
+            Debug.LogError("WATCHDOG AL LIMITE, CORTO EJECUCION");
+            return false;
+        }
+        
+
+        Vector3 randomPos = spawnArea + new Vector3(Random.Range(-width, width), 0, Random.Range(-height, height));
+
+
+        if (Physics.Raycast(randomPos, Vector3.down, out RaycastHit hit, float.MaxValue, Ground))
+        {
+            //si no hay ninguna grid entity cerca,devuelvo la posicion
+            var entityNearby = Physics.OverlapSphere(hit.point, SeparationRadiusBetweenUnits, NotSpawnable)
+                .Where(x => x != this)
+                .Where(x => x.TryGetComponent(out GridEntity aux));
+
+
+            //esto es pesadisimo, pero como solo se haria en el awake...
+            if (!entityNearby.Any())
+            {
+
+                pos = hit.point;
+                return true;
+            }
+            else
+                Debug.Log($"no puedo spawnear aca, hay {entityNearby.Count()} cerca, hago recursion C: ");
+        }
+
+       
+        Debug.Log(hit.point + "watchdog = " + _watchDog);
+
+
+
+        _watchDog++;
+        return GetRandomFreePosOnGround(spawnArea, width,height, out pos);
+    }
+    #endregion
+
+    #endregion
+    #region UsefulMethods
     public IEnumerable<Fireteam> GetAllyFireteams(MilitaryTeam team)
     {
         return _teams[team].OfType<Infantry>().Select(x => x.MyFireteam).Where(x => x != null).Distinct();       
@@ -278,21 +348,21 @@ public class TeamsManager : MonoSingleton<TeamsManager>
             .OfType<Plane>()
             .Where(x => x.actualState != PlaneStates.ABANDONED);
     }
+    #endregion
 
-    private void OnValidate()
-    {
-        if (_matchParameters.ContainsKey(MilitaryTeam.None))
-        {
-            _matchParameters.Remove(MilitaryTeam.None);
-        }
+   
 
-    }
-
+    #region Gizmos
     private void OnDrawGizmos()
     {
 
         if (Application.isPlaying || !_canDebug) return;
+        
+         DrawCivilianSpawn(); DrawTeamSpawn();
+    }
 
+    void DrawTeamSpawn()
+    {
         foreach (var item in _matchParameters)
         {
             Gizmos.color = item.Key == MilitaryTeam.Red ? Color.red : Color.blue;
@@ -312,8 +382,27 @@ public class TeamsManager : MonoSingleton<TeamsManager>
                 Gizmos.DrawLine(freepos, freepos + Vector3.up * 50);
             }
         }
-
     }
 
-   
+    void DrawCivilianSpawn()
+    {
+
+        if (_civilianPos == null) return;
+      
+        Vector3 spawnArea = _civilianPos.position;
+     
+        Gizmos.color = Color.white;
+        Gizmos.DrawLine(spawnArea + new Vector3(-_width_CivilianSpawn, 0, _height_CivilianSpawn), spawnArea + new Vector3(_width_CivilianSpawn, 0, _height_CivilianSpawn));
+        Gizmos.DrawLine(spawnArea + new Vector3(_width_CivilianSpawn, 0, -_height_CivilianSpawn), spawnArea + new Vector3(_width_CivilianSpawn, 0, _height_CivilianSpawn));
+        Gizmos.DrawLine(spawnArea + new Vector3(_width_CivilianSpawn, 0, -_height_CivilianSpawn), spawnArea + new Vector3(-_width_CivilianSpawn, 0, -_height_CivilianSpawn));
+        Gizmos.DrawLine(spawnArea + new Vector3(-_width_CivilianSpawn, 0, _height_CivilianSpawn), spawnArea + new Vector3(-_width_CivilianSpawn, 0, -_height_CivilianSpawn));
+        _watchDog = 0;
+        if (GetRandomFreePosOnGround(_civilianPos.position,_width_CivilianSpawn,_height_CivilianSpawn, out Vector3 freepos))
+        {
+            Gizmos.DrawWireSphere(freepos, SeparationRadiusBetweenUnits);
+            Gizmos.DrawLine(freepos, freepos + Vector3.up * 50);
+        }
+    }
+    #endregion
+
 }

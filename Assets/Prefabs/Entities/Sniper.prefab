@@ -181,7 +181,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &8309585079942525626
 Transform:
   m_ObjectHideFlags: 0
@@ -249,8 +249,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5747d27ef88acac41acc7cc0ef883ab2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <ViewRadius>k__BackingField: 0
-  _viewAngle: 0
+  <ViewRadius>k__BackingField: 600
+  _viewAngle: 360
   _eyes: {fileID: 7064883830487174975}
 --- !u!120 &2815108865257515581
 LineRenderer:
@@ -380,9 +380,9 @@ MonoBehaviour:
   _maxLife: 100
   _dmgMultiplier: 1
   dmgResist: 1
-  canTakeDamage: 1
-  canBeHealed: 1
-  isCrit: 0
+  CanTakeDamage: 1
+  CanBeHealed: 1
+  IsCrit: 0
 --- !u!114 &5673067206364739106
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -399,9 +399,9 @@ MonoBehaviour:
   <Team>k__BackingField: 1
   _shootPos: {fileID: 6569154086367201079}
   FramesBetweenEnemySearch: 4
-  _aimSpeed: 13
+  _aimSpeed: 2
   _addPerTimesFocused: 10
-  _requiredFocusTime: 4
+  _requiredFocusTime: 6
   maxShootsInRow: 4
   _anim: {fileID: 6967533335640094502}
 --- !u!1 &814226080847022549

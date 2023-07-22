@@ -1,9 +1,10 @@
 using UnityEngine;
 public interface IDamagable 
 {
+    public bool IsAlive { get; }
+
     DamageData TakeDamage(int dmgToDeal);
     DamageData TakeDamage(int dmgToDeal,Vector3 hitPoint);
-   
     void AddKnockBack(Vector3 force);
     Vector3 Position();
 
