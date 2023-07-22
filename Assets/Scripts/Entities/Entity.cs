@@ -30,7 +30,7 @@ public abstract class Entity : MonoBehaviour
         Health = GetComponent<LifeComponent>();
         DebugEntity = GetComponent<DebugableObject>();
         IsCapturing = false;
-        gameObject.name = GetType().Name + ColomboMethods.GenerateName(6);
+        gameObject.name = GetType().Name + " - " +ColomboMethods.GenerateName(6);
         EntityAwake();
     }
 

@@ -88,7 +88,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
             if (icon == default)
                 icon = GetSprite(typeof(IMilitary));
 
-            indicator.SetName(gameObject.name);
+            indicator.SetName(item.name);
             indicator.AssignOwner(item as IMilitary, icon);
         }
     }
