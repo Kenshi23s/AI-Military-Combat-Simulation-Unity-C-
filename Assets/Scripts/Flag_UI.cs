@@ -44,9 +44,12 @@ public class Flag_UI : MonoBehaviour
 
     void SetTexts(Dictionary<MilitaryTeam, IMilitary[]> col)
     {
-        foreach (var key in TeamTexts.Keys.Where(x => col.ContainsKey(x)))
+        foreach (var key in TeamTexts.Keys)
         {
-            TeamTexts[key].text = col[key].Length.ToString();
+            if (col.ContainsKey(key))
+                TeamTexts[key].text = col[key].Length.ToString();
+            else
+                TeamTexts[key].text = 0.ToString();
         }
     }
 
