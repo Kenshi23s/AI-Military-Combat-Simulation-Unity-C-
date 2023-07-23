@@ -342,6 +342,15 @@ namespace FacundoColomboMethods
             return !Physics.Raycast(start, dir, dir.magnitude, maskWall);
         }
 
+        public static bool InLineOffSight(this Vector3 start, Vector3 end, LayerMask maskWall, float maxDistance)
+        {
+            Vector3 dir = end - start;
+            if (dir.sqrMagnitude > maxDistance * maxDistance)
+                return false;
+
+            return !Physics.Raycast(start, dir, maxDistance, maskWall);
+        }
+
         public static Vector3 CheckForwardRayColision(Vector3 pos, Vector3 dir, float range = 15)
         {
             //aca se guardan los datos de con lo que impacte el rayo
@@ -440,11 +449,11 @@ namespace FacundoColomboMethods
         /// <param name="myPos"></param>
         /// <param name="walls"></param>
         /// <returns></returns>
-        public static T GetNearestOnSigth<T>(this Vector3 myPos, List<T> objPosition,LayerMask walls) where T : MonoBehaviour
+        public static T GetNearestOnSight<T>(this Vector3 myPos, List<T> objPosition,LayerMask walls) where T : MonoBehaviour
         {
-            List<T> listOnSigth = GetWhichAreOnSight(objPosition, myPos,walls);
-           
-            switch (listOnSigth.Count)
+            List<T> listOnSight = GetWhichAreOnSight(objPosition, myPos,walls);
+
+            switch (listOnSight.Count)
             {
                   
                 //ninguno a la vista
@@ -452,25 +461,24 @@ namespace FacundoColomboMethods
                     return null;
                 //1 a la vista
                 case 1:
-                    return listOnSigth[0];
+                    return listOnSight[0];
                 //mas de  1 a la vista
                 default:
-                 float nearestMagnitude = (listOnSigth[0].transform.position - myPos).magnitude;
+                 float nearest = (listOnSight[0].transform.position - myPos).sqrMagnitude;
                  int nearestIndex = 0;
 
-                 for (int i = 1; i < listOnSigth.Count; i++)
+                 for (int i = 1; i < listOnSight.Count; i++)
                  {
-                     float tempMagnitude = (listOnSigth[i].transform.position - myPos).magnitude;
+                     float tempMagnitude = (listOnSight[i].transform.position - myPos).sqrMagnitude;
                    
-                     if (nearestMagnitude > tempMagnitude)
+                     if (nearest > tempMagnitude)
                      {
-                         nearestMagnitude = tempMagnitude;
+                         nearest = tempMagnitude;
                          nearestIndex = i;
                      }
-
                  }
                   
-                 return listOnSigth[nearestIndex];
+                 return listOnSight[nearestIndex];
 
                     
             }                          
@@ -488,7 +496,6 @@ namespace FacundoColomboMethods
         /// <returns></returns>
         public static List<T> GetWhichAreOnSight<T>(this List<T> itemsPassed, Vector3 pos,  LayerMask wallMask = default, RaycastType type = RaycastType.Default, float radius=10f) where T : MonoBehaviour
         {
-           
             switch (type)
             {
                 case RaycastType.Sphere:
