@@ -7,7 +7,6 @@ using UnityEngine;
 [RequireComponent(typeof(NewAIMovement))]
 public class Civilian : Entity
 {
-    Animator anim;
     public enum CivilianStates
     {
         Idle,
@@ -15,6 +14,7 @@ public class Civilian : Entity
         LookForRefugee,
         Die
     }
+    [SerializeField]Animator anim;
     NewAIMovement civilian_AI;
     Bunker nearestBunker;
 
@@ -62,13 +62,17 @@ public class Civilian : Entity
 
         run.OnEnter += (x) =>
         {
+            anim.SetBool("Running",true);
             nearestBunker = GameManager.instance.Bunkers.Minimum(x => Vector3.Distance(x.transform.position,transform.position));
-            civilian_AI.SetDestination(nearestBunker.transform.position ,TryEnterBunker);
+            civilian_AI.SetDestination(nearestBunker.transform.position , TryEnterBunker);
             
             DebugEntity.Log("Corro hacia el refugio");
         };
 
-
+        run.OnExit += (x) =>
+        {
+            anim.SetBool("Running", false);
+        };
     
         return run;
     }
@@ -78,9 +82,10 @@ public class Civilian : Entity
         State<CivilianStates> pray = new State<CivilianStates>("Pray");
 
         pray.OnEnter += (x) => { DebugEntity.Log("A rezar C:"); };
-        
-       
-        //me imagino q aca se harian cosas del animator
+
+        pray.OnEnter += (x) => { anim.SetBool("Praying", true); };
+
+        pray.OnExit += (x) => { anim.SetBool("Praying", false); }; 
 
         return pray;
     }
@@ -94,8 +99,7 @@ public class Civilian : Entity
             DebugEntity.Log("ha muerto");
             Destroy(GetComponent<BoxCollider>());
             Destroy(Health);
-            anim.SetTrigger("Die");
-
+            anim.SetBool("Die", false);
         };
 
         return die;

@@ -488,6 +488,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AimingPoint: {fileID: 4014297498884675600}
+  anim: {fileID: 3956645896193352886}
 --- !u!1 &4016105130084220768
 GameObject:
   m_ObjectHideFlags: 0

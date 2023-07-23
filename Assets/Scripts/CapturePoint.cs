@@ -5,6 +5,7 @@ using UnityEngine.Events;
 using System;
 using System.Linq;
 using IA2;
+using System.Collections.ObjectModel;
 
 public enum CaptureState
 {
@@ -16,21 +17,18 @@ public enum CaptureState
 [RequireComponent(typeof(DebugableObject))]
 public class CapturePoint : MonoBehaviour
 {
+    #region Variables
     [SerializeField, Min(0)] float _searchTime = 0.2f;
     [SerializeField, Min(0)] float _pointRadius = 15, _pointHeight = 8;
     [SerializeField, Min(0)] float _captureSpeed = 5f;
+    #endregion
     DebugableObject _debug;
-
-    public UnityEvent<MilitaryTeam> OnPointOwnerChange;
-    public UnityEvent OnPointNeutralized;
-    public UnityEvent<float> OnProgressChange;
-    public UnityEvent<Dictionary<MilitaryTeam, IMilitary[]>> OnTeamsInPointUpdate;
-    public event Action<MilitaryTeam> OnCaptureComplete;
 
     HashSet<ICapturePointEntity> _entitiesInPoint = new HashSet<ICapturePointEntity>();
     Dictionary<MilitaryTeam, IMilitary[]> _teamSplit = new Dictionary<MilitaryTeam, IMilitary[]>();
 
     [field: SerializeField] public float ProgressRequiredForCapture { get; private set; } = 100f;
+
 
     float _captureProgress = 0;
     public float CaptureProgress
@@ -49,9 +47,28 @@ public class CapturePoint : MonoBehaviour
     public MilitaryTeam BeingCapturedBy { get; private set; } = MilitaryTeam.None;
     public MilitaryTeam CapturedBy { get; private set; } = MilitaryTeam.None;
 
+    #region Questions
     public bool IsBeingCaptured => BeingCapturedBy != MilitaryTeam.None;
     public bool IsCaptured => CapturedBy != MilitaryTeam.None;
     public bool IsFullyCaptured => Mathf.Abs(_captureProgress) >= ProgressRequiredForCapture;
+    #endregion
+
+    #region Events
+
+    #region UnityEvents
+    public UnityEvent<MilitaryTeam> OnPointOwnerChange;
+    public UnityEvent OnPointNeutralized;
+    public UnityEvent<float> OnProgressChange;
+    public UnityEvent<Dictionary<MilitaryTeam, IMilitary[]>> OnTeamsInPointUpdate;
+    #endregion
+
+    #region C# Events
+    public event Action OnDisputeStart, OnDisputeEnd,OnStopCapture;
+    public event Action<MilitaryTeam> OnCaptureComplete;
+    public event Action<MilitaryTeam> OnBeingCaptured;
+    #endregion
+
+    #endregion
 
     EventFSM<CaptureState> _fsm;
 
@@ -102,9 +119,9 @@ public class CapturePoint : MonoBehaviour
         _fsm.Update();
     }
 
-    bool CanTeamCapture(MilitaryTeam team) 
+    bool CanTeamCapture(MilitaryTeam team)
     {
-        return _teamSplit.ContainsKey(team) && (!IsFullyCaptured || CapturedBy != team);
+        return _teamSplit[team].Any() && (!IsFullyCaptured || CapturedBy != team);
     }
 
 
@@ -115,6 +132,7 @@ public class CapturePoint : MonoBehaviour
 
         inactive.OnEnter += _ =>
         {
+
             CurrentState = CaptureState.Inactive;
         };
 
@@ -138,6 +156,7 @@ public class CapturePoint : MonoBehaviour
         beingCaptured.OnEnter += _ =>
         {
             CurrentState = CaptureState.BeingCaptured;
+            OnBeingCaptured?.Invoke(BeingCapturedBy);
         };
 
         beingCaptured.OnUpdate += () =>
@@ -147,18 +166,20 @@ public class CapturePoint : MonoBehaviour
 
         beingCaptured.OnExit += _ =>
         {
-
+            OnStopCapture?.Invoke();
         };
 
         return beingCaptured;
     }
 
-    State<CaptureState> CreateDisputedState() {
+    State<CaptureState> CreateDisputedState()
+    {
         var disputed = new State<CaptureState>("Disputed");
 
         disputed.OnEnter += _ =>
         {
             CurrentState = CaptureState.Disputed;
+            OnDisputeStart?.Invoke();
         };
 
         disputed.OnUpdate += () =>
@@ -168,7 +189,7 @@ public class CapturePoint : MonoBehaviour
 
         disputed.OnExit += _ =>
         {
-
+            OnDisputeEnd?.Invoke();
         };
 
         return disputed;
@@ -196,7 +217,8 @@ public class CapturePoint : MonoBehaviour
             _teamSplit = _entitiesInPoint
                 .OfType<IMilitary>()
                 .ToLookup(x => x.Team)
-                .ToDictionary(x => x.Key, x => x.ToArray());
+                .ToDictionary(x => x.Key, x => x.ToArray())
+                .EmptyIfNull();
 
             OnTeamsInPointUpdate?.Invoke(_teamSplit);
             yield return new WaitForSeconds(_searchTime);
@@ -228,7 +250,7 @@ public class CapturePoint : MonoBehaviour
     void CheckState()
     {
         // Chequear si esta siendo disputada.
-        if (_teamSplit.ContainsKey(MilitaryTeam.Red) && _teamSplit.ContainsKey(MilitaryTeam.Blue) && CurrentState != CaptureState.Disputed)
+        if (_teamSplit[MilitaryTeam.Red].Any() && _teamSplit[MilitaryTeam.Blue].Any() && CurrentState != CaptureState.Disputed)
         {
             SendInputToFSM(CaptureState.Disputed);
             return;

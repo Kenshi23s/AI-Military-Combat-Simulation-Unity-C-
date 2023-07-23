@@ -9,10 +9,19 @@ using UnityEngine.UI;
 public class Flag_UI : MonoBehaviour
 {
     [SerializeField] Image _flagOwner;
-    [SerializeField, SerializedDictionary("Team","TextMesh")] SerializedDictionary<MilitaryTeam, TextMeshProUGUI> TeamTexts;
+   
 
     Material _mat;
     CapturePoint _myCapturePoint;
+
+    [Header("OnTake")]
+    [SerializeField] GameObject OnTakeGO;
+    [SerializeField] TextMeshProUGUI UnitAmountText;
+
+    [Header("OnDispute")]
+    [SerializeField] GameObject OnDisputeGO;
+    [SerializeField, SerializedDictionary("Team", "TextMesh")] SerializedDictionary<MilitaryTeam, TextMeshProUGUI> TeamTexts;
+
     private void Awake()
     {
          _myCapturePoint = GetComponentInParent<CapturePoint>();
@@ -22,11 +31,16 @@ public class Flag_UI : MonoBehaviour
             Destroy(gameObject);
 
         _myCapturePoint.OnProgressChange.AddListener(UpdateProgressUI);
-        _myCapturePoint.OnTeamsInPointUpdate.AddListener(SetTexts);
         _myCapturePoint.OnPointOwnerChange.AddListener(SetLetterColor);
 
-        UpdateProgressUI(_myCapturePoint.CaptureProgress);
-        SetLetterColor(_myCapturePoint.CapturedBy);
+        _myCapturePoint.OnDisputeStart += ActivateDisputeUI;
+        _myCapturePoint.OnDisputeEnd += DeActivateDisputeUI;
+
+
+        _myCapturePoint.OnBeingCaptured += ActivateOnTake;
+        _myCapturePoint.OnStopCapture   += DeActivateOnTake;
+
+        UpdateProgressUI(_myCapturePoint.CaptureProgress); SetLetterColor(_myCapturePoint.CapturedBy);
     }
 
     private void LateUpdate()
@@ -34,6 +48,28 @@ public class Flag_UI : MonoBehaviour
         transform.forward = Camera.main.transform.position - transform.position;
     }
 
+    #region OnTake
+    void ActivateOnTake(MilitaryTeam team)
+    {
+        OnTakeGO.SetActive(true);
+        UnitAmountText.color = team == MilitaryTeam.Red ? Color.red : Color.blue;
+        _myCapturePoint.OnTeamsInPointUpdate.AddListener(ChangeOnTakeText);
+    }
+
+    void ChangeOnTakeText(Dictionary<MilitaryTeam, IMilitary[]> col)
+    {
+        UnitAmountText.text = col.Select(x => x.Value).Maximum(x => x.Count()).Count().ToString();
+    }
+
+    void DeActivateOnTake()
+    {
+        OnTakeGO.SetActive(false);
+        _myCapturePoint.OnTeamsInPointUpdate.RemoveListener(ChangeOnTakeText);
+    }
+    #endregion
+    #region OnDispute
+
+    #endregion
     void UpdateProgressUI(float progress)
     {
         _mat.SetFloat("_CaptureProgress", progress);
@@ -41,6 +77,11 @@ public class Flag_UI : MonoBehaviour
         Color color = progress >= 0 ? Color.red : Color.blue;
 
         _mat.SetColor("_ProgressFillColor", color);
+    }
+
+    void ActivateDisputeUI()
+    {
+        _myCapturePoint.OnTeamsInPointUpdate.AddListener(SetTexts);
     }
 
     void SetTexts(Dictionary<MilitaryTeam, IMilitary[]> col)
@@ -53,6 +94,12 @@ public class Flag_UI : MonoBehaviour
                 TeamTexts[key].text = 0.ToString();
         }
     }
+
+    void DeActivateDisputeUI()
+    {
+        _myCapturePoint.OnTeamsInPointUpdate.RemoveListener(SetTexts);
+    }
+
 
     void SetLetterColor(MilitaryTeam team) 
     {
