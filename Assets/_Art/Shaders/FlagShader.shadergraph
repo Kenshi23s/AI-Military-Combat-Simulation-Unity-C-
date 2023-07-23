@@ -137,6 +137,9 @@
         },
         {
             "m_Id": "a3dce034ffd94d769c0e92d8062fe8b0"
+        },
+        {
+            "m_Id": "772b6e3c61fa48ff813e5f70a5541035"
         }
     ],
     "m_GroupDatas": [
@@ -3036,6 +3039,39 @@
     },
     "isMainColor": false,
     "m_ColorMode": 0
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.SubGraphNode",
+    "m_ObjectId": "772b6e3c61fa48ff813e5f70a5541035",
+    "m_Group": {
+        "m_Id": ""
+    },
+    "m_Name": "sub_CustomPolygon",
+    "m_DrawState": {
+        "m_Expanded": true,
+        "m_Position": {
+            "serializedVersion": "2",
+            "x": -1181.75,
+            "y": -1764.0,
+            "width": 0.0,
+            "height": 0.0
+        }
+    },
+    "m_Slots": [],
+    "synonyms": [],
+    "m_Precision": 0,
+    "m_PreviewExpanded": true,
+    "m_PreviewMode": 0,
+    "m_CustomColors": {
+        "m_SerializableColors": []
+    },
+    "m_SerializedSubGraph": "{\n    \"subGraph\": {\n        \"fileID\": -5475051401550479605,\n        \"guid\": \"08c7ac471d4081744aa469307a781451\",\n        \"type\": 3\n    }\n}",
+    "m_PropertyGuids": [],
+    "m_PropertyIds": [],
+    "m_Dropdowns": [],
+    "m_DropdownSelectedEntries": []
 }
 
 {

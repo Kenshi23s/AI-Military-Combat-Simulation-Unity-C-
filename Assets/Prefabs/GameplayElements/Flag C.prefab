@@ -712,6 +712,7 @@ MonoBehaviour:
   _searchTime: 0.2
   _pointRadius: 15
   _pointHeight: 8
+  _captureSpeed: 10
   OnPointOwnerChange:
     m_PersistentCalls:
       m_Calls: []

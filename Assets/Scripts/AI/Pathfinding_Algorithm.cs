@@ -288,7 +288,7 @@ public static class Pathfinding_Algorithm
        
     }
 
-    public static IEnumerator CalculateLazyThetaStar(this Tuple<Node, Node> nodes, LayerMask wallMask, Action<bool,List<Vector3>> onFinish, Vector3 endpos = default, int iterationPerFrame = 30)
+    public static IEnumerator CalculateLazyThetaStar(this Tuple<Node, Node> nodes, LayerMask wallMask, Action<bool,List<Vector3>> onFinish, Vector3 endpos = default, int iterationPerFrame = 30, float maxDistance = 20f)
     {
         
 
@@ -302,7 +302,7 @@ public static class Pathfinding_Algorithm
 
             while (current + 2 < pathToCut.Count)
             {
-                if (InLineOffSight(pathToCut[current].transform.position, pathToCut[current + 2].transform.position, wallMask))
+                if (InLineOffSight(pathToCut[current].transform.position, pathToCut[current + 2].transform.position, wallMask, maxDistance))
                     pathToCut.RemoveAt(current + 1);
                 else
                     current++;
@@ -437,6 +437,16 @@ public static class Pathfinding_Algorithm
     {
          Vector3 dir = finalPos - InitialPos;
          return !Physics.Raycast(InitialPos, dir, dir.magnitude, maskWall);
+    }
+
+    public static bool InLineOffSight(Vector3 InitialPos, Vector3 finalPos, LayerMask maskWall, float maxDistance)
+    {
+        Vector3 dir = finalPos - InitialPos;
+
+        if (dir.sqrMagnitude > maxDistance * maxDistance)
+            return false;
+
+        return !Physics.Raycast(InitialPos, dir, maxDistance, maskWall);
     }
 }
 

@@ -82,23 +82,31 @@ public class Fireteam
     }
     #endregion
 
+
+    CapturePoint targetCapturePoint;
     public IEnumerator FindNearestUntakenPoint()
     {
+        // Esperamos un frame para darle tiempo a las demas fsms a que se inicialicen. Idealmente no deberia ser asi esto.
         yield return null;
+        // Conseguir el punto mas cercano
         var untakenPoint = CapturePointManager.instance.CapturePoints.Where(IsPointPriority);
-        var nearest = untakenPoint.Minimum(x => Vector3.SqrMagnitude(x.transform.position - Leader.transform.position));
+        targetCapturePoint = untakenPoint.Minimum(x => Vector3.SqrMagnitude(x.transform.position - Leader.transform.position));
 
-        nearest.OnCaptureComplete += (capturedBy) =>
-        {
-            if (capturedBy != Team) return;
+        targetCapturePoint.OnCaptureComplete += OnTargetPointCaptured;
 
-            Leader.WaitOrdersTransition();
-            foreach (var unit in _fireteamMembers.Where(x => x != Leader))
-                unit.FollowLeaderTransition();
-        };
+        Leader.DebugEntity.Log($"Moviendome a la bandera {targetCapturePoint}");
+        SendPatrolOrders(targetCapturePoint.transform.position);
+    }
 
-        Leader.DebugEntity.Log($"Moviendome a la bandera {nearest}");
-        SendPatrolOrders(nearest.transform.position);
+    void OnTargetPointCaptured(MilitaryTeam capturedBy) 
+    {
+        if (capturedBy != Team) return;
+
+        Leader.WaitOrdersTransition();
+        foreach (var unit in _fireteamMembers.Where(x => x != Leader))
+            unit.FollowLeaderTransition();
+
+        targetCapturePoint.OnCaptureComplete -= OnTargetPointCaptured;
     }
 
     bool IsPointPriority(CapturePoint point)
