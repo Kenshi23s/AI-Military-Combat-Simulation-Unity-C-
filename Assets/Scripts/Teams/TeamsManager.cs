@@ -1,10 +1,9 @@
 using AYellowpaper.SerializedCollections;
+using FacundoColomboMethods;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static UnityEditor.Progress;
-using static UnityEngine.Rendering.DebugUI;
 using Random = UnityEngine.Random;
 
 [System.Serializable]
@@ -24,7 +23,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     [SerializeField] bool _canDebug;
     [SerializeField] Infantry _infantryPrefab;
     [SerializeField] Plane _planePrefab;
-    [SerializeField] Civilian civilian;
+    [SerializeField] Civilian _civilianPrefab;
  
     public LayerMask NotSpawnable,Ground;
 
@@ -118,19 +117,6 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     #endregion
     #endregion
 
-   
-
-    public Sprite GetSprite(Type targetType)
-    {
-        foreach (var keys in sprites.Keys)
-        {
-            if (targetType == keys.type)           
-                return sprites[keys];
-            
-        }
-        return sprites.Where(x => x.Key.type == typeof(IMilitary)).First().Value;
-    }
-
     #region UnityCalls
     protected override void SingletonAwake()
     {
@@ -151,6 +137,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
             SpawnFireteams(key, _matchParameters[key]);
             SpawnPlanes(key, _matchParameters[key]);
         }
+        SpawnCivilians();
     }
 
     private void LateUpdate()
@@ -174,16 +161,26 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     void SpawnFireteams(MilitaryTeam team, TeamParameters param)
     {
         List<Fireteam> fireteams = new List<Fireteam>();
-        
+
+        GameObject newGO = Instantiate(new GameObject(team + " Infantry"), transform);
+
         for (int i = 0; i < param.FireteamQuantity; i++)
         {       
            FList<Infantry> members = new FList<Infantry>();
+
+           GameObject fireteamGroup = Instantiate(new GameObject("Fireteam"+ ColomboMethods.GenerateName(5)), newGO.transform);
 
            for (int j = 0; j < param.membersPerFireteam; j++)
            {
                 _watchDog = 0;
                 if (GetRandomFreePosOnGround(param, out Vector3 pos))
-                    members += Instantiate(_infantryPrefab, pos, Quaternion.identity);
+                {
+                    var newUnit = Instantiate(_infantryPrefab, pos, Quaternion.identity);
+                    newUnit.transform.parent = fireteamGroup.transform;
+                    members += newUnit;
+
+
+                }              
                 else
                     return;
            }      
@@ -197,6 +194,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
     void SpawnPlanes(MilitaryTeam team, TeamParameters parameters)
     {
+        GameObject newGO = Instantiate(new GameObject(team + " Planes"), transform);
         for (int i = 0; i < parameters.planesQuantity; i++)
         {
             if (GetRandomFreePosOnAir(parameters,out Vector3 pos))
@@ -204,6 +202,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
                 var x = Instantiate(_planePrefab,pos,Quaternion.identity);
                 x.Initialize(team);
                 AddToTeam(team, x, GetSprite(typeof(Plane)));
+                x.transform.parent = newGO.transform;
             }
             else           
                 return;                               
@@ -212,7 +211,16 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
     void SpawnCivilians()
     {
+        GameObject newGO = Instantiate(new GameObject("Civilians"), transform);
 
+        for (int i = 0; i < _civiliansQuantity; i++)
+        {
+            if (GetRandomFreePosOnGround(_civilianPos.position, _width_CivilianSpawn, _height_CivilianSpawn, out var pos))
+            {
+                var new_civilian = Instantiate(_civilianPrefab, pos, Quaternion.identity);
+                new_civilian.transform.parent = newGO.transform;
+            }
+        }
     }
     #endregion
 
@@ -336,7 +344,19 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     #endregion
 
     #endregion
+
     #region UsefulMethods
+    public Sprite GetSprite(Type targetType)
+    {
+        foreach (var keys in sprites.Keys)
+        {
+            if (targetType == keys.type)
+                return sprites[keys];
+
+        }
+        return sprites.Where(x => x.Key.type == typeof(IMilitary)).First().Value;
+    }
+
     public IEnumerable<Fireteam> GetAllyFireteams(MilitaryTeam team)
     {
         return _teams[team].OfType<Infantry>().Select(x => x.MyFireteam).Where(x => x != null).Distinct();       
@@ -349,8 +369,6 @@ public class TeamsManager : MonoSingleton<TeamsManager>
             .Where(x => x.actualState != PlaneStates.ABANDONED);
     }
     #endregion
-
-   
 
     #region Gizmos
     private void OnDrawGizmos()
