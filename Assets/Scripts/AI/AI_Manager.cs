@@ -42,6 +42,30 @@ public class AI_Manager : MonoSingleton<AI_Manager>
 
     public Node GetNearestNode(Vector3 pos)
     {
-        return ColomboMethods.GetNearestOnSigth(pos, nodes, WallMask);
+        return GetNearestNodeOnSight(pos);
+    }
+
+    public Node GetNearestNodeOnSight(Vector3 pos)
+    {
+        Node nearestOnSight = null;
+        float minSqrMagnitude = float.MaxValue;
+
+        float sqrMag;
+        Vector3 dir;
+        foreach (var node in nodes)
+        {
+            dir = pos - node.groundPosition;
+            sqrMag = dir.sqrMagnitude;
+            if (sqrMag > minSqrMagnitude)
+                continue;
+
+            if (!Physics.Raycast(pos, dir, Mathf.Sqrt(sqrMag), WallMask))
+            {
+                nearestOnSight = node;
+                minSqrMagnitude = sqrMag;
+            }
+        }
+
+        return nearestOnSight;
     }
 }

@@ -14,7 +14,7 @@ public class NewAIMovement : MonoBehaviour
     public GridEntity Owner { get; private set; }
 
     public event Action OnAnyDestinationReached, OnDestinationChanged, OnMovementCanceled;
-    Action OnCurrentDestinationReach;
+    Action OnCurrentDestinationReached;
 
     DebugableObject _debug;
 
@@ -37,8 +37,8 @@ public class NewAIMovement : MonoBehaviour
 
         _debug.AddGizmoAction(DrawPath); _debug.AddGizmoAction(DrawDestination);
 
-        OnDestinationChanged += () => { OnCurrentDestinationReach = delegate { }; };
-        OnMovementCanceled +=   () => { OnCurrentDestinationReach = delegate { }; };
+        OnDestinationChanged += () => { OnCurrentDestinationReached = delegate { }; };
+        OnMovementCanceled +=   () => { OnCurrentDestinationReached = delegate { }; };
     }
 
 
@@ -49,7 +49,7 @@ public class NewAIMovement : MonoBehaviour
 
         Destination = newDestination;
 
-        if (transform.position.InLineOffSight(newDestination, AI_Manager.instance.WallMask))
+        if (transform.position.InLineOffSight(newDestination, AI_Manager.instance.WallMask, 20f))
         {
             OnDesinationAtSight(newDestination);
         }
@@ -65,9 +65,10 @@ public class NewAIMovement : MonoBehaviour
 
         Destination = newDestination;
 
-        if (onDestinationReach != null) OnCurrentDestinationReach += onDestinationReach;
+        
+        if (onDestinationReach != null) OnCurrentDestinationReached += onDestinationReach;
 
-        if (transform.position.InLineOffSight(newDestination, AI_Manager.instance.WallMask))
+        if (transform.position.InLineOffSight(newDestination, AI_Manager.instance.WallMask, 20f))
         {
             OnDesinationAtSight(newDestination);
         }
@@ -81,14 +82,17 @@ public class NewAIMovement : MonoBehaviour
     {
         if (_path.Any() && newDestination != Destination) OnDestinationChanged?.Invoke();
 
-        if (onDestinationReach != null) OnCurrentDestinationReach += onDestinationReach;
+        if (onDestinationReach != null) OnCurrentDestinationReached += onDestinationReach;
 
         Destination = newDestination;
 
         Action<bool, List<Vector3>> onCalculate = (boolean,list) => OnFinishCalculating(boolean);
 
-        if (transform.position.InLineOffSight(newDestination, AI_Manager.instance.WallMask))      
-            OnDesinationAtSight(newDestination);        
+        if (transform.position.InLineOffSight(newDestination, AI_Manager.instance.WallMask, 20f))
+        {
+            OnFinishCalculating?.Invoke(true);
+            OnDesinationAtSight(newDestination);
+        }
         else       
             CalculatePath(newDestination, onCalculate);
         
@@ -111,7 +115,7 @@ public class NewAIMovement : MonoBehaviour
 
             if (Vector3.Distance(newDestination, transform.position) < DestinationArriveDistance)
             {
-                OnCurrentDestinationReach?.Invoke();
+                OnCurrentDestinationReached?.Invoke();
                 OnAnyDestinationReached?.Invoke();
                 ClearPath();
             }
@@ -200,7 +204,7 @@ public class NewAIMovement : MonoBehaviour
         {
             _debug.Log("no hay mas nodos, corto pathfinding");
             OnAnyDestinationReached?.Invoke();
-            OnCurrentDestinationReach?.Invoke();
+            OnCurrentDestinationReached?.Invoke();
             ClearPath();
             return;
         }
