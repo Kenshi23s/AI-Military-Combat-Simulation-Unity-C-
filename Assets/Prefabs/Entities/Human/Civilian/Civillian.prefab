@@ -452,7 +452,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26e164ce1119c5a4b97d9c825076c88c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DestinationArriveDistance: 0
+  DestinationArriveDistance: 5
   obstacleMask:
     serializedVersion: 2
     m_Bits: 1024
@@ -472,9 +472,9 @@ MonoBehaviour:
   _maxLife: 100
   _dmgMultiplier: 1
   dmgResist: 1
-  canTakeDamage: 1
-  canBeHealed: 1
-  isCrit: 0
+  CanTakeDamage: 1
+  CanBeHealed: 1
+  IsCrit: 0
 --- !u!114 &4015529176650051653
 MonoBehaviour:
   m_ObjectHideFlags: 0
