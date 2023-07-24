@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 33496462993904764}
   - component: {fileID: 23605714977781758}
   - component: {fileID: 1424019226278627995}
+  - component: {fileID: 1182642970291458792}
   m_Layer: 0
   m_Name: SM_Bld_WoodenShack_01
   m_TagString: Untagged
@@ -97,3 +98,30 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 4.5268555, y: 3.9359367, z: 6.2219286}
   m_Center: {x: 0.00000011920929, y: 1.9679683, z: 0.0000011920929}
+--- !u!205 &1182642970291458792
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1393828521067074}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: 0, y: 1.9679683, z: 0.0000011920929}
+  m_Size: 6.2219286
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23605714977781758}
+  - screenRelativeHeight: 0.3
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23605714977781758}
+  - screenRelativeHeight: 0.1
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23605714977781758}
+  m_Enabled: 1

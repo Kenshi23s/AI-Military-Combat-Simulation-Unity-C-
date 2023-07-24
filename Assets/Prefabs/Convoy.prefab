@@ -116,6 +116,7 @@ GameObject:
   - component: {fileID: 33478880837364498}
   - component: {fileID: 23512240475489024}
   - component: {fileID: 64475440655322744}
+  - component: {fileID: 692731915240289657}
   m_Layer: 0
   m_Name: Convoy
   m_TagString: Untagged
@@ -211,6 +212,60 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 43138678090282050, guid: 6324b15095c481248ab69662d6af3c93, type: 2}
+--- !u!205 &692731915240289657
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1248582704293972}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: 0, y: 1.5853388, z: 0.2498709}
+  m_Size: 7.053978
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23512240475489024}
+    - renderer: {fileID: 23037182961960040}
+    - renderer: {fileID: 23847419897970514}
+    - renderer: {fileID: 23250336931843908}
+    - renderer: {fileID: 23759684664543974}
+    - renderer: {fileID: 23437512658290692}
+    - renderer: {fileID: 23057136809342598}
+    - renderer: {fileID: 23400557938409334}
+    - renderer: {fileID: 23839759049107282}
+    - renderer: {fileID: 23292046864750330}
+  - screenRelativeHeight: 0.39326718
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23512240475489024}
+    - renderer: {fileID: 23037182961960040}
+    - renderer: {fileID: 23847419897970514}
+    - renderer: {fileID: 23250336931843908}
+    - renderer: {fileID: 23759684664543974}
+    - renderer: {fileID: 23437512658290692}
+    - renderer: {fileID: 23057136809342598}
+    - renderer: {fileID: 23400557938409334}
+    - renderer: {fileID: 23839759049107282}
+    - renderer: {fileID: 23292046864750330}
+  - screenRelativeHeight: 0.0974939
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23512240475489024}
+    - renderer: {fileID: 23037182961960040}
+    - renderer: {fileID: 23847419897970514}
+    - renderer: {fileID: 23250336931843908}
+    - renderer: {fileID: 23759684664543974}
+    - renderer: {fileID: 23437512658290692}
+    - renderer: {fileID: 23057136809342598}
+    - renderer: {fileID: 23400557938409334}
+    - renderer: {fileID: 23839759049107282}
+    - renderer: {fileID: 23292046864750330}
+  m_Enabled: 1
 --- !u!1 &1391002002883350
 GameObject:
   m_ObjectHideFlags: 0

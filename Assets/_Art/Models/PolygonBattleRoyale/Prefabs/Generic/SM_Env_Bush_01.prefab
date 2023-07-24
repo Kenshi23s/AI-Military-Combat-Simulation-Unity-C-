@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 33503376461626508}
   - component: {fileID: 23012848276799612}
   - component: {fileID: 64188702652509376}
+  - component: {fileID: 5815020922700957523}
   m_Layer: 10
   m_Name: SM_Env_Bush_01
   m_TagString: Untagged
@@ -98,3 +99,30 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 43345576039658418, guid: 35f16dde67a50664bb4036d8fba4f7b8, type: 2}
+--- !u!205 &5815020922700957523
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1335091913290960}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: -0.08253682, y: 0.7730173, z: -0.12346363}
+  m_Size: 1.6166456
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23012848276799612}
+  - screenRelativeHeight: 0.3
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23012848276799612}
+  - screenRelativeHeight: 0.1
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23012848276799612}
+  m_Enabled: 1

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7282944069297120028}
   - component: {fileID: 7282944069297120098}
   - component: {fileID: 7282944069297120099}
+  - component: {fileID: 722975098001665090}
   m_Layer: 8
   m_Name: View
   m_TagString: Untagged
@@ -84,6 +85,36 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!205 &722975098001665090
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7282944069297120029}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: -0.00000166893, y: -0.9732857, z: -0.0000010728836}
+  m_Size: 2.910594
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 7282944069297120099}
+    - renderer: {fileID: 1203651971834224894}
+  - screenRelativeHeight: 0.41547516
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 1203651971834224894}
+    - renderer: {fileID: 7282944069297120099}
+  - screenRelativeHeight: 0.09571124
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 1203651971834224894}
+    - renderer: {fileID: 7282944069297120099}
+  m_Enabled: 1
 --- !u!1 &7282944069579428831
 GameObject:
   m_ObjectHideFlags: 0
@@ -99,6 +130,7 @@ GameObject:
   - component: {fileID: 7282944069579428829}
   - component: {fileID: 7282944069579428830}
   - component: {fileID: 2803249810437451156}
+  - component: {fileID: 5276209248903470557}
   m_Layer: 0
   m_Name: Misile
   m_TagString: Untagged
@@ -198,9 +230,9 @@ MonoBehaviour:
   _maxLife: 100
   _dmgMultiplier: 1
   dmgResist: 1
-  canTakeDamage: 1
-  canBeHealed: 1
-  isCrit: 0
+  CanTakeDamage: 1
+  CanBeHealed: 1
+  IsCrit: 0
 --- !u!114 &7282944069579428830
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -213,8 +245,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96b426cb93347084e8e352f9f6010d83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <MyTeam>k__BackingField: 0
-  onGrid: 0
+  AimingPoint: {fileID: 0}
   explosionParticle:
     particle: {fileID: 2592738608535527766, guid: 92774f5bcd4f0954b84016e50e182d31,
       type: 3}
@@ -234,6 +265,19 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.50492096, y: 0.45716858, z: 2.1449013}
   m_Center: {x: -0.004196167, y: 0.0012931824, z: -0.7067089}
+--- !u!114 &5276209248903470557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7282944069579428831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac49b2b6d50c7a749bea4d8294713dac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OnGrid: 0
 --- !u!1001 &1203651971849848478
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -291,6 +335,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3a49f5d9f96d13f4c82d78c5ff46a0b0, type: 3}
+--- !u!199 &1203651971834224894 stripped
+ParticleSystemRenderer:
+  m_CorrespondingSourceObject: {fileID: 19900000, guid: 3a49f5d9f96d13f4c82d78c5ff46a0b0,
+    type: 3}
+  m_PrefabInstance: {fileID: 1203651971849848478}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1203651971849460766 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: 3a49f5d9f96d13f4c82d78c5ff46a0b0,

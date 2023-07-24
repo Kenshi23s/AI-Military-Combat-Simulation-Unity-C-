@@ -2357,6 +2357,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3306243466553625614}
   - component: {fileID: 6967533335640094502}
+  - component: {fileID: 3738865865973267924}
   m_Layer: 9
   m_Name: View
   m_TagString: Untagged
@@ -2403,6 +2404,57 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!205 &3738865865973267924
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7988630670061647465}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: 0.28711104, y: 0.6630931, z: 2.4369614}
+  m_Size: 6.126077
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 7378546515433247118}
+    - renderer: {fileID: 2580022629104232899}
+    - renderer: {fileID: 8368230001168860609}
+    - renderer: {fileID: 7138104755417632812}
+    - renderer: {fileID: 881610628265726010}
+    - renderer: {fileID: 6667221846604085018}
+    - renderer: {fileID: 7112057883794566290}
+    - renderer: {fileID: 7444771696663800099}
+    - renderer: {fileID: 5255688269197294508}
+    - renderer: {fileID: 2815108865257515581}
+  - screenRelativeHeight: 0.43061846
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 7378546515433247118}
+    - renderer: {fileID: 2580022629104232899}
+    - renderer: {fileID: 8368230001168860609}
+    - renderer: {fileID: 7138104755417632812}
+    - renderer: {fileID: 881610628265726010}
+    - renderer: {fileID: 6667221846604085018}
+    - renderer: {fileID: 7112057883794566290}
+    - renderer: {fileID: 7444771696663800099}
+    - renderer: {fileID: 5255688269197294508}
+  - screenRelativeHeight: 0.1001984
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 7378546515433247118}
+    - renderer: {fileID: 8368230001168860609}
+    - renderer: {fileID: 7138104755417632812}
+    - renderer: {fileID: 881610628265726010}
+    - renderer: {fileID: 6667221846604085018}
+    - renderer: {fileID: 7112057883794566290}
+    - renderer: {fileID: 7444771696663800099}
+    - renderer: {fileID: 5255688269197294508}
+  m_Enabled: 1
 --- !u!1 &8145695338458376467
 GameObject:
   m_ObjectHideFlags: 0

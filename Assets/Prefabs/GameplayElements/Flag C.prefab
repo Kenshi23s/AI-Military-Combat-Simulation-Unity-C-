@@ -835,6 +835,7 @@ GameObject:
   - component: {fileID: 7439353184476601509}
   - component: {fileID: 7439353184476601514}
   - component: {fileID: 7439353184476601512}
+  - component: {fileID: 6959578967954162165}
   m_Layer: 0
   m_Name: Flag C
   m_TagString: Untagged
@@ -904,6 +905,33 @@ MonoBehaviour:
   OnTeamsInPointUpdate:
     m_PersistentCalls:
       m_Calls: []
+--- !u!205 &6959578967954162165
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7439353184476601513}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: -0.17622262, y: 0.3251119, z: 0}
+  m_Size: 1.0769883
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 7451490280401113057}
+  - screenRelativeHeight: 0.41735324
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 7451490280401113057}
+  - screenRelativeHeight: 0.09665625
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 7451490280401113057}
+  m_Enabled: 1
 --- !u!1001 &7439353184931151119
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -976,6 +1004,12 @@ PrefabInstance:
 --- !u!4 &7436307575038545553 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4211238800585630, guid: d470efb7df5223c46b0cfeb12c77f9cf,
+    type: 3}
+  m_PrefabInstance: {fileID: 7439353184931151119}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &7451490280401113057 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 23897474001826542, guid: d470efb7df5223c46b0cfeb12c77f9cf,
     type: 3}
   m_PrefabInstance: {fileID: 7439353184931151119}
   m_PrefabAsset: {fileID: 0}

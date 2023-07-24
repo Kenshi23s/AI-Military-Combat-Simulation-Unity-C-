@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 33913251640760384}
   - component: {fileID: 23719266236786072}
   - component: {fileID: 64484435090825528}
+  - component: {fileID: 3984929723035569436}
   m_Layer: 10
   m_Name: SM_Generic_TreeStump_01
   m_TagString: Untagged
@@ -98,3 +99,30 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 43056149942014792, guid: ecafe059cec9abf44a5e19c9e548f028, type: 2}
+--- !u!205 &3984929723035569436
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1413477321174702}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: -0.0000026524067, y: 0.2487875, z: -0.00000017881393}
+  m_Size: 0.8210404
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23719266236786072}
+  - screenRelativeHeight: 0.3
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23719266236786072}
+  - screenRelativeHeight: 0.1
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23719266236786072}
+  m_Enabled: 1
