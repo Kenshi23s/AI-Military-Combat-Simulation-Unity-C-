@@ -1,4 +1,5 @@
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -9,10 +10,10 @@ public class TeamIndicator : MonoBehaviour
 {
     public IMilitary Owner { get; private set; }
 
-    [SerializeField]
-    Image Image;
+
+    [SerializeField] Image Image;
     [SerializeField] TMP_Text nameText;
-   
+    [SerializeField] Gradient _lifeGradient;
 
     public void AssignOwner(IMilitary NewOwner,Sprite icon)
     {
@@ -28,16 +29,33 @@ public class TeamIndicator : MonoBehaviour
                 color = Color.red;
                 break;     
         }
-        
         Image.sprite = icon;
         Image.color = color;
-      
+
+
+        Action destroy = delegate { };
+
+        destroy += () =>
+        {
+            Destroy(this.gameObject);
+            NewOwner.OnDeathInCombat -= destroy;
+        };
+        NewOwner.OnDeathInCombat += destroy;
+
+        var x = NewOwner as ILifeObject;
+        if (x == null) return;
+
+        nameText.color = _lifeGradient.Evaluate(x.NormalizedLife);
+        x.OnTakeDamage += () => nameText.color = _lifeGradient.Evaluate(x.NormalizedLife);
     }
 
     public void SetName(string x)
     {
         nameText.text = x;
     }
+    
+
+
 
 
     void LookCamera()

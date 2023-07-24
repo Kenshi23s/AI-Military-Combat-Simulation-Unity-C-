@@ -3083,18 +3083,18 @@ MonoBehaviour:
     _serializedList:
     - Key: 0
       Value:
-        FireteamQuantity: 1
-        membersPerFireteam: 4
-        planesQuantity: 0
+        FireteamQuantity: 50
+        membersPerFireteam: 5
+        planesQuantity: 50
         tanksQuantity: 0
         SpawnArea: {fileID: 1823427471}
         width: 20
         height: 20
     - Key: 1
       Value:
-        FireteamQuantity: 1
-        membersPerFireteam: 4
-        planesQuantity: 0
+        FireteamQuantity: 50
+        membersPerFireteam: 5
+        planesQuantity: 50
         tanksQuantity: 0
         SpawnArea: {fileID: 1020563752}
         width: 20
@@ -3117,7 +3117,7 @@ MonoBehaviour:
     type: 3}
   _unitsAboveMilitary: 3
   _civilianPos: {fileID: 1632117066}
-  _civiliansQuantity: 0
+  _civiliansQuantity: 36
   _width_CivilianSpawn: 32.8
   _height_CivilianSpawn: 56.3
 --- !u!114 &658754924

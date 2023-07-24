@@ -40,6 +40,8 @@ public class Flag_UI : MonoBehaviour
         _myCapturePoint.OnBeingCaptured += ActivateOnTake;
         _myCapturePoint.OnStopCapture   += DeActivateOnTake;
 
+     
+
         UpdateProgressUI(_myCapturePoint.CaptureProgress); SetLetterColor(_myCapturePoint.CapturedBy);
     }
 
@@ -51,9 +53,14 @@ public class Flag_UI : MonoBehaviour
     #region OnTake
     void ActivateOnTake(MilitaryTeam team)
     {
-        OnTakeGO.SetActive(true);
-        UnitAmountText.color = team == MilitaryTeam.Red ? Color.red : Color.blue;
-        _myCapturePoint.OnTeamsInPointUpdate.AddListener(ChangeOnTakeText);
+        if (!OnTakeGO.activeInHierarchy)
+        {
+            OnTakeGO.SetActive(true);
+            UnitAmountText.color = team == MilitaryTeam.Red ? Color.red : Color.blue;
+            _myCapturePoint.OnTeamsInPointUpdate.AddListener(ChangeOnTakeText);
+        }
+      
+      
     }
 
     void ChangeOnTakeText(Dictionary<MilitaryTeam, IMilitary[]> col)
@@ -81,7 +88,12 @@ public class Flag_UI : MonoBehaviour
 
     void ActivateDisputeUI()
     {
-        _myCapturePoint.OnTeamsInPointUpdate.AddListener(SetTexts);
+        if (!OnDisputeGO.activeInHierarchy)
+        {
+            OnDisputeGO.SetActive(true);
+            _myCapturePoint.OnTeamsInPointUpdate.AddListener(SetTexts);
+        }
+      
     }
 
     void SetTexts(Dictionary<MilitaryTeam, IMilitary[]> col)
@@ -97,6 +109,7 @@ public class Flag_UI : MonoBehaviour
 
     void DeActivateDisputeUI()
     {
+        OnDisputeGO.SetActive(false);
         _myCapturePoint.OnTeamsInPointUpdate.RemoveListener(SetTexts);
     }
 

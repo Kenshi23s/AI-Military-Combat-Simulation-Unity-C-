@@ -39,18 +39,23 @@ public class Misile : Entity, IMilitary
     Action<Misile> returnToPool;
 
     string ownerName;
-  
+
+    public event Action OnDeathInCombat;
+
     public void PoolObjectInitialize(Action<Misile> HowToReturn) => returnToPool = HowToReturn;
 
     #region UnityCalls
-    private void Awake()
+   
+    protected override void EntityAwake()
     {
         _gridEntity = GetComponent<GridEntity>();
+        Health.OnKilled += OnDeathInCombat;
+        Health.OnKilled += Explosion;
         _movement = GetComponent<NewPhysicsMovement>();
 
         GetComponent<Collider>().isTrigger = true;
-        enabled = false;      
     }
+
 
     void Start()
     {
@@ -105,6 +110,7 @@ public class Misile : Entity, IMilitary
 
     void SetMovementStats()
     {
+        Debug.Log("Movement Misile"+ _movement);
         _movement.Acceleration = myStats.acceleration;
         _movement.MaxSpeed = myStats.maxSpeed;
         _movement.Velocity = myStats.initialVelocity;

@@ -12,8 +12,11 @@ public class GameManager : MonoSingleton<GameManager>
     public ReadOnlyCollection<Bunker> Bunkers;
     DebugableObject DebugGM;
 
+    public const int targetFrameRate = 144;
+
     protected override void SingletonAwake()
     {
+        Application.targetFrameRate = targetFrameRate;
         Bunkers = new ReadOnlyCollection<Bunker>(_bunkers);
         DebugGM = GetComponent<DebugableObject>();
     }

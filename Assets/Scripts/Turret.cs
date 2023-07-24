@@ -40,8 +40,11 @@ public class Turret : Entity, IMilitary
 
     float _fixedCanonPos;
 
+    public event Action OnDeathInCombat;
+
     protected override void EntityAwake()
     {
+        Health.OnKilled += OnDeathInCombat;
         _myGridEntity = GetComponent<GridEntity>();
         _ShootHandler = GetComponent<ShootComponent>();
         _fov = GetComponent<FOVAgent>();      

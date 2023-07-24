@@ -32,11 +32,14 @@ public abstract class Vehicle : Entity, IMilitary, FlockableEntity
 
     protected GridEntity _gridEntity;
 
+    public event Action OnDeathInCombat;
+
     public abstract void VehicleAwake();
 
     
     protected override void EntityAwake()
     {
+        Health.OnKilled += () => OnDeathInCombat();
         _gridEntity = GetComponent<GridEntity>();
         _movement = GetComponent<NewPhysicsMovement>();
         _fov = GetComponent<FOVAgent>();

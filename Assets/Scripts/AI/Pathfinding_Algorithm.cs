@@ -20,7 +20,7 @@ public static class Pathfinding_Algorithm
     //    Queue<Node> frontier = new Queue<Node>();
     //    frontier.Enqueue(startingNode);
 
-    //    Dictionary<Node, Node> cameFrom = new Dictionary<Node, Node>();
+    //    Dictionary<Node, Node> cameFrom = new Dictionary<Node, Node>();w
     //    cameFrom.Add(startingNode, null);
 
     //    while (frontier.Count > 0)

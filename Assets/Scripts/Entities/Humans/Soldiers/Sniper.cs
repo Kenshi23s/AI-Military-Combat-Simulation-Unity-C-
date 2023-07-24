@@ -52,13 +52,15 @@ public class Sniper : Soldier
         _fovAgent = GetComponent<FOVAgent>();
         _laser = GetComponent<LineRenderer>();
         _laser.enabled = false;
+        Health.OnKilled += () => _fsm.SendInput(SNIPER_STATES.DIE);
       
     }
     private void Start()
     {
         CreateFSM();
-        var sprite = TeamsManager.instance.GetSprite(typeof(Sniper));
-        TeamsManager.instance.AddToTeam(Team, this, sprite);
+        var tm = TeamsManager.instance;
+        var sprite = tm.GetSprite(typeof(Sniper)); tm.AddToTeam(Team, this, sprite);
+
     }
 
 
@@ -72,6 +74,7 @@ public class Sniper : Soldier
 
         StateConfigurer.Create(lookEnemies)
             .SetTransition(SNIPER_STATES.AIM, aimEnemy)
+            .SetTransition(SNIPER_STATES.DIE, die)
             .Done();
 
         StateConfigurer.Create(aimEnemy)
@@ -155,7 +158,7 @@ public class Sniper : Soldier
             {
                 _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
                 DebugEntity.Log("El Target es null, paso a buscar otro enemigo");
-               
+                _laser.enabled = false;
             }
             _anim.SetBool("Shooting", true);
             _currentAimLerp = 0;
@@ -260,6 +263,7 @@ public class Sniper : Soldier
         {
             _anim.SetBool("Shooting", false);
             _anim.SetBool("Die",true);
+            _laser.enabled = false;
             DebugEntity.Log("Die");
         };
         return state;

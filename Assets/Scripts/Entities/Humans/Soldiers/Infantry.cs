@@ -3,13 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using System;
 using static NewPhysicsMovement;
 
 [RequireComponent(typeof(NewAIMovement))]
 [RequireComponent(typeof(FOVAgent))]
 [RequireComponent(typeof(ShootComponent))]
 [SelectionBase]
-public class Infantry : Soldier
+public class Infantry : Soldier, ICapturePointEntity
 {
     public enum INFANTRY_STATES
     {
@@ -19,6 +20,16 @@ public class Infantry : Soldier
         DIE,
         FIRE_AT_WILL
     }
+
+    #region Zone Variables
+    public bool CanCapture => Health.IsAlive;
+
+    public CapturePoint Zone { get; protected set; }
+
+    public event Action OnZoneEnter = delegate { };
+    public event Action OnZoneStay = delegate { };
+    public event Action OnZoneExit = delegate { };
+    #endregion
 
     [SerializeField] Animator _anim;
 
@@ -46,6 +57,7 @@ public class Infantry : Soldier
 
     protected State<INFANTRY_STATES> waitOrders, moveTowards, followLeader, fireAtWill,die;
 
+    const int waitingFramesTilSearch = 30;
     #endregion
 
     public void InitializeUnit(MilitaryTeam newTeam)
@@ -57,14 +69,48 @@ public class Infantry : Soldier
         InCombat = false;
     }
 
+    #region CaptureZone
+
+    public void ZoneEnter(CapturePoint zone)
+    {
+        Zone = zone;
+        DebugEntity.Log("ZoneEnter");
+        OnZoneEnter();
+    }
+
+    public void ZoneStay()
+    {
+        DebugEntity.Log("ZoneStay");
+        OnZoneStay();
+    }
+
+    public void ZoneExit(CapturePoint zone)
+    {
+        Zone = null;
+        DebugEntity.Log("ZoneExit");
+        OnZoneExit();
+    }
+
+    #endregion
+
     public void SetFireteam(Fireteam MyFireteam) => this.MyFireteam = MyFireteam;
 
     void Start()
     {
-        Health.OnTakeDamage += (x) => Infantry_FSM.SendInput(INFANTRY_STATES.FIRE_AT_WILL);
+        Health.OnTakeDamage += (x) =>
+        {
+            if (LookForEnemiesAlive().Any())
+            {
+                Infantry_FSM.SendInput(INFANTRY_STATES.FIRE_AT_WILL);
+            }
+
+        };
 
         Health.OnKilled += () => Infantry_FSM.SendInput(INFANTRY_STATES.DIE);
+
+      
     }
+
 
     protected override void SoldierAwake()
     {
@@ -147,6 +193,7 @@ public class Infantry : Soldier
         };
 
         state.OnExit += (x) => StopCoroutine(LookForTargets());
+        state.OnExit += (x) => StopCoroutine(MyFireteam.FindNearestUntakenPoint());
 
         return state;
     }
@@ -253,7 +300,7 @@ public class Infantry : Soldier
         {
 
             _infantry_AI.CancelMovement();
-            _infantry_AI.ManualMovement.Alignment = AlignmentType.Target;
+          
 
             _anim.SetBool("Running", false); _anim.SetBool("Shooting", true);
 
@@ -301,6 +348,8 @@ public class Infantry : Soldier
 
             foreach (var item in colliders.Where(x => x != null)) item.enabled = false;
 
+            foreach (var item in this.GetComponents<MonoBehaviour>()) item.enabled = false;
+
             GetComponent<Rigidbody>().useGravity = false;
 
             _infantry_AI.CancelMovement();
@@ -330,13 +379,16 @@ public class Infantry : Soldier
     {
         while (true)
         {
-            var z = GetMilitaryAround()                               
-           .Where(x => x.Team != Team)
-           .Where(x => _fov.IN_FOV(x.transform.position));
+            var z = LookForEnemiesAlive();                               
+                   
 
-            if (z.Any()) Infantry_FSM.SendInput(INFANTRY_STATES.FIRE_AT_WILL);
+            if (z.Any())
+            {
+                Infantry_FSM.SendInput(INFANTRY_STATES.FIRE_AT_WILL);
+                break;
+            } 
 
-            for (int i = 0; i < 30; i++)
+            for (int i = 0; i < waitingFramesTilSearch; i++)
                 yield return null;
         }
     }
@@ -351,6 +403,13 @@ public class Infantry : Soldier
          return col;
     }
 
+    IEnumerable<Soldier> LookForEnemiesAlive()
+    {
+        return GetMilitaryAround().Where(x => x.Team != Team)
+                  .Where(x => x.Health.IsAlive)
+                  .Where(x => _fov.IN_FOV(x.transform.position));
+    }
+
     IEnumerator SetTarget()
     {
         while (true)
@@ -360,6 +419,7 @@ public class Infantry : Soldier
             if (ActualTarget != null)
             {
                 _infantry_AI.ManualMovement.AlignmentTarget = ActualTarget.transform;
+                _infantry_AI.ManualMovement.Alignment = AlignmentType.Target;
                 Vector3 dir = ActualTarget.transform.position - transform.position;
                 _gun.Shoot(_shootPos, dir);
             }
@@ -383,18 +443,14 @@ public class Infantry : Soldier
         }
     }
 
-    IEnumerable<Entity> LookForEnemiesAlive()
-    {
-        return GetMilitaryAround().Where(x => x.Team != Team)
-                  .Where(x => x.Health.IsAlive);
-    }
+   
     #endregion
     
     float GetWeakestAndNearest(Entity entity)
     {
         float result = 0;
         result += Vector3.Distance(transform.position, entity.transform.position);
-        result += entity.Health.Life;
+      
         return result;
     }
 

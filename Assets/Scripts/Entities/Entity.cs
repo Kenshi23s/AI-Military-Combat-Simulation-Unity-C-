@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using FacundoColomboMethods;
 using System;
+using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(LifeComponent))]
 [RequireComponent(typeof(DebugableObject))]
-public abstract class Entity : MonoBehaviour, IDamagable, IHealable
+public abstract class Entity : MonoBehaviour, IDamagable, IHealable,ILifeObject
 {
     public LifeComponent Health { get; private set; }
     public DebugableObject DebugEntity { get; private set; }
@@ -23,6 +24,8 @@ public abstract class Entity : MonoBehaviour, IDamagable, IHealable
 
     [SerializeField, Header("Entity")] Transform AimingPoint;
 
+ 
+
     public void SetCaptureState(bool arg)
     {
         IsCapturing = arg;
@@ -33,14 +36,22 @@ public abstract class Entity : MonoBehaviour, IDamagable, IHealable
         Health = GetComponent<LifeComponent>();
         DebugEntity = GetComponent<DebugableObject>();
         IsCapturing = false;
-        gameObject.name = GetType().Name + " - " + ColomboMethods.GenerateName(6);
+        gameObject.name = GetType().Name + " - " + ColomboMethods.GenerateName(Random.Range(3,7));
+        Health.OnTakeDamage += _ => OnTakeDamage?.Invoke();
         EntityAwake();
     }
 
     protected virtual void EntityAwake() { }
 
     #region Redirect To Health Component
+
+    public event Action OnTakeDamage;
+
     public bool IsAlive => Health.IsAlive;
+
+    public int MaxLife => Health.MaxLife;
+
+    public int Life => Health.Life;
 
     public DamageData TakeDamage(int dmgToDeal) => Health.TakeDamage(dmgToDeal);
 

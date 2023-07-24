@@ -2,6 +2,7 @@ using AYellowpaper.SerializedCollections;
 using FacundoColomboMethods;
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -117,6 +118,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     #endregion
     #endregion
 
+    public const int WaitFramesBeforeContinuing =144;
     #region UnityCalls
     protected override void SingletonAwake()
     {
@@ -130,14 +132,17 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
     }
 
+  
+
+  
     private void Start()
     {
         foreach (MilitaryTeam key in _teams.Keys)
-        {      
-            SpawnFireteams(key, _matchParameters[key]);
-            SpawnPlanes(key, _matchParameters[key]);
+        {
+            StartCoroutine(SpawnFireteams(key, _matchParameters[key]));
+           StartCoroutine(SpawnPlanes(key, _matchParameters[key]));
         }
-        SpawnCivilians();
+        StartCoroutine(SpawnCivilians());
     }
 
     private void LateUpdate()
@@ -158,9 +163,9 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     #region SpawnMethds
 
     #region EntitySpawn
-    void SpawnFireteams(MilitaryTeam team, TeamParameters param)
+    IEnumerator SpawnFireteams(MilitaryTeam team, TeamParameters param)
     {
-        List<Fireteam> fireteams = new List<Fireteam>();
+      
 
         GameObject newGO = Instantiate(new GameObject(team + " Infantry"), transform);
 
@@ -180,19 +185,21 @@ public class TeamsManager : MonoSingleton<TeamsManager>
                     members += newUnit;
 
 
-                }              
+                }
                 else
-                    return;
-           }      
-
+                    break;
+           }
+         
            Fireteam newFT = new Fireteam(team, members.ToList());
-           fireteams.Add(newFT);         
+           
+            for (int k = 0; k < WaitFramesBeforeContinuing; k++) yield return null;
+            
+            AddToTeam(team, members);
         }
-        var col = fireteams.SelectMany(x => x.FireteamMembers);
-        AddToTeam(team, col);
+     
     }
 
-    void SpawnPlanes(MilitaryTeam team, TeamParameters parameters)
+    IEnumerator SpawnPlanes(MilitaryTeam team, TeamParameters parameters)
     {
         GameObject newGO = Instantiate(new GameObject(team + " Planes"), transform);
         for (int i = 0; i < parameters.planesQuantity; i++)
@@ -203,13 +210,18 @@ public class TeamsManager : MonoSingleton<TeamsManager>
                 x.Initialize(team);
                 AddToTeam(team, x, GetSprite(typeof(Plane)));
                 x.transform.parent = newGO.transform;
+
+                int actualFrameRate = ColomboMethods.GetActualFrameRate;
+
+                for (int j = 0; j < WaitFramesBeforeContinuing; j++) yield return null;             
+               
             }
             else           
-                return;                               
+                break;                               
         }
     }
 
-    void SpawnCivilians()
+    IEnumerator SpawnCivilians()
     {
         GameObject newGO = Instantiate(new GameObject("Civilians"), transform);
 
@@ -219,7 +231,17 @@ public class TeamsManager : MonoSingleton<TeamsManager>
             {
                 var new_civilian = Instantiate(_civilianPrefab, pos, Quaternion.identity);
                 new_civilian.transform.parent = newGO.transform;
+
+                int _frameRate = ColomboMethods.GetActualFrameRate;
+                for (int j = 0; j < WaitFramesBeforeContinuing; j++) yield return null;
+
             }
+            else
+            {
+                yield return null;
+            }
+          
+            
         }
     }
     #endregion

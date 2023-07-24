@@ -23,6 +23,9 @@ namespace FacundoColomboMethods
     public static class ColomboMethods
     {
 
+        public static int GetActualFrameRate => (int)(1f/Time.deltaTime);
+
+
         public static void DrawCylinder(this Vector3 position, Quaternion orientation, float height, float radius, bool drawFromBase = true)
         {
             Vector3 localUp = orientation * Vector3.up;

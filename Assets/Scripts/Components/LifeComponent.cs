@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 [RequireComponent(typeof(DebugableObject))]
-public class LifeComponent : MonoBehaviour, IDamagable, IHealable
+public class LifeComponent : MonoBehaviour, IDamagable, IHealable,ILifeObject
 {
     DebugableObject _debug;
 
@@ -51,10 +51,23 @@ public class LifeComponent : MonoBehaviour, IDamagable, IHealable
     //pasar TODA LA INFORMACION AL TOMAR DAÑO (USAR EL STRUCT DE DAMAGE DATA)
     public event Action<int> OnTakeDamage;
     public event Action OnKilled;
+
+    event Action ILifeObject.OnTakeDamage
+    {
+        add
+        {
+            OnTakeDamage += (_) => value.Invoke(); 
+        }
+
+        remove
+        {
+            OnTakeDamage -= (_) => value.Invoke();
+        }
+    }
     #endregion
 
 
- 
+
     private void Awake()
     {
         
@@ -114,6 +127,7 @@ public class LifeComponent : MonoBehaviour, IDamagable, IHealable
         if (_life <= 0)
         {
             OnKilled?.Invoke();
+            OnKilled = delegate { };
             data.wasKilled = true;
         }
         data.damageDealt = dmgDealt;

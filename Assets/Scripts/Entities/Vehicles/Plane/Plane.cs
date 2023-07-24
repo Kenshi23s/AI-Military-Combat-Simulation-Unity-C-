@@ -352,6 +352,7 @@ public class Plane : Vehicle
         //fisica avion
         state.OnFixedUpdate += () =>
         {
+            if (targetPlane == null) return;
             Vector3 dir = Vector3.zero;
 
             Vector3 awayDir = new Vector3(-targetPlane.transform.forward.x, 0, -targetPlane.transform.forward.z);
