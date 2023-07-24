@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 33822488147203970}
   - component: {fileID: 23607258989949140}
   - component: {fileID: 3480793902119805045}
+  - component: {fileID: 8764955984545046142}
   m_Layer: 6
   m_Name: SM_Prop_GuardTower_01
   m_TagString: Untagged
@@ -97,3 +98,30 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 2.2756412, y: 6.9879127, z: 2.6489236}
   m_Center: {x: 0.00000029802325, y: 3.2981374, z: 0}
+--- !u!205 &8764955984545046142
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1170082105736364}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: 0.00000023841858, y: 3.2981374, z: 0}
+  m_Size: 6.9879127
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23607258989949140}
+  - screenRelativeHeight: 0.3
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23607258989949140}
+  - screenRelativeHeight: 0.1
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23607258989949140}
+  m_Enabled: 1

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 33796832975326620}
   - component: {fileID: 23903047285375572}
   - component: {fileID: 624705956338981138}
+  - component: {fileID: 6448445240209041145}
   m_Layer: 10
   m_Name: SM_Prop_Crate_Large_01
   m_TagString: Untagged
@@ -97,3 +98,30 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.8089135, y: 0.78901017, z: 0.8089137}
   m_Center: {x: -0.0000038146973, y: 0.39450508, z: 0.0000037252903}
+--- !u!205 &6448445240209041145
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1475137749187476}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: 0, y: 0.39450508, z: -0.00000008940697}
+  m_Size: 0.8089137
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.58328223
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23903047285375572}
+  - screenRelativeHeight: 0.3
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23903047285375572}
+  - screenRelativeHeight: 0.1
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23903047285375572}
+  m_Enabled: 1

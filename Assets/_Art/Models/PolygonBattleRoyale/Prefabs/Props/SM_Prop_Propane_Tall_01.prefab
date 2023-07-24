@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 33935638461270422}
   - component: {fileID: 23105236969412400}
   - component: {fileID: 64473980235169990}
+  - component: {fileID: 482455389350768695}
   m_Layer: 10
   m_Name: SM_Prop_Propane_Tall_01
   m_TagString: Untagged
@@ -98,3 +99,30 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 43191080503427850, guid: ae9d96113aeb32f49a77e92d1d372f44, type: 2}
+--- !u!205 &482455389350768695
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1742842295773592}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: 0.000000014901161, y: 0.7256103, z: 0}
+  m_Size: 1.4512206
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23105236969412400}
+  - screenRelativeHeight: 0.3
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23105236969412400}
+  - screenRelativeHeight: 0.1
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23105236969412400}
+  m_Enabled: 1

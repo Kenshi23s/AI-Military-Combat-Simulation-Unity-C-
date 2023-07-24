@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 33560138956166198}
   - component: {fileID: 23938506204803712}
   - component: {fileID: 372939238967380028}
+  - component: {fileID: 2230241047768104913}
   m_Layer: 0
   m_Name: SM_Prop_Wirespool_02
   m_TagString: Untagged
@@ -97,3 +98,30 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1.5637274, y: 1.0229902, z: 1.5637274}
   m_Center: {x: 0, y: 0.4924506, z: 0}
+--- !u!205 &2230241047768104913
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1185052435009796}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: 0, y: 0.4924506, z: 0}
+  m_Size: 1.5637274
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23938506204803712}
+  - screenRelativeHeight: 0.3
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23938506204803712}
+  - screenRelativeHeight: 0.1
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23938506204803712}
+  m_Enabled: 1

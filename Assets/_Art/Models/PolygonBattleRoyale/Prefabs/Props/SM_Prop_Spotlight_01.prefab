@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 33220382924007766}
   - component: {fileID: 23554478071543390}
   - component: {fileID: 64068050932624444}
+  - component: {fileID: 967914926745687062}
   m_Layer: 6
   m_Name: SM_Prop_Spotlight_01
   m_TagString: Untagged
@@ -98,3 +99,30 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 43163496777286566, guid: f504c1a3640f4584a87776f558163859, type: 2}
+--- !u!205 &967914926745687062
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1438767388765440}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: 0, y: 3.2078786, z: -0.053136975}
+  m_Size: 6.415757
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23554478071543390}
+  - screenRelativeHeight: 0.3
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23554478071543390}
+  - screenRelativeHeight: 0.1
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23554478071543390}
+  m_Enabled: 1

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 33169034167316624}
   - component: {fileID: 23468823729795518}
   - component: {fileID: 5005149221870821000}
+  - component: {fileID: 5951702962746280192}
   m_Layer: 0
   m_Name: SM_Veh_Armored_Car_Destroyed_01
   m_TagString: Untagged
@@ -97,3 +98,30 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 3.0967808, y: 2.442377, z: 4.8835797}
   m_Center: {x: -0.041575257, y: 1.0294762, z: 0.000007033348}
+--- !u!205 &5951702962746280192
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1947779817853410}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: -0.041582823, y: 1.0294762, z: -0.0000023841858}
+  m_Size: 4.8835793
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23468823729795518}
+  - screenRelativeHeight: 0.3
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23468823729795518}
+  - screenRelativeHeight: 0.1
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23468823729795518}
+  m_Enabled: 1

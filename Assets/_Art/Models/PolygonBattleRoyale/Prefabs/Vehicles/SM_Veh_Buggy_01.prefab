@@ -344,6 +344,7 @@ GameObject:
   - component: {fileID: 33797533338922632}
   - component: {fileID: 23722263441226122}
   - component: {fileID: 6279918330392032843}
+  - component: {fileID: 5486226450722154029}
   m_Layer: 6
   m_Name: SM_Veh_Buggy_01
   m_TagString: Untagged
@@ -433,6 +434,51 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 2.3978348, y: 2.1061645, z: 4.790079}
   m_Center: {x: 0, y: 1.3792493, z: 0.1169883}
+--- !u!205 &5486226450722154029
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1916854770252222}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: 0, y: 1.2145343, z: 0.11698818}
+  m_Size: 4.790079
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23722263441226122}
+    - renderer: {fileID: 23361498768162946}
+    - renderer: {fileID: 23582216140302984}
+    - renderer: {fileID: 23391101909355654}
+    - renderer: {fileID: 23783536031984412}
+    - renderer: {fileID: 23645335231706730}
+    - renderer: {fileID: 23627923453041828}
+  - screenRelativeHeight: 0.3
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23722263441226122}
+    - renderer: {fileID: 23361498768162946}
+    - renderer: {fileID: 23582216140302984}
+    - renderer: {fileID: 23391101909355654}
+    - renderer: {fileID: 23783536031984412}
+    - renderer: {fileID: 23645335231706730}
+    - renderer: {fileID: 23627923453041828}
+  - screenRelativeHeight: 0.1
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23722263441226122}
+    - renderer: {fileID: 23361498768162946}
+    - renderer: {fileID: 23582216140302984}
+    - renderer: {fileID: 23391101909355654}
+    - renderer: {fileID: 23783536031984412}
+    - renderer: {fileID: 23645335231706730}
+    - renderer: {fileID: 23627923453041828}
+  m_Enabled: 1
 --- !u!1 &1929071328597504
 GameObject:
   m_ObjectHideFlags: 0

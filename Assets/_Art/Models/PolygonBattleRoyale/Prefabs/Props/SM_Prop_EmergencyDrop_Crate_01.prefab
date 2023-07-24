@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 33574118403364416}
   - component: {fileID: 23844289834852074}
   - component: {fileID: 64554883476177600}
+  - component: {fileID: 7411231463542563635}
   m_Layer: 10
   m_Name: SM_Prop_EmergencyDrop_Crate_01
   m_TagString: Untagged
@@ -98,3 +99,30 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 43216936479235164, guid: 79ebf25c9fcfabc469df0e72038e306b, type: 2}
+--- !u!205 &7411231463542563635
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1029301884381818}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: -0.14419973, y: 0.2627552, z: 0.00000059604645}
+  m_Size: 1.3118303
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23844289834852074}
+  - screenRelativeHeight: 0.3
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23844289834852074}
+  - screenRelativeHeight: 0.1
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23844289834852074}
+  m_Enabled: 1

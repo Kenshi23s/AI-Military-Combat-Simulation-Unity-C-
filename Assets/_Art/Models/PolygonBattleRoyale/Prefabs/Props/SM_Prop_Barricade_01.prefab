@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 33269277650621944}
   - component: {fileID: 23808324063401026}
   - component: {fileID: 7182676045736593132}
+  - component: {fileID: 3565595442930733264}
   m_Layer: 10
   m_Name: SM_Prop_Barricade_01
   m_TagString: Untagged
@@ -97,3 +98,30 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1.8606335, y: 0.92073315, z: 0.42384574}
   m_Center: {x: 0, y: 0.46036658, z: 0}
+--- !u!205 &3565595442930733264
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1224111418291396}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: 0, y: 0.46036658, z: 0}
+  m_Size: 1.8606335
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23808324063401026}
+  - screenRelativeHeight: 0.3
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23808324063401026}
+  - screenRelativeHeight: 0.1
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23808324063401026}
+  m_Enabled: 1

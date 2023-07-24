@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 33298741262237120}
   - component: {fileID: 23975550313357894}
   - component: {fileID: 6423612828947252572}
+  - component: {fileID: 7821757312026812724}
   m_Layer: 0
   m_Name: SM_Prop_Portaloo_01
   m_TagString: Untagged
@@ -98,6 +99,36 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1.6301708, y: 3.1403394, z: 1.5458273}
   m_Center: {x: 0, y: 1.5701699, z: 0}
+--- !u!205 &7821757312026812724
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1640034449780564}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: 0, y: 1.5701699, z: 0.011855394}
+  m_Size: 3.1403394
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23975550313357894}
+    - renderer: {fileID: 23323031373625554}
+  - screenRelativeHeight: 0.3
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23975550313357894}
+    - renderer: {fileID: 23323031373625554}
+  - screenRelativeHeight: 0.1
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23975550313357894}
+    - renderer: {fileID: 23323031373625554}
+  m_Enabled: 1
 --- !u!1 &1969700223460132
 GameObject:
   m_ObjectHideFlags: 0

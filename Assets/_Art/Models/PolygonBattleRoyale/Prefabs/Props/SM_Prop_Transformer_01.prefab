@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 33312320091254928}
   - component: {fileID: 23141805398525980}
   - component: {fileID: 214391988277002181}
+  - component: {fileID: 3697029315183407085}
   m_Layer: 0
   m_Name: SM_Prop_Transformer_01
   m_TagString: Untagged
@@ -97,3 +98,30 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 3.2329135, y: 2.4595892, z: 2.0809364}
   m_Center: {x: -0.47461635, y: 1.2297946, z: 0}
+--- !u!205 &3697029315183407085
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1545609568005316}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: -0.4746163, y: 1.2297946, z: 0}
+  m_Size: 3.2329135
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23141805398525980}
+  - screenRelativeHeight: 0.3
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23141805398525980}
+  - screenRelativeHeight: 0.1
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23141805398525980}
+  m_Enabled: 1

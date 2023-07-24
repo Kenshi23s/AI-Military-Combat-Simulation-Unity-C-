@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 33528922367963358}
   - component: {fileID: 23061327545420132}
   - component: {fileID: 8044212061785902881}
+  - component: {fileID: 903398748749464150}
   m_Layer: 10
   m_Name: SM_Prop_Pallet_Loaded_01
   m_TagString: Untagged
@@ -97,3 +98,30 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1.4409857, y: 1.1813606, z: 1.5216638}
   m_Center: {x: -0.000014603138, y: 0.5906804, z: 0.000008225441}
+--- !u!205 &903398748749464150
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1667268319894246}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: -0.00000029802322, y: 0.5906804, z: 0.00000059604645}
+  m_Size: 1.5216638
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23061327545420132}
+  - screenRelativeHeight: 0.3
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23061327545420132}
+  - screenRelativeHeight: 0.1
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23061327545420132}
+  m_Enabled: 1

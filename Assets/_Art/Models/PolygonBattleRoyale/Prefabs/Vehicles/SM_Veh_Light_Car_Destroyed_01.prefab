@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 33959235095399294}
   - component: {fileID: 23513596934411974}
   - component: {fileID: 8962753896602472487}
+  - component: {fileID: 1314309501847515540}
   m_Layer: 6
   m_Name: SM_Veh_Light_Car_Destroyed_01
   m_TagString: Untagged
@@ -97,3 +98,30 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 2.4946609, y: 1.7737976, z: 4.7116194}
   m_Center: {x: -0.0029138923, y: 0.84191173, z: 0.0121564865}
+--- !u!205 &1314309501847515540
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1589240936164142}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: -0.0029139519, y: 0.84191173, z: 0.0121564865}
+  m_Size: 4.7116194
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23513596934411974}
+  - screenRelativeHeight: 0.3
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23513596934411974}
+  - screenRelativeHeight: 0.1
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23513596934411974}
+  m_Enabled: 1

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 33656949727973436}
   - component: {fileID: 23200846239296298}
   - component: {fileID: 3635917424750385702}
+  - component: {fileID: 2204624733358161122}
   m_Layer: 0
   m_Name: SM_Veh_Tank_USA_Destroyed_01
   m_TagString: Untagged
@@ -98,6 +99,36 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 3.9043474, y: 3.0562944, z: 7.9605913}
   m_Center: {x: -0.03614235, y: 1.5118637, z: 0.060425278}
+--- !u!205 &2204624733358161122
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1053460715930104}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: -0.0495739, y: 1.8877984, z: 0.59852314}
+  m_Size: 9.036784
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23200846239296298}
+    - renderer: {fileID: 23262127046104122}
+  - screenRelativeHeight: 0.3
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23200846239296298}
+    - renderer: {fileID: 23262127046104122}
+  - screenRelativeHeight: 0.1
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23200846239296298}
+    - renderer: {fileID: 23262127046104122}
+  m_Enabled: 1
 --- !u!1 &1514905908761052
 GameObject:
   m_ObjectHideFlags: 0

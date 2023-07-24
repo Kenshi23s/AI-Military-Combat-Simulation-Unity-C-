@@ -427,6 +427,7 @@ GameObject:
   - component: {fileID: 33383805039317586}
   - component: {fileID: 23832635026531654}
   - component: {fileID: 1021641166264522452}
+  - component: {fileID: 6821893949405262961}
   m_Layer: 6
   m_Name: SM_Veh_Armored_Car_01
   m_TagString: Untagged
@@ -518,6 +519,51 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 2.401886, y: 2.078208, z: 4.75737}
   m_Center: {x: -0.0000076293945, y: 1.3899083, z: -0.01184845}
+--- !u!205 &6821893949405262961
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1751490120701532}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: 0, y: 1.2151715, z: -0.011856079}
+  m_Size: 4.75737
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23832635026531654}
+    - renderer: {fileID: 23043966879591338}
+    - renderer: {fileID: 23457511866475350}
+    - renderer: {fileID: 23154142706285664}
+    - renderer: {fileID: 23564137133341628}
+    - renderer: {fileID: 23478449151903446}
+    - renderer: {fileID: 23951285258536312}
+  - screenRelativeHeight: 0.3
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23832635026531654}
+    - renderer: {fileID: 23043966879591338}
+    - renderer: {fileID: 23457511866475350}
+    - renderer: {fileID: 23154142706285664}
+    - renderer: {fileID: 23564137133341628}
+    - renderer: {fileID: 23478449151903446}
+    - renderer: {fileID: 23951285258536312}
+  - screenRelativeHeight: 0.1
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23832635026531654}
+    - renderer: {fileID: 23043966879591338}
+    - renderer: {fileID: 23457511866475350}
+    - renderer: {fileID: 23154142706285664}
+    - renderer: {fileID: 23564137133341628}
+    - renderer: {fileID: 23478449151903446}
+    - renderer: {fileID: 23951285258536312}
+  m_Enabled: 1
 --- !u!1 &1766633825018414
 GameObject:
   m_ObjectHideFlags: 0

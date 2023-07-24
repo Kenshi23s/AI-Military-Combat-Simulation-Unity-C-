@@ -95,6 +95,7 @@ GameObject:
   - component: {fileID: 33638302703156238}
   - component: {fileID: 23194004214046134}
   - component: {fileID: 2920591757764653329}
+  - component: {fileID: 6649587948493902849}
   m_Layer: 6
   m_Name: SM_Prop_WireFence_01
   m_TagString: Untagged
@@ -181,3 +182,33 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 2.0232708, y: 3.2864075, z: 0.30509013}
   m_Center: {x: -1.0116354, y: 1.1432037, z: 0}
+--- !u!205 &6649587948493902849
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1712709652979322}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: -1.0116348, y: 1.1432037, z: 0}
+  m_Size: 3.2864075
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.6
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23194004214046134}
+    - renderer: {fileID: 23696987250667748}
+  - screenRelativeHeight: 0.3
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23194004214046134}
+    - renderer: {fileID: 23696987250667748}
+  - screenRelativeHeight: 0.1
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23194004214046134}
+    - renderer: {fileID: 23696987250667748}
+  m_Enabled: 1
