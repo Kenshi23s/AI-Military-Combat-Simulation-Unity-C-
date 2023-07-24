@@ -39,7 +39,9 @@ public class SpatialGrid3D : MonoBehaviour
 
     private void OnValidate() 
     {
+#if UNITY_EDITOR
         runInEditMode = takePositionFromTransform;
+#endif
 
         CalculateGridCenter();
     }
@@ -105,10 +107,12 @@ public class SpatialGrid3D : MonoBehaviour
 
     public void Update() 
     {
+#if UNITY_EDITOR
         if(!Application.IsPlaying(gameObject) && takePositionFromTransform && transform.hasChanged) 
         {
             SetGridPosition();
-        }    
+        }
+#endif
     }
 
     public void UpdateEntity(GridEntity entity)

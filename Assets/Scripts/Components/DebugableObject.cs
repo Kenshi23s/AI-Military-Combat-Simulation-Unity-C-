@@ -1,12 +1,10 @@
 using System;
-using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
 [DisallowMultipleComponent]
-[ExecuteInEditMode]
 public class DebugableObject : MonoBehaviour
 {
     [SerializeField]public bool canDebug = true;
@@ -15,18 +13,16 @@ public class DebugableObject : MonoBehaviour
     Action _lateUpdate;
     private void Awake()
     {
-#if !UNITY_EDITOR
-       canDebug = false;
-       enabled = false
-       
-#endif
+
 #if UNITY_EDITOR
         if (!canDebug)
         {
             _lateUpdate += () => canDebug = Selection.activeObject == gameObject;
         }
-#endif
 
+#endif
+        canDebug = false;
+        enabled = false;
     }
 
     private void LateUpdate()

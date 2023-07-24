@@ -9,7 +9,7 @@ public class SerializableType : ISerializationCallbackReceiver
 {
      public string name;
     [SerializeField]public System.Type type;
-    [NonSerialized]public byte[] data;
+    public byte[] data;
     public SerializableType(System.Type aType)
     {
         name = aType.FullName;
@@ -73,10 +73,16 @@ public class SerializableType : ISerializationCallbackReceiver
 
     public void OnAfterDeserialize()
     {
+       
         using (var stream = new MemoryStream(data))
-        using (var r = new BinaryReader(stream))
         {
-            type = Read(r);
+            Debug.Log("Stream"+stream);
+            Debug.Log("Data"+data);
+            using (var r = new BinaryReader(stream))
+            {
+                type = Read(r);
+            }
         }
+       
     }
 }
