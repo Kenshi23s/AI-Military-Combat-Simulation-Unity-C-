@@ -12,6 +12,7 @@ public class ScoreManager : MonoBehaviour
     [SerializeField] UnitScore prefabUnitScore;
     List<UnitScore> _scoreList = new List<UnitScore>();
 
+    const float refreshTime = 0.5f;
     Action ActualState = delegate { };
     
 
@@ -39,9 +40,13 @@ public class ScoreManager : MonoBehaviour
 
     IEnumerator UpdateButtons()
     {
+
+        WaitForSeconds wait = new WaitForSeconds(refreshTime);
         //IA2-LINQ
         while (_scoreList.Any())
         {
+
+            //obtengo todas las unidades de combate vivas
             var col = TeamsManager.instance._teams
            .SelectMany(x => x.Value)
            .Where(x => x.IsAlive)
@@ -52,7 +57,7 @@ public class ScoreManager : MonoBehaviour
              
             for (int i = 0; i < col.Count; i++) _scoreList[i].SetOwner(col[i]);
 
-            yield return null;
+            yield return wait;
         }
        
     }

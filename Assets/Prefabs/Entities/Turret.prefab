@@ -95,7 +95,7 @@ MonoBehaviour:
   _shootPos:
   - {fileID: 760970452639734747}
   - {fileID: 8749848918761836064}
-  _cd_BetweenShots: 3
+  _cd_BetweenShots: 0.5
 --- !u!114 &7233517434944596159
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -172,7 +172,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _bulletspread: 70
-  _bulletdamage: 10
+  <BulletDamage>k__BackingField: 10
   shootableLayers:
     serializedVersion: 2
     m_Bits: 448
