@@ -214,12 +214,11 @@ public class NewPhysicsMovement : MonoBehaviour
 
         // Freezear ejes... tiene que haber una manera mas optima de hacer esto, sin tener que conseguir 
         // eulerAngles y hacer estas idas y vueltas de conversiones
-        Vector3 currentEulerAngles = _rotation.eulerAngles;
         Vector3 desiredEulerAngles = desiredRotation.eulerAngles;
         desiredRotation.eulerAngles = new Vector3(
-            FreezeXAlignment ? currentEulerAngles.x : desiredEulerAngles.x,
-            FreezeYAlignment ? currentEulerAngles.y : desiredEulerAngles.y,
-            FreezeZAlignment ? currentEulerAngles.z : desiredEulerAngles.z
+            FreezeXAlignment ? 0 : desiredEulerAngles.x,
+            FreezeYAlignment ? 0 : desiredEulerAngles.y,
+            FreezeZAlignment ? 0 : desiredEulerAngles.z
             );
 
         // Si tiene tiempo de alineacion, alinear de a poco
