@@ -6,12 +6,14 @@ using UnityEngine;
 [RequireComponent(typeof(GridEntity))]
 public abstract class Soldier : Human, IMilitary
 {
-    [field : SerializeField, Header("Soldier")] 
+    [field: SerializeField, Header("Soldier")]
     public MilitaryTeam Team { get; protected set; }
 
     protected GridEntity _gridEntity;
 
     public bool InCombat { get; protected set; }
+
+    public int TotalDamageDealt { get; protected set; }
 
     public event Action OnDeathInCombat;
 

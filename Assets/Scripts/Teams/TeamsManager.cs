@@ -31,7 +31,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     [field: SerializeField] public float SeparationRadiusBetweenUnits { get; private set; }
 
     #region TeamsDictionary
-    Dictionary<MilitaryTeam, List<Entity>> _teams = new Dictionary<MilitaryTeam, List<Entity>>();
+    public Dictionary<MilitaryTeam, List<Entity>> _teams = new Dictionary<MilitaryTeam, List<Entity>>();
 
     [SerializeField,SerializedDictionary("Team","Parameters")]
     SerializedDictionary<MilitaryTeam, TeamParameters> _matchParameters = new SerializedDictionary<MilitaryTeam, TeamParameters>();

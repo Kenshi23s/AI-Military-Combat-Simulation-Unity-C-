@@ -30,6 +30,8 @@ public abstract class Vehicle : Entity, IMilitary, FlockableEntity
 
     public bool InCombat => throw new NotImplementedException();
 
+    public int TotalDamageDealt { get; protected set; }
+
     protected GridEntity _gridEntity;
 
     public event Action OnDeathInCombat;

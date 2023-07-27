@@ -18,9 +18,11 @@ public class Turret : Entity, IMilitary
         ALIGN,
         SHOOT
     }
-    [field: SerializeField,Header("Turret")] public MilitaryTeam Team { get; private set; }
+    [field: SerializeField, Header("Turret")] public MilitaryTeam Team { get; private set; }
 
     public Plane Target { get; private set; }
+
+    public int TotalDamageDealt { get; private set; }
 
     [SerializeField] Transform _pivotTurret,_pivotCanon;
     [SerializeField] float _baseMinAngle, _canonMinAngle;
@@ -47,7 +49,8 @@ public class Turret : Entity, IMilitary
         Health.OnKilled += OnDeathInCombat;
         _myGridEntity = GetComponent<GridEntity>();
         _ShootHandler = GetComponent<ShootComponent>();
-        _fov = GetComponent<FOVAgent>();      
+        _fov = GetComponent<FOVAgent>();
+        _ShootHandler.onHit += _ => TotalDamageDealt += _ShootHandler.BulletDamage;
         _fixedCanonPos = _pivotCanon.transform.localRotation.eulerAngles.y;
     }
 

@@ -29,6 +29,8 @@ public class Misile : Entity, IMilitary
 
     public bool InCombat => false;
 
+    public int TotalDamageDealt { get; private set; }
+
     [SerializeField] ParticleHold explosionParticle;
     [SerializeField] ParticleHold explosionParticleonGround;
 
@@ -42,6 +44,8 @@ public class Misile : Entity, IMilitary
 
     public event Action OnDeathInCombat;
 
+    public event Action<IDamagable> onHit;
+
     public void PoolObjectInitialize(Action<Misile> HowToReturn) => returnToPool = HowToReturn;
 
     #region UnityCalls
@@ -51,6 +55,7 @@ public class Misile : Entity, IMilitary
         _gridEntity = GetComponent<GridEntity>();
         Health.OnKilled += OnDeathInCombat;
         Health.OnKilled += Explosion;
+        
         _movement = GetComponent<NewPhysicsMovement>();
 
         GetComponent<Collider>().isTrigger = true;
@@ -144,7 +149,7 @@ public class Misile : Entity, IMilitary
         foreach (var entity in _damagables)
         {
             GameManager.instance.DebugDamageFeed(ownerName,entity);
-            entity.TakeDamage(myStats.damage);
+            entity.TakeDamage(myStats.damage); onHit?.Invoke(entity);
         }
         returnToPool?.Invoke(this);
     }

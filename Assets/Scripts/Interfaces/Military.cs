@@ -15,6 +15,7 @@ public enum MilitaryTeam
 public interface IMilitary 
 {
     MilitaryTeam Team { get; }
+    public int TotalDamageDealt { get; }
     public event Action OnDeathInCombat;
     
 }

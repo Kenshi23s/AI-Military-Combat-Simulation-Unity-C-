@@ -77,7 +77,7 @@ public class Plane : Vehicle
         _planeFSM = CreateFSM();
         
         misileStats.owner = gameObject;
-
+        shootComponent.onHit += _ => TotalDamageDealt += shootComponent.BulletDamage;
         Health.OnKilled += () => _planeFSM.SendInput(PlaneStates.ABANDONED);
     }
 

@@ -11,7 +11,7 @@ public class ShootComponent : MonoBehaviour
     public event Action<IDamagable> onHit;
 
     [SerializeField] float _bulletspread;
-    [SerializeField] int _bulletdamage;
+    [field : SerializeField] public int BulletDamage { get; private set; }
     //estaria bueno sacar esto de un manager mejor, pero por ahora
     [SerializeField]LayerMask shootableLayers;
     [SerializeField] TrailRenderer trailSample;
@@ -33,7 +33,7 @@ public class ShootComponent : MonoBehaviour
         {
             if (hit.transform.TryGetComponent(out IDamagable victim))
             {
-                victim.TakeDamage(_bulletdamage);
+                victim.TakeDamage(BulletDamage);
                 GameManager.instance.DebugDamageFeed(gameObject,victim);
 
 
@@ -57,7 +57,7 @@ public class ShootComponent : MonoBehaviour
         {
             if (hit.transform.TryGetComponent(out IDamagable victim))
             {
-                victim.TakeDamage(_bulletdamage);
+                victim.TakeDamage(BulletDamage);
                 GameManager.instance.DebugDamageFeed(gameObject, victim);
                 onHit?.Invoke(victim);
             }
@@ -81,7 +81,7 @@ public class ShootComponent : MonoBehaviour
             {
                 if (_predicate(hit))
                 {
-                    victim.TakeDamage(_bulletdamage);
+                    victim.TakeDamage(BulletDamage);
                     GameManager.instance.DebugDamageFeed(gameObject, victim);
                     onHit?.Invoke(victim);
                 }
@@ -102,7 +102,7 @@ public class ShootComponent : MonoBehaviour
     }
 
 
-    public void ShootRecursion(Transform shootPos ,Vector3 continuFrom , Vector3 dir, Func<RaycastHit, bool> ignoreIfTrue)
+    public void ShootRecursion(Transform shootPos ,Vector3 continuFrom , Vector3 dir, Func<RaycastHit, bool> ignoreIfFalse)
     {
         Vector3 finalTrailPos = Vector3.zero;
        
@@ -110,16 +110,16 @@ public class ShootComponent : MonoBehaviour
         {
             if (hit.transform.TryGetComponent(out IDamagable victim))
             {
-                if (ignoreIfTrue(hit))
+                if (ignoreIfFalse(hit))
                 {
-                    victim.TakeDamage(_bulletdamage);
+                    victim.TakeDamage(BulletDamage);
                     GameManager.instance.DebugDamageFeed(gameObject, victim);
                     onHit?.Invoke(victim);
                 }
                 else
                 {
                     Vector3 Skip = hit.point + dir.normalized * 2f;
-                    ShootRecursion(shootPos, Skip, dir, ignoreIfTrue); return;
+                    ShootRecursion(shootPos, Skip, dir, ignoreIfFalse); return;
                 }
 
             }
