@@ -151,7 +151,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _bulletspread: 20
-  _bulletdamage: 30
+  <BulletDamage>k__BackingField: 25
   shootableLayers:
     serializedVersion: 2
     m_Bits: 1984
@@ -305,6 +305,7 @@ MonoBehaviour:
   RandomAngleToStart: 90
   _unitsBehindPlane: 30
   _collisionCheckDistance: 80
+  _ExplosionDamageOnDeath: 50
   misilePos:
   - {fileID: 5285789855417990210}
   - {fileID: 3355421752814213245}

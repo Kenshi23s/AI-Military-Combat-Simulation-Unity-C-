@@ -115,7 +115,7 @@ public class Misile : Entity, IMilitary
 
     void SetMovementStats()
     {
-        Debug.Log("Movement Misile"+ _movement);
+      
         _movement.Acceleration = myStats.acceleration;
         _movement.MaxSpeed = myStats.maxSpeed;
         _movement.Velocity = myStats.initialVelocity;

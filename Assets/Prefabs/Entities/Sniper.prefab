@@ -212,7 +212,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _bulletspread: 15
-  _bulletdamage: 60
+  <BulletDamage>k__BackingField: 50
   shootableLayers:
     serializedVersion: 2
     m_Bits: 960
@@ -410,8 +410,8 @@ MonoBehaviour:
   _shootPos: {fileID: 6569154086367201079}
   FramesBetweenEnemySearch: 4
   _aimSpeed: 0.5
-  _addPerTimesFocused: 1.2
-  _requiredFocusTime: 6
+  _addPerTimesFocused: 2
+  _requiredFocusTime: 10
   maxShootsInRow: 10
   _anim: {fileID: 6967533335640094502}
 --- !u!65 &3688280697286250966

@@ -2078,7 +2078,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _bulletspread: 45
-  _bulletdamage: 20
+  <BulletDamage>k__BackingField: 25
   shootableLayers:
     serializedVersion: 2
     m_Bits: 1984

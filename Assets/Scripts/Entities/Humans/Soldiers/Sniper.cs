@@ -52,6 +52,7 @@ public class Sniper : Soldier
         _fovAgent = GetComponent<FOVAgent>();
         _laser = GetComponent<LineRenderer>();
         _laser.enabled = false;
+        _shootComponent.onHit += _ => TotalDamageDealt += _shootComponent.BulletDamage;
         Health.OnKilled += () => _fsm.SendInput(SNIPER_STATES.DIE);
       
     }

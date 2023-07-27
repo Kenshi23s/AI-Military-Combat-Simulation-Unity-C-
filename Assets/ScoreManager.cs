@@ -7,7 +7,7 @@ using UnityEngine;
 public class ScoreManager : MonoBehaviour
 {
 
-    [SerializeField] int maxToShow;
+    [SerializeField] int leaderboardQuantity;
     [SerializeField] GameObject _panel,_scoreFatherGO;
     [SerializeField] UnitScore prefabUnitScore;
     List<UnitScore> _scoreList = new List<UnitScore>();
@@ -28,29 +28,30 @@ public class ScoreManager : MonoBehaviour
     void CreateScores()
     {
         _scoreFatherGO.SetActive(true);
-        for (int i = 0; i < maxToShow; i++)
+        for (int i = 0; i < leaderboardQuantity; i++)
         {
             var unitScore = Instantiate(prefabUnitScore, _panel.transform);
             _scoreList.Add(unitScore);
         }    
-        ActualState = RemoveScores;
         StartCoroutine(UpdateButtons());
+        ActualState = RemoveScores;
     }
 
     IEnumerator UpdateButtons()
     {
+        //IA2-LINQ
         while (_scoreList.Any())
         {
-            var col = TeamsManager.instance._teams.SelectMany(x => x.Value)
+            var col = TeamsManager.instance._teams
+           .SelectMany(x => x.Value)
            .Where(x => x.IsAlive)
            .OfType<IMilitary>()
            .OrderByDescending(x => x.TotalDamageDealt)
-           .Take(maxToShow).ToArray();
+           .Take(leaderboardQuantity)
+           .ToList();
+             
+            for (int i = 0; i < col.Count; i++) _scoreList[i].SetOwner(col[i]);
 
-            for (int i = 0; i < col.Length; i++)
-            {
-                _scoreList[i].SetOwner(col[i]);
-            }
             yield return null;
         }
        

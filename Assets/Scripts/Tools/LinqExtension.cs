@@ -1,20 +1,17 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
-using UnityEngine;
 using Random = UnityEngine.Random;
-
+//IA2-LINQ
 public static class LinqExtension
 {
     public static T Minimum<T>(this IEnumerable<T> col,Func<T,float> GetValue)
     {
-        float minimum = float.MaxValue;
-        T returnItem = default;
+        float minimum = float.MaxValue; T returnItem = default;
+
         foreach (var item in col)
         {
             float newValue = GetValue(item);
+
             if (minimum > newValue)
             {
                 minimum = newValue;
@@ -26,11 +23,12 @@ public static class LinqExtension
 
     public static T Maximum<T>(this IEnumerable<T> col, Func<T,float> GetValue)
     {
-        float maximum = float.MinValue;
-        T returnItem = default;
+        float maximum = float.MinValue; T returnItem = default;
+
         foreach (var item in col)
         {         
             float newValue = GetValue(item);
+
             if (newValue > maximum)
             {
                 maximum = newValue;

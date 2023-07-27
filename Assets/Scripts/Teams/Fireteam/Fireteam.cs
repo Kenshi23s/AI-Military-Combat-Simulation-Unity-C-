@@ -120,7 +120,7 @@ public class Fireteam
         //tambien se puede dividir en strings o enums
 
         //deberia poner a donde debe ir el lider
-
+        //IA2-LINQ
         var split = _fireteamMembers.ToLookup(x => x == Leader);
         //agarro el lider y le digo q se mueva hacia la nueva destinacion
         split[true].First().MoveTowardsTransition(newDestination);
