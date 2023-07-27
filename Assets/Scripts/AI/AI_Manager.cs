@@ -13,8 +13,8 @@ public class AI_Manager : MonoSingleton<AI_Manager>
     public LayerMask WallMask => _walls;
     public LayerMask GroundMask => _ground;
 
-    public List<AI_Movement> flockingTargets => _flockingTargets; 
-    private List<AI_Movement> _flockingTargets = new List<AI_Movement>();
+    public List<NewAIMovement> flockingTargets => _flockingTargets; 
+    private List<NewAIMovement> _flockingTargets = new List<NewAIMovement>();
 
     public float MaxDistanceBetweenNodes;
 
@@ -22,7 +22,7 @@ public class AI_Manager : MonoSingleton<AI_Manager>
 
     [NonSerialized] public List<Node> nodes;
 
-    public void AddToFlockingTargets(AI_Movement a) => _flockingTargets.Add(a);
+    public void AddToFlockingTargets(NewAIMovement a) => _flockingTargets.Add(a);
 
     protected override void SingletonAwake()
     {
