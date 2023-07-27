@@ -300,9 +300,9 @@ public class Infantry : Soldier, ICapturePointEntity
         {
 
             _infantry_AI.CancelMovement();
-          
 
-            _anim.SetBool("Running", false); _anim.SetBool("Shooting", true);
+            _anim.SetBool("Running", true);
+            _anim.SetBool("Shooting", true);
 
             InCombat = true;
 

@@ -1679,7 +1679,7 @@ PrefabInstance:
     - target: {fileID: 5673067206364739106, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
       propertyPath: <Team>k__BackingField
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8309585079942525626, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
@@ -2586,7 +2586,7 @@ PrefabInstance:
     - target: {fileID: 5673067206364739106, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
       propertyPath: <Team>k__BackingField
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8309585079942525626, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
@@ -3426,7 +3426,7 @@ PrefabInstance:
     - target: {fileID: 5673067206364739106, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
       propertyPath: <Team>k__BackingField
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8309585079942525626, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
@@ -3591,7 +3591,7 @@ PrefabInstance:
     - target: {fileID: 5673067206364739106, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
       propertyPath: <Team>k__BackingField
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8309585079942525626, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
@@ -3967,7 +3967,7 @@ PrefabInstance:
     - target: {fileID: 5673067206364739106, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
       propertyPath: <Team>k__BackingField
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8309585079942525626, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
@@ -4155,15 +4155,19 @@ MonoBehaviour:
     _serializedList:
     - Key:
         name: Plane
+        data: 004d506c616e652c20417373656d626c792d4353686172702c2056657273696f6e3d302e302e302e302c2043756c747572653d6e65757472616c2c205075626c69634b6579546f6b656e3d6e756c6c
       Value: {fileID: 21300000, guid: 6331173cc6ae3154e805a0b6ec8a9a41, type: 3}
     - Key:
         name: Sniper
+        data: 004e536e697065722c20417373656d626c792d4353686172702c2056657273696f6e3d302e302e302e302c2043756c747572653d6e65757472616c2c205075626c69634b6579546f6b656e3d6e756c6c
       Value: {fileID: 21300000, guid: e2443a4c9183b8c4581516b98cf4dfb0, type: 3}
     - Key:
         name: Turret
+        data: 004e5475727265742c20417373656d626c792d4353686172702c2056657273696f6e3d302e302e302e302c2043756c747572653d6e65757472616c2c205075626c69634b6579546f6b656e3d6e756c6c
       Value: {fileID: 21300000, guid: 44941ff6735232c4f945798274ae617c, type: 3}
     - Key:
         name: IMilitary
+        data: 0051494d696c69746172792c20417373656d626c792d4353686172702c2056657273696f6e3d302e302e302e302c2043756c747572653d6e65757472616c2c205075626c69634b6579546f6b656e3d6e756c6c
       Value: {fileID: 21300000, guid: faf8ca996f9b32742bd45c73694827b2, type: 3}
   _prefabTeamIndicator: {fileID: 2757783013167010051, guid: 75e6314f8f7326b49a4813e495247918,
     type: 3}
@@ -6841,7 +6845,7 @@ PrefabInstance:
     - target: {fileID: 5673067206364739106, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
       propertyPath: <Team>k__BackingField
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8309585079942525626, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
@@ -6922,6 +6926,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Sniper (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5673067206364739106, guid: 5c69a824fe0e44d479879926d759160b,
+        type: 3}
+      propertyPath: <Team>k__BackingField
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8309585079942525626, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
@@ -9267,7 +9276,7 @@ PrefabInstance:
     - target: {fileID: 5673067206364739106, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
       propertyPath: <Team>k__BackingField
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8309585079942525626, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
@@ -10260,7 +10269,7 @@ PrefabInstance:
     - target: {fileID: 5673067206364739106, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
       propertyPath: <Team>k__BackingField
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8309585079942525626, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
@@ -12637,7 +12646,7 @@ PrefabInstance:
     - target: {fileID: 5673067206364739106, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
       propertyPath: <Team>k__BackingField
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8309585079942525626, guid: 5c69a824fe0e44d479879926d759160b,
         type: 3}
