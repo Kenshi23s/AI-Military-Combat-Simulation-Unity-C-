@@ -34,6 +34,7 @@ public class Plane : Vehicle
     [SerializeField] float RandomAngleToStart = 90;
     [SerializeField, Min(0)] float _unitsBehindPlane = 30f;
     [SerializeField, Min(0)] float _collisionCheckDistance = 30f;
+    [SerializeField] int _ExplosionDamageOnDeath = 50;
 
     #region Misile
     [SerializeField]
@@ -61,7 +62,7 @@ public class Plane : Vehicle
     [Header("VFX")]
     [SerializeField] ParticleHolder ExplosionParticle;
     int keyExplosionParticle;
-    const float explosionRadiusParticle = 20f;
+    const float explosionRadius = 20f;
 
     public override void VehicleAwake()
     {
@@ -500,12 +501,17 @@ public class Plane : Vehicle
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (_planeFSM.CurrentKey == PlaneStates.ABANDONED)
-        {
-            var x = ParticlePool.instance.GetVFX(keyExplosionParticle);
-            x.transform.position = transform.position;
-            x.transform.localScale = explosionRadiusParticle.ToVector();
-            Destroy(gameObject);
-        }
+        if (_planeFSM.CurrentKey != PlaneStates.ABANDONED) return;
+
+        _gridEntity.GetEntitiesInRange(explosionRadius)
+        .Distinct()
+        .ToList()
+        .ForEach(x => x.TakeDamage(_ExplosionDamageOnDeath));
+
+         var x = ParticlePool.instance.GetVFX(keyExplosionParticle);
+         x.transform.position = transform.position;
+         x.transform.localScale = explosionRadius.ToVector();
+         Destroy(gameObject);
+        
     }
 }

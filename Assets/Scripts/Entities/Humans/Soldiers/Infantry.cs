@@ -420,8 +420,9 @@ public class Infantry : Soldier, ICapturePointEntity
             {
                 _infantry_AI.ManualMovement.AlignmentTarget = ActualTarget.transform;
                 _infantry_AI.ManualMovement.Alignment = AlignmentType.Target;
+
                 Vector3 dir = ActualTarget.transform.position - transform.position;
-                _gun.Shoot(_shootPos, dir);
+                _gun.Shoot(_shootPos, dir, CheckIfDifferentTeam);
             }
             else
             {
@@ -443,9 +444,16 @@ public class Infantry : Soldier, ICapturePointEntity
         }
     }
 
-   
+
     #endregion
-    
+
+    bool CheckIfDifferentTeam(RaycastHit hit)
+    {
+        if (hit.transform.TryGetComponent<IMilitary>(out var x))       
+            return x.Team != Team;
+        
+        return true;
+    }
     float GetWeakestAndNearest(Entity entity)
     {
         float result = 0;

@@ -70,6 +70,68 @@ public class ShootComponent : MonoBehaviour
         StartCoroutine(SpawnTrail(trail, finalTrailPos));
     }
 
+    public void Shoot(Transform shootPos, Vector3 dir,Func<RaycastHit,bool> _predicate)
+    {
+        Vector3 finalTrailPos = Vector3.zero;
+        var randomDir = dir.normalized.RandomDirFrom(Random.Range(0, _bulletspread));
+
+        if (Physics.Raycast(shootPos.position, randomDir, out RaycastHit hit, Mathf.Infinity, shootableLayers))
+        {
+            if (hit.transform.TryGetComponent(out IDamagable victim))
+            {
+                if (_predicate(hit))
+                {
+                    victim.TakeDamage(_bulletdamage);
+                    GameManager.instance.DebugDamageFeed(gameObject, victim);
+                    onHit?.Invoke(victim);
+                }
+                else
+                {
+                    Vector3 Skip = hit.point + randomDir.normalized * 2f;
+                    ShootRecursion(shootPos,hit.collider.ClosestPointOnBounds(Skip), randomDir, _predicate);
+                    return;
+                }          
+            }
+            finalTrailPos = hit.point;
+        }
+
+        if (finalTrailPos == Vector3.zero) finalTrailPos = randomDir.normalized * maxTravelDistance;
+
+        var trail = Instantiate(trailSample, shootPos.position, Quaternion.identity);
+        StartCoroutine(SpawnTrail(trail, finalTrailPos));
+    }
+
+
+    public void ShootRecursion(Transform shootPos ,Vector3 continuFrom , Vector3 dir, Func<RaycastHit, bool> ignoreIfTrue)
+    {
+        Vector3 finalTrailPos = Vector3.zero;
+       
+        if (Physics.Raycast(continuFrom, dir, out RaycastHit hit, Mathf.Infinity, shootableLayers))
+        {
+            if (hit.transform.TryGetComponent(out IDamagable victim))
+            {
+                if (ignoreIfTrue(hit))
+                {
+                    victim.TakeDamage(_bulletdamage);
+                    GameManager.instance.DebugDamageFeed(gameObject, victim);
+                    onHit?.Invoke(victim);
+                }
+                else
+                {
+                    Vector3 Skip = hit.point + dir.normalized * 2f;
+                    ShootRecursion(shootPos, Skip, dir, ignoreIfTrue); return;
+                }
+
+            }
+            finalTrailPos = hit.point;
+        }
+
+        if (finalTrailPos == Vector3.zero) finalTrailPos = dir.normalized * maxTravelDistance;
+
+        var trail = Instantiate(trailSample, shootPos.position, Quaternion.identity);
+        StartCoroutine(SpawnTrail(trail, finalTrailPos));
+    }
+
     IEnumerator SpawnTrail(TrailRenderer trail, Vector3 impactPos)
     {
         Vector3 startPos = trail.transform.position;
