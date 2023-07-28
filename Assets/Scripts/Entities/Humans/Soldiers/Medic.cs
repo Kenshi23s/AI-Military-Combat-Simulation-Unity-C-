@@ -6,7 +6,6 @@ using System;
 using System.Linq;
 
 [RequireComponent(typeof(NewAIMovement))]
-[RequireComponent(typeof(FOVAgent))]
 public class Medic : Soldier
 {
     public enum MedicInputs
@@ -20,7 +19,6 @@ public class Medic : Soldier
     }
 
     NewAIMovement _ai;
-    FOVAgent _fov;
     Fireteam _fireteam;
     public EventFSM<MedicInputs> _fsm;
 
@@ -256,8 +254,8 @@ public class Medic : Soldier
     {
         while (true)
         {
-            var z = _gridEntity.GetEntitiesInRange(_fov.ViewRadius)
-               .Where(x => _fov.IN_FOV(x.transform.position))
+            var z = _gridEntity.GetEntitiesInRange(_fovAgent.ViewRadius)
+               .Where(x => _fovAgent.IN_FOV(x.transform.position))
                .OfType<IMilitary>()
                .Where(x => x.Team != Team);
 
@@ -271,7 +269,7 @@ public class Medic : Soldier
     {
         while (true)
         {
-            var z = _gridEntity.GetEntitiesInRange(_fov.ViewRadius)
+            var z = _gridEntity.GetEntitiesInRange(_fovAgent.ViewRadius)
                .OfType<IMilitary>()
                .Where(x => x.Team == Team);
 

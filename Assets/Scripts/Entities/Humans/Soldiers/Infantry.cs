@@ -7,9 +7,6 @@ using System;
 using static NewPhysicsMovement;
 
 [RequireComponent(typeof(NewAIMovement))]
-[RequireComponent(typeof(FOVAgent))]
-[RequireComponent(typeof(ShootComponent))]
-[SelectionBase]
 public class Infantry : Soldier, ICapturePointEntity
 {
     public enum INFANTRY_STATES
@@ -38,10 +35,8 @@ public class Infantry : Soldier, ICapturePointEntity
     [SerializeField] float _timeBeforeSelectingTarget;
 
     NewAIMovement _infantry_AI;
-    FOVAgent _fov;
 
     #region ShootingLogic
-    ShootComponent _gun;
     [SerializeField] Transform _shootPos;
     #endregion
 
@@ -114,10 +109,7 @@ public class Infantry : Soldier, ICapturePointEntity
 
     protected override void SoldierAwake()
     {
-        _infantry_AI = GetComponent<NewAIMovement>();
-        _fov = GetComponent<FOVAgent>();
-        _gun = GetComponent<ShootComponent>();
-     
+        _infantry_AI = GetComponent<NewAIMovement>();     
     }
 
     #region States
@@ -396,7 +388,7 @@ public class Infantry : Soldier, ICapturePointEntity
 
     public IEnumerable<Soldier> GetMilitaryAround()
     {
-         var col = _gridEntity.GetEntitiesInRange(_fov.ViewRadius)
+         var col = _gridEntity.GetEntitiesInRange(_fovAgent.ViewRadius)
           .Where(x => x != this)
           .OfType<Soldier>();
     
@@ -407,7 +399,7 @@ public class Infantry : Soldier, ICapturePointEntity
     {
         return GetMilitaryAround().Where(x => x.Team != Team)
                   .Where(x => x.Health.IsAlive)
-                  .Where(x => _fov.IN_FOV(x.transform.position));
+                  .Where(x => _fovAgent.IN_FOV(x.transform.position));
     }
 
     IEnumerator SetTarget()
@@ -422,7 +414,7 @@ public class Infantry : Soldier, ICapturePointEntity
                 _infantry_AI.ManualMovement.Alignment = AlignmentType.Target;
 
                 Vector3 dir = ActualTarget.transform.position - transform.position;
-                _gun.Shoot(_shootPos, dir, CheckIfDifferentTeam);
+                _shootComponent.Shoot(_shootPos, dir, CheckIfDifferentTeam);
             }
             else
             {

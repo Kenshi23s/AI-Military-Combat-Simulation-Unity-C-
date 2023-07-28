@@ -8,7 +8,7 @@ using static UnityEngine.ParticleSystem;
 
 public class ShootComponent : MonoBehaviour
 {
-    public event Action<IDamagable> onHit;
+    public event Action<IDamageable> onHit;
 
     [SerializeField] float _bulletspread;
     [field : SerializeField] public int BulletDamage { get; private set; }
@@ -31,7 +31,7 @@ public class ShootComponent : MonoBehaviour
  
         if (Physics.Raycast(shootPos.position,dir,out RaycastHit hit,Mathf.Infinity, shootableLayers))
         {
-            if (hit.transform.TryGetComponent(out IDamagable victim))
+            if (hit.transform.TryGetComponent(out IDamageable victim))
             {
                 victim.TakeDamage(BulletDamage);
                 GameManager.instance.DebugDamageFeed(gameObject,victim);
@@ -55,7 +55,7 @@ public class ShootComponent : MonoBehaviour
 
         if (Physics.Raycast(shootPos.position, randomDir, out RaycastHit hit, Mathf.Infinity, shootableLayers))
         {
-            if (hit.transform.TryGetComponent(out IDamagable victim))
+            if (hit.transform.TryGetComponent(out IDamageable victim))
             {
                 victim.TakeDamage(BulletDamage);
                 GameManager.instance.DebugDamageFeed(gameObject, victim);
@@ -77,7 +77,7 @@ public class ShootComponent : MonoBehaviour
 
         if (Physics.Raycast(shootPos.position, randomDir, out RaycastHit hit, Mathf.Infinity, shootableLayers))
         {
-            if (hit.transform.TryGetComponent(out IDamagable victim))
+            if (hit.transform.TryGetComponent(out IDamageable victim))
             {
                 if (_predicate(hit))
                 {
@@ -108,7 +108,7 @@ public class ShootComponent : MonoBehaviour
        
         if (Physics.Raycast(continuFrom, dir, out RaycastHit hit, Mathf.Infinity, shootableLayers))
         {
-            if (hit.transform.TryGetComponent(out IDamagable victim))
+            if (hit.transform.TryGetComponent(out IDamageable victim))
             {
                 if (ignoreIfFalse(hit))
                 {

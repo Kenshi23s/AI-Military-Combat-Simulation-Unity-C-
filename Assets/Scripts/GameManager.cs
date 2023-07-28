@@ -30,12 +30,12 @@ public class GameManager : MonoSingleton<GameManager>
         };
     }
 
-    public void DebugDamageFeed(GameObject From,IDamagable Victim)
+    public void DebugDamageFeed(GameObject From,IDamageable Victim)
     {
         DebugDamageFeed(From.gameObject.name,Victim);
     }
 
-    public void DebugDamageFeed(string name, IDamagable Victim)
+    public void DebugDamageFeed(string name, IDamageable Victim)
     {
         string Text = "Le hizo daño a";
         if (!Victim.IsAlive)

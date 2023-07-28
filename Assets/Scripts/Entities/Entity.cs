@@ -7,7 +7,8 @@ using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(LifeComponent))]
 [RequireComponent(typeof(DebugableObject))]
-public abstract class Entity : MonoBehaviour, IDamagable, IHealable,ILifeObject
+[SelectionBase]
+public abstract class Entity : MonoBehaviour, ILifeObject
 {
     public LifeComponent Health { get; private set; }
     public DebugableObject DebugEntity { get; private set; }

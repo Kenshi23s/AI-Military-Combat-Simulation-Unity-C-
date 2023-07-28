@@ -20,14 +20,6 @@ public interface IMilitary
     
 }
 
-public interface ILifeObject
-{
-    public float NormalizedLife => (Life*1f) / (MaxLife*1f);
-    public int MaxLife { get; }
-    public int Life { get; }
-    public event Action OnTakeDamage;
-}
-
 public interface ICapturePointEntity 
 {
     void ZoneEnter(CapturePoint zone);
@@ -38,4 +30,3 @@ public interface ICapturePointEntity
     CapturePoint Zone { get; }
     bool IsInZone => Zone != null;
 }
-

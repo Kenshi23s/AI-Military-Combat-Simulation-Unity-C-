@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 [RequireComponent(typeof(DebugableObject))]
-public class LifeComponent : MonoBehaviour, IDamagable, IHealable,ILifeObject
+public class LifeComponent : MonoBehaviour, IDamageable, IHealable,ILifeObject
 {
     DebugableObject _debug;
 

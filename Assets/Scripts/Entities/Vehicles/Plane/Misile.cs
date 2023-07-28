@@ -44,7 +44,7 @@ public class Misile : Entity, IMilitary
 
     public event Action OnDeathInCombat;
 
-    public event Action<IDamagable> onHit;
+    public event Action<IDamageable> onHit;
 
     public void PoolObjectInitialize(Action<Misile> HowToReturn) => returnToPool = HowToReturn;
 
@@ -143,7 +143,7 @@ public class Misile : Entity, IMilitary
         var _damagables = _gridEntity.GetEntitiesInRange(myStats.explosionRadius)
         .Where(x => x != myStats.owner)
         .Where(x => x != null)
-        .OfType<IDamagable>()
+        .OfType<IDamageable>()
         .Where(FilterUnitsByTeam);
 
         foreach (var entity in _damagables)
@@ -154,7 +154,7 @@ public class Misile : Entity, IMilitary
         returnToPool?.Invoke(this);
     }
 
-    bool FilterUnitsByTeam(IDamagable x)
+    bool FilterUnitsByTeam(IDamageable x)
     {
         var cast = x as IMilitary;
         return cast == null || cast.Team != Team;

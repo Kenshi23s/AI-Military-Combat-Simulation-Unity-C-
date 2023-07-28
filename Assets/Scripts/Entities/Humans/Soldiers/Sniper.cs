@@ -6,8 +6,6 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
-[RequireComponent(typeof(ShootComponent))]
-[RequireComponent(typeof(FOVAgent))]
 [RequireComponent(typeof(LineRenderer))]
 public class Sniper : Soldier
 {
@@ -23,10 +21,6 @@ public class Sniper : Soldier
     public event Action OnEnemyFound = delegate { };
 
     EventFSM<SNIPER_STATES> _fsm;
-
-    ShootComponent _shootComponent;
- 
-    FOVAgent _fovAgent;
 
     LineRenderer _laser;
 
@@ -47,9 +41,6 @@ public class Sniper : Soldier
 
     protected override void SoldierAwake()
     {       
-
-        _shootComponent = GetComponent<ShootComponent>();
-        _fovAgent = GetComponent<FOVAgent>();
         _laser = GetComponent<LineRenderer>();
         _laser.enabled = false;
         _shootComponent.onHit += _ => TotalDamageDealt += _shootComponent.BulletDamage;
