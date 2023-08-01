@@ -221,7 +221,7 @@ MonoBehaviour:
   _bulletsPerBurst: 0
   _burstCD: 3
   _bulletCD: 0.3
-  _shootPos: {fileID: 6569154086367201079}
+  ShootPos: {fileID: 0}
 --- !u!114 &6481451692193517999
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -406,6 +406,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AimingPoint: {fileID: 8987092123195722308}
+  <Anim>k__BackingField: {fileID: 0}
   <Team>k__BackingField: 0
   _shootPos: {fileID: 6569154086367201079}
   FramesBetweenEnemySearch: 4
@@ -413,7 +414,6 @@ MonoBehaviour:
   _addPerTimesFocused: 2
   _requiredFocusTime: 10
   maxShootsInRow: 10
-  _anim: {fileID: 6967533335640094502}
 --- !u!65 &3688280697286250966
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2443,7 +2443,7 @@ LODGroup:
     - renderer: {fileID: 7112057883794566290}
     - renderer: {fileID: 7444771696663800099}
     - renderer: {fileID: 5255688269197294508}
-  - screenRelativeHeight: 0.1001984
+  - screenRelativeHeight: 0.056820057
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 7378546515433247118}

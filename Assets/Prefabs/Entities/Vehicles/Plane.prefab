@@ -160,7 +160,7 @@ MonoBehaviour:
   _bulletsPerBurst: 0
   _burstCD: 3
   _bulletCD: 0.3
-  _shootPos: {fileID: 0}
+  ShootPos: {fileID: 0}
 --- !u!54 &6565769872705145564
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -753,7 +753,7 @@ LODGroup:
     - renderer: {fileID: 128718073973636632}
     - renderer: {fileID: 128718073973636614}
     - renderer: {fileID: 128718073973636612}
-  - screenRelativeHeight: 0.23841546
+  - screenRelativeHeight: 0.06600096
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 128718073973636610}
