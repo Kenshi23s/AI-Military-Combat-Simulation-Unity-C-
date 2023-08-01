@@ -112,7 +112,7 @@ public class CapturePoint : MonoBehaviour
     private void Update()
     {
         foreach (var e in _entitiesInPoint)
-            e.ZoneStay();
+            e.PointStay();
 
         CheckState();
 
@@ -207,11 +207,11 @@ public class CapturePoint : MonoBehaviour
 
             // Calcular quien entro
             foreach (var e in _entitiesInPoint?.Except(previousQuery)) 
-                e.ZoneEnter(this);
+                e.PointEnter(this);
 
             // Calcular quien salio
             foreach (var e in previousQuery?.Except(_entitiesInPoint))
-                e.ZoneExit(this);
+                e.PointExit(this);
 
             // Consigo los que son militares y divido la lista por equipos con ToLookup.
             _teamSplit = _entitiesInPoint

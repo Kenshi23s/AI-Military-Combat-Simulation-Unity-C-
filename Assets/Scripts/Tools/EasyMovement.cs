@@ -21,28 +21,27 @@ public struct FlockingParameters
 
 }
 //si se quiere hacer flocking con algo, debe tener esta interfaz
-public interface FlockableEntity
+public interface IFlockableEntity
 {
-    
     public Vector3 GetPosition();
     public Vector3 GetVelocity();
 }
 public static class EasyMovement 
 {
 
-   public static Rigidbody MoveTowards(this Rigidbody rb,Vector3 dir, float force)
+   public static Rigidbody MoveTowards(this Rigidbody rb, Vector3 dir, float force)
    {
       rb.velocity = rb.velocity + dir.normalized * force * Time.deltaTime;
       return rb;
    }
 
-   public static Rigidbody ClampVelocity(this Rigidbody rb, float _maxSpeed)
+   public static Rigidbody ClampVelocity(this Rigidbody rb, float maxSpeed)
    {
-       rb.velocity= Vector3.ClampMagnitude(rb.velocity, _maxSpeed);
+       rb.velocity = Vector3.ClampMagnitude(rb.velocity, maxSpeed);
        return rb;
    }
 
-    public static Vector3 Flocking(this IEnumerable<FlockableEntity> targets,FlockingParameters parameters)
+    public static Vector3 Flocking(this IEnumerable<IFlockableEntity> targets, FlockingParameters parameters)
     {
         Vector3 actualforce = Vector3.zero;
 
@@ -56,7 +55,7 @@ public static class EasyMovement
     public static Vector3 CalculateSteering(this Vector3 velocity, Vector3 desired, float steeringForce) => (desired - velocity) * steeringForce;
 
     #region Flocking
-    public static Vector3 GroupAlignment(this IEnumerable<FlockableEntity> targets, FlockingParameters parameters)
+    public static Vector3 GroupAlignment(this IEnumerable<IFlockableEntity> targets, FlockingParameters parameters)
     {
         Vector3 desired = Vector3.zero;
         //int count = 0;
@@ -88,7 +87,7 @@ public static class EasyMovement
         return desired;
     }
 
-    public static Vector3 Cohesion(this IEnumerable<FlockableEntity> targets, FlockingParameters parameters)
+    public static Vector3 Cohesion(this IEnumerable<IFlockableEntity> targets, FlockingParameters parameters)
     {
         Vector3 desired = Vector3.zero;
         int count = 0;
@@ -116,7 +115,7 @@ public static class EasyMovement
         return desired;
     }
 
-    public static Vector3 Separation(this IEnumerable<FlockableEntity> targets,FlockingParameters parameters)
+    public static Vector3 Separation(this IEnumerable<IFlockableEntity> targets,FlockingParameters parameters)
     {
         Vector3 desired = Vector3.zero;
         foreach (var item in targets)
@@ -139,7 +138,7 @@ public static class EasyMovement
     }
     #endregion
 
-    public static Vector3 Pursuit(this FlockableEntity target)
+    public static Vector3 Pursuit(this IFlockableEntity target)
     {
         Vector3 finalPos = target.GetPosition() + target.GetVelocity() * Time.deltaTime;
         Vector3 desired = finalPos - target.GetPosition();
@@ -147,7 +146,7 @@ public static class EasyMovement
 
         return desired;
     }
-    public static Vector3 Evade(this FlockableEntity target)
+    public static Vector3 Evade(this IFlockableEntity target)
     {
         Vector3 finalPos = target.GetPosition() + target.GetVelocity() * Time.deltaTime;
         Vector3 desired = target.GetPosition() - finalPos;

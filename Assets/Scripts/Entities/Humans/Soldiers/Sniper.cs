@@ -26,8 +26,6 @@ public class Sniper : Soldier
 
     public Soldier target { get; private set; }
 
-    [Header("Sniper"),SerializeField] Transform _shootPos;
-
     [SerializeField] int FramesBetweenEnemySearch = 4;
     [SerializeField] float _aimSpeed;
     float _currentAimLerp, _currentFocusTime;
@@ -36,14 +34,13 @@ public class Sniper : Soldier
     [SerializeField] float _requiredFocusTime, maxShootsInRow = 1;
     int timesFocused = 1;
 
+    protected override void Awake()
+    {
+        base.Awake();
 
-    [SerializeField] Animator _anim;
-
-    protected override void SoldierAwake()
-    {       
         _laser = GetComponent<LineRenderer>();
         _laser.enabled = false;
-        _shootComponent.onHit += _ => TotalDamageDealt += _shootComponent.BulletDamage;
+        ShootComponent.onHit += _ => TotalDamageDealt += ShootComponent.BulletDamage;
         Health.OnKilled += () => _fsm.SendInput(SNIPER_STATES.DIE);
       
     }
@@ -93,22 +90,22 @@ public class Sniper : Soldier
     {
         var state = new State<SNIPER_STATES>("Look For Enemies");
 
-        Action _onFound = () =>
+        Action onFound = () =>
         {
             _fsm.SendInput(SNIPER_STATES.AIM);
         };
 
         state.OnEnter += (x) =>
         {
-            _anim.SetBool("Shooting", false);
-            OnEnemyFound += _onFound;
+            Anim.SetBool("Shooting", false);
+            OnEnemyFound += onFound;
             StartCoroutine(LookForEnemiesCoroutine());
 
         };
 
         state.OnExit += (x) =>
         {
-            OnEnemyFound -= _onFound;         
+            OnEnemyFound -= onFound;         
         };
 
         return state;
@@ -152,7 +149,7 @@ public class Sniper : Soldier
                 DebugEntity.Log("El Target es null, paso a buscar otro enemigo");
                 _laser.enabled = false;
             }
-            _anim.SetBool("Shooting", true);
+            Anim.SetBool("Shooting", true);
             _currentAimLerp = 0;
         };
 
@@ -224,7 +221,7 @@ public class Sniper : Soldier
             if (_currentFocusTime >= _requiredFocusTime)
             {
                 _currentFocusTime = 0;
-                _shootComponent.Shoot(_shootPos, target.AimPoint - _shootPos.position);
+                ShootComponent.Shoot(_shootPos, target.AimPoint - _shootPos.position);
                 timesFocused++;
                 DebugEntity.Log("Disparo al target");
 
@@ -253,8 +250,8 @@ public class Sniper : Soldier
         State<SNIPER_STATES> state = new State<SNIPER_STATES>("Die");
         state.OnEnter += (x) =>
         {
-            _anim.SetBool("Shooting", false);
-            _anim.SetBool("Die",true);
+            Anim.SetBool("Shooting", false);
+            Anim.SetBool("Die",true);
             _laser.enabled = false;
             DebugEntity.Log("Die");
         };

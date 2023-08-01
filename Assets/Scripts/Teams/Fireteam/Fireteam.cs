@@ -8,7 +8,7 @@ using UnityEngine;
 public class Fireteam
 {
 
-    public Fireteam(MilitaryTeam newTeam, List<Infantry> members)
+    public Fireteam(MilitaryTeam newTeam, List<AssaultInfantry> members)
     {
         Team = newTeam;
 
@@ -24,43 +24,43 @@ public class Fireteam
         }
 
         foreach (var item in _fireteamMembers.Where(x => x != Leader))
-            item.InitializeUnit(newTeam);
-        Leader.InitializeUnit(newTeam);
+            item.Initialize(newTeam);
+        Leader.Initialize(newTeam);
     }
 
-    List<Infantry> _fireteamMembers = new List<Infantry>();
+    List<AssaultInfantry> _fireteamMembers = new List<AssaultInfantry>();
 
-    public ReadOnlyCollection<Infantry> FireteamMembers;
+    public ReadOnlyCollection<AssaultInfantry> FireteamMembers;
 
 
-    public Infantry Leader { get; private set; }
+    public AssaultInfantry Leader { get; private set; }
 
     public MilitaryTeam Team { get; private set; }
 
 
 
     #region MemberManagment
-    public void AddMember(Infantry infantry)
+    public void AddMember(AssaultInfantry infantry)
     {
         if (!_fireteamMembers.Contains(infantry))
         {
             _fireteamMembers.Add(infantry);
-            infantry.SetFireteam(this);
+            infantry.Fireteam = this;
         }
 
     }
 
-    public void AddMembers(IEnumerable<Infantry> infantryCol)
+    public void AddMembers(IEnumerable<AssaultInfantry> infantryCol)
     {
         foreach (var item in infantryCol.Where(x => !_fireteamMembers.Contains(x)))
         {
             _fireteamMembers.Add(item);
-            item.SetFireteam(this);
+            item.Fireteam = this;
         }
 
     }
 
-    public void RemoveMember(Infantry infantry)
+    public void RemoveMember(AssaultInfantry infantry)
     {
         if (_fireteamMembers.Contains(infantry))
             _fireteamMembers.Remove(infantry);
@@ -71,7 +71,7 @@ public class Fireteam
     }
 
 
-    public void RemoveMembers(IEnumerable<Infantry> infantryCol)
+    public void RemoveMembers(IEnumerable<AssaultInfantry> infantryCol)
     {
         foreach (var item in infantryCol.Where(x => _fireteamMembers.Contains(x)))
             _fireteamMembers.Remove(item);
@@ -128,12 +128,6 @@ public class Fireteam
         foreach (var members in split[false]) members.FollowLeaderTransition();
     }
 
-    #region GetMethods
-
-
-    public IEnumerable<Medic> GetMedics() => _fireteamMembers.OfType<Medic>();
-    #endregion
-
     #region UsefulQuestions
     //pregunta si algun aliado de la escuadra tiene enemigos cerca
     public bool AlliesWithEnemiesNearby(Entity whoAsks, out Entity neartestInDanger)
@@ -161,7 +155,7 @@ public class Fireteam
         return false;
     }
     //saber si la unidad esta cerca del lider
-    public bool IsNearLeader(Infantry member, float MinimumDistanceFromLeader)
+    public bool IsNearLeader(AssaultInfantry member, float MinimumDistanceFromLeader)
     {
         return Vector3.Distance(Leader.transform.position, member.transform.position) < MinimumDistanceFromLeader;
     }

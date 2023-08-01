@@ -12,8 +12,11 @@ public abstract class Soldier : Human, IMilitary
     public MilitaryTeam Team { get; protected set; }
 
     protected GridEntity _gridEntity;
-    protected ShootComponent _shootComponent;
+    protected ShootComponent ShootComponent;
     protected FOVAgent _fovAgent;
+
+    [SerializeField] protected Transform _shootPos;
+
 
     public bool InCombat { get; protected set; }
 
@@ -21,16 +24,14 @@ public abstract class Soldier : Human, IMilitary
 
     public event Action OnDeathInCombat;
 
-    protected override void EntityAwake()
+    protected override void Awake()
     {
+        base.Awake();
+
         Health.OnKilled += () => OnDeathInCombat?.Invoke();
 
         _gridEntity = GetComponent<GridEntity>();
-        _shootComponent = GetComponent<ShootComponent>();
+        ShootComponent = GetComponent<ShootComponent>();
         _fovAgent = GetComponent<FOVAgent>();
-
-        SoldierAwake();
     }
-
-    protected abstract void SoldierAwake();
 }

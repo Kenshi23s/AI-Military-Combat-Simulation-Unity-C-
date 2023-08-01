@@ -49,9 +49,11 @@ public class Misile : Entity, IMilitary
     public void PoolObjectInitialize(Action<Misile> HowToReturn) => returnToPool = HowToReturn;
 
     #region UnityCalls
-   
-    protected override void EntityAwake()
+
+    protected override void Awake()
     {
+        base.Awake();
+
         _gridEntity = GetComponent<GridEntity>();
         Health.OnKilled += OnDeathInCombat;
         Health.OnKilled += Explosion;

@@ -20,7 +20,8 @@ public class ShootComponent : MonoBehaviour
     [SerializeField] float _bulletsPerBurst;
     [SerializeField] float _burstCD = 3;
     [SerializeField] float _bulletCD = 0.3f;
-    [SerializeField] Transform _shootPos;
+
+    public Transform ShootPos;
 
     const float maxTravelDistance = 100;
 
@@ -154,7 +155,7 @@ public class ShootComponent : MonoBehaviour
         {
             for (int i = 0; i < _bulletsPerBurst; i++)
             {
-                Shoot(_shootPos);
+                Shoot(ShootPos);
                 yield return new WaitForSeconds(_bulletCD);
             }
             yield return new WaitForSeconds(_burstCD);

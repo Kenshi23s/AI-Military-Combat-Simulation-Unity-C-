@@ -9,14 +9,15 @@ public struct Seat
 {
     public bool Available;
     public int seatPriority;
-    public Infantry passenger;  
+    public MobileInfantry passenger;  
     public Transform seatPos;
 }
 
 [RequireComponent(typeof(NewPhysicsMovement))]
 [RequireComponent(typeof(FOVAgent))]
 [RequireComponent(typeof(GridEntity))]
-public abstract class Vehicle : Entity, IMilitary, FlockableEntity
+[RequireComponent(typeof(ShootComponent))]
+public abstract class Vehicle : Entity, IMilitary, IFlockableEntity
 {
 
     [SerializeField,Header("Vehicle Variables")] 
@@ -25,6 +26,7 @@ public abstract class Vehicle : Entity, IMilitary, FlockableEntity
     [SerializeField] protected float _loseSightRadius;
     protected FOVAgent _fov;
     protected NewPhysicsMovement _movement;
+    protected ShootComponent _shootComponent;
 
     public MilitaryTeam Team { get; private set; }
 
@@ -36,15 +38,22 @@ public abstract class Vehicle : Entity, IMilitary, FlockableEntity
 
     public event Action OnDeathInCombat;
 
+
     public abstract void VehicleAwake();
 
     
-    protected override void EntityAwake()
+    protected override void Awake()
     {
+        base.Awake();
+
         Health.OnKilled += () => OnDeathInCombat();
+
         _gridEntity = GetComponent<GridEntity>();
         _movement = GetComponent<NewPhysicsMovement>();
         _fov = GetComponent<FOVAgent>();
+        _shootComponent = GetComponent<ShootComponent>();
+        _shootComponent.onHit += _ => TotalDamageDealt += _shootComponent.BulletDamage;
+
         _flockingParameters.myTransform = transform;
         VehicleAwake();
     }

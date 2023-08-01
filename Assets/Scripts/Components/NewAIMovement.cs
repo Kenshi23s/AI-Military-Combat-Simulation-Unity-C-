@@ -59,14 +59,14 @@ public class NewAIMovement : MonoBehaviour
         }
     }
 
-    public void SetDestination(Vector3 newDestination, Action onDestinationReach)
+    public void SetDestination(Vector3 newDestination, Action onDestinationReached)
     {
         if (newDestination != Destination) OnDestinationChanged?.Invoke();
 
         Destination = newDestination;
 
         
-        if (onDestinationReach != null) OnCurrentDestinationReached += onDestinationReach;
+        if (onDestinationReached != null) OnCurrentDestinationReached += onDestinationReached;
 
         if (transform.position.InLineOffSight(newDestination, AI_Manager.instance.WallMask, 20f))
         {
@@ -78,19 +78,19 @@ public class NewAIMovement : MonoBehaviour
         }
     }
 
-    public void SetDestination(Vector3 newDestination, Action<bool> OnFinishCalculating, Action onDestinationReach)
+    public void SetDestination(Vector3 newDestination, Action<bool> onFinishCalculating = null, Action onDestinationReached = null)
     {
         if (_path.Any() && newDestination != Destination) OnDestinationChanged?.Invoke();
 
-        if (onDestinationReach != null) OnCurrentDestinationReached += onDestinationReach;
+        if (onDestinationReached != null) OnCurrentDestinationReached += onDestinationReached;
 
         Destination = newDestination;
 
-        Action<bool, List<Vector3>> onCalculate = (boolean,list) => OnFinishCalculating(boolean);
+        Action<bool, List<Vector3>> onCalculate = (boolean,list) => onFinishCalculating(boolean);
 
         if (transform.position.InLineOffSight(newDestination, AI_Manager.instance.WallMask, 20f))
         {
-            OnFinishCalculating?.Invoke(true);
+            onFinishCalculating?.Invoke(true);
             OnDesinationAtSight(newDestination);
         }
         else       

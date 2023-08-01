@@ -1949,14 +1949,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 7684651609810558658}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a3bce0032b7fe6b468f60a42b0e5bb97, type: 3}
+  m_Script: {fileID: 11500000, guid: 7cc3b775be67cae4b833c5ddb565c6ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  AimingPoint: {fileID: 7686234030039808085}
-  <Team>k__BackingField: 2
-  _anim: {fileID: 7779844200561149171}
-  _timeBeforeSelectingTarget: 2
+  AimingPoint: {fileID: 7689205297965026081}
+  <Anim>k__BackingField: {fileID: 0}
+  <Team>k__BackingField: 0
   _shootPos: {fileID: 2889329660706087394}
+  _timeBeforeSelectingTarget: 2
   <MinDistanceFromDestination>k__BackingField: 4
 --- !u!114 &6064664604643365114
 MonoBehaviour:
@@ -2087,7 +2087,7 @@ MonoBehaviour:
   _bulletsPerBurst: 0
   _burstCD: 3
   _bulletCD: 0.3
-  _shootPos: {fileID: 2889329660706087394}
+  ShootPos: {fileID: 0}
 --- !u!1 &7684651611259997065
 GameObject:
   m_ObjectHideFlags: 0

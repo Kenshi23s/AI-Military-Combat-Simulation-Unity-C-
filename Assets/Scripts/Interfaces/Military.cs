@@ -22,9 +22,9 @@ public interface IMilitary
 
 public interface ICapturePointEntity 
 {
-    void ZoneEnter(CapturePoint zone);
-    void ZoneStay();
-    void ZoneExit(CapturePoint zone);
+    void PointEnter(CapturePoint zone);
+    void PointStay();
+    void PointExit(CapturePoint zone);
 
     public bool CanCapture { get; }
     CapturePoint Zone { get; }

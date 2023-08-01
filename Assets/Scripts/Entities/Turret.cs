@@ -44,8 +44,10 @@ public class Turret : Entity, IMilitary
 
     public event Action OnDeathInCombat;
 
-    protected override void EntityAwake()
+    protected override void Awake()
     {
+        base.Awake();
+
         Health.OnKilled += OnDeathInCombat;
         _myGridEntity = GetComponent<GridEntity>();
         _ShootHandler = GetComponent<ShootComponent>();

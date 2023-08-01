@@ -19,30 +19,23 @@ public abstract class Entity : MonoBehaviour, ILifeObject
     // (porque algunas cosas no tienen el pivote en el centro)
     public Vector3 AimPoint => AimingPoint != null
         ? AimingPoint.position
-        : transform.position;
+        : transform.position;  
 
-  
-
-    [SerializeField, Header("Entity")] Transform AimingPoint;
-
- 
+    [SerializeField, Header("Entity")] Transform AimingPoint; 
 
     public void SetCaptureState(bool arg)
     {
         IsCapturing = arg;
     }
 
-    private void Awake()
+    protected virtual void Awake()
     {
         Health = GetComponent<LifeComponent>();
         DebugEntity = GetComponent<DebugableObject>();
         IsCapturing = false;
         gameObject.name = GetType().Name + " - " + ColomboMethods.GenerateName(Random.Range(3,7));
         Health.OnTakeDamage += _ => OnTakeDamage?.Invoke();
-        EntityAwake();
     }
-
-    protected virtual void EntityAwake() { }
 
     #region Redirect To Health Component
 
@@ -53,6 +46,8 @@ public abstract class Entity : MonoBehaviour, ILifeObject
     public int MaxLife => Health.MaxLife;
 
     public int Life => Health.Life;
+
+    public float NormalizedLife => (float)Life / MaxLife;
 
     public DamageData TakeDamage(int dmgToDeal) => Health.TakeDamage(dmgToDeal);
 

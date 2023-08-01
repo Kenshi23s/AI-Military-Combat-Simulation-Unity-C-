@@ -5,7 +5,7 @@ using UnityEngine;
 public struct ParticleHold
 {
     public ParticleHolder particle;
-    [NonSerialized]public int key;
+    [NonSerialized] public int key;
 }
 public class ParticleHolder : MonoBehaviour
 {  
@@ -13,16 +13,16 @@ public class ParticleHolder : MonoBehaviour
     Action<ParticleHolder,int> _returnToPool;
     public event Action OnFinish;
 
-    int key;
+    int _key;
     private void Awake()
     {    
         //buscar la manera de decirle q no haga update pero si OnEnabled(consultar a algun profe)
        //enabled=false;
     }
-    public void InitializeParticle(Action<ParticleHolder,int> _returnToPool,int key)
+    public void InitializeParticle(Action<ParticleHolder, int> returnToPool, int key)
     {
-        this._returnToPool = _returnToPool;
-        this.key = key;       
+        _returnToPool = returnToPool;
+        _key = key;       
     }      
 
     private void OnEnable() => StartCoroutine(CooldownDecrease());
@@ -32,7 +32,7 @@ public class ParticleHolder : MonoBehaviour
         yield return new WaitForSeconds(_totalDuration);
         OnFinish?.Invoke();
         OnFinish = null;
-        _returnToPool(this,key);
+        _returnToPool(this, _key);
     }
 
     public void ReturnNow()
@@ -40,6 +40,6 @@ public class ParticleHolder : MonoBehaviour
         StopCoroutine(CooldownDecrease());
         OnFinish?.Invoke();
         OnFinish = null;
-        _returnToPool(this, key);
+        _returnToPool(this, _key);
     }
 }

@@ -15,7 +15,6 @@ public enum PlaneStates
 }
 
 [SelectionBase]
-[RequireComponent(typeof(ShootComponent))]
 public class Plane : Vehicle
 {
 
@@ -55,7 +54,6 @@ public class Plane : Vehicle
     [SerializeField] float burstCD = 3;
     [SerializeField] float BulletCD = 0.3f;
     [SerializeField] Transform shootPos;
-    ShootComponent shootComponent;
     #endregion
 
 
@@ -68,7 +66,6 @@ public class Plane : Vehicle
     {
         _gridEntity.LookGrid();
 
-        shootComponent = GetComponent<ShootComponent>();
         DebugEntity.AddGizmoAction(DrawTowardsTarget); DebugEntity.AddGizmoAction(DrawAirstrikeZone);
    
 
@@ -77,7 +74,6 @@ public class Plane : Vehicle
         _planeFSM = CreateFSM();
         
         misileStats.owner = gameObject;
-        shootComponent.onHit += _ => TotalDamageDealt += shootComponent.BulletDamage;
         Health.OnKilled += () => _planeFSM.SendInput(PlaneStates.ABANDONED);
     }
 
@@ -113,7 +109,7 @@ public class Plane : Vehicle
         {         
             for (int i = 0; i < bulletsPerBurst; i++)
             {
-                shootComponent.Shoot(shootPos);
+                _shootComponent.Shoot(shootPos);
                 yield return new WaitForSeconds(BulletCD);
             }
             yield return new WaitForSeconds(burstCD);     
@@ -279,7 +275,7 @@ public class Plane : Vehicle
             if (col.Any() && _gridEntity.OnGrid)
             {
                 var endPromise = col.ToArray();
-                dir += endPromise.Flocking(_flockingParameters);
+                dir += col.Flocking(_flockingParameters);
                 
                 DebugEntity.Log($"hago flocking con {endPromise.Length} aviones aliados");
             }

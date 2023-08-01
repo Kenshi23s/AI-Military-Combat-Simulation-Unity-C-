@@ -22,7 +22,7 @@ public struct TeamParameters
 public class TeamsManager : MonoSingleton<TeamsManager>
 {
     [SerializeField] bool _canDebug;
-    [SerializeField] Infantry _infantryPrefab;
+    [SerializeField] AssaultInfantry _infantryPrefab;
     [SerializeField] Plane _planePrefab;
     [SerializeField] Civilian _civilianPrefab;
  
@@ -171,7 +171,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
         for (int i = 0; i < param.FireteamQuantity; i++)
         {       
-           FList<Infantry> members = new FList<Infantry>();
+           FList<AssaultInfantry> members = new FList<AssaultInfantry>();
 
            GameObject fireteamGroup = Instantiate(new GameObject("Fireteam"+ ColomboMethods.GenerateName(5)), newGO.transform);
 
@@ -381,7 +381,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
     public IEnumerable<Fireteam> GetAllyFireteams(MilitaryTeam team)
     {
-        return _teams[team].OfType<Infantry>().Select(x => x.MyFireteam).Where(x => x != null).Distinct();       
+        return _teams[team].OfType<AssaultInfantry>().Select(x => x.Fireteam).Where(x => x != null).Distinct();       
     }
 
     public IEnumerable<Plane> GetTeamPlanes(MilitaryTeam team)

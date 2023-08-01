@@ -29,7 +29,7 @@ public interface IHealable
 
 public interface ILifeObject : IDamageable, IHealable
 {
-    public float NormalizedLife => (Life * 1f) / (MaxLife * 1f);
+    public float NormalizedLife => (float)Life / MaxLife;
     public int MaxLife { get; }
     public int Life { get; }
     public event Action OnTakeDamage;

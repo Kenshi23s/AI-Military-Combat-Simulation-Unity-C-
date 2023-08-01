@@ -19,8 +19,11 @@ public class Civilian : Entity
     Bunker nearestBunker;
 
     EventFSM<CivilianStates> civilianFSM;
-    protected override void EntityAwake()
+
+    protected override void Awake()
     {
+        base.Awake();
+
         civilian_AI = GetComponent<NewAIMovement>();
        
     }
