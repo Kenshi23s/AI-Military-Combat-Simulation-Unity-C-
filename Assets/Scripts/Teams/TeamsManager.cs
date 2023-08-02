@@ -22,7 +22,7 @@ public struct TeamParameters
 public class TeamsManager : MonoSingleton<TeamsManager>
 {
     [SerializeField] bool _canDebug;
-    [SerializeField] AssaultInfantry _infantryPrefab;
+    [SerializeField] MobileInfantry _assaultPrefab, _medicPrefab;
     [SerializeField] Plane _planePrefab;
     [SerializeField] Civilian _civilianPrefab;
  
@@ -165,32 +165,39 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     #region EntitySpawn
     IEnumerator SpawnFireteams(MilitaryTeam team, TeamParameters param)
     {
-      
-
         GameObject newGO = Instantiate(new GameObject(team + " Infantry"), transform);
 
         for (int i = 0; i < param.FireteamQuantity; i++)
         {       
-           FList<MobileInfantry> members = new FList<MobileInfantry>();
+            FList<MobileInfantry> members = new FList<MobileInfantry>();
 
-           GameObject fireteamGroup = Instantiate(new GameObject("Fireteam"+ ColomboMethods.GenerateName(5)), newGO.transform);
-
-           for (int j = 0; j < param.membersPerFireteam; j++)
-           {
+            GameObject fireteamGroup = Instantiate(new GameObject("Fireteam"+ ColomboMethods.GenerateName(5)), newGO.transform);
+            bool medicSpawned = false;
+            
+            for (int j = 0; j < param.membersPerFireteam; j++)
+            {
                 _watchDog = 0;
                 if (GetRandomFreePosOnGround(param, out Vector3 pos))
                 {
-                    var newUnit = Instantiate(_infantryPrefab, pos, Quaternion.identity);
+                    MobileInfantry newUnit;
+
+                    if (!medicSpawned && Random.Range(0, 4) == 0)
+                    {
+                        newUnit = Instantiate(_medicPrefab, pos, Quaternion.identity);
+                        medicSpawned = true;
+                    }
+                    else
+                        newUnit = Instantiate(_assaultPrefab, pos, Quaternion.identity);
+
+
                     newUnit.transform.parent = fireteamGroup.transform;
                     members += newUnit;
-
-
                 }
                 else
                     break;
-           }
+            }
          
-           Fireteam newFT = new Fireteam(team, members.ToList());
+            Fireteam newFT = new Fireteam(team, members.ToList());
            
             for (int k = 0; k < WaitFramesBeforeContinuing; k++) yield return null;
             
@@ -204,7 +211,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
         GameObject newGO = Instantiate(new GameObject(team + " Planes"), transform);
         for (int i = 0; i < parameters.planesQuantity; i++)
         {
-            if (GetRandomFreePosOnAir(parameters,out Vector3 pos))
+            if (GetRandomFreePosOnAir(parameters, out Vector3 pos))
             {
                 var x = Instantiate(_planePrefab,pos,Quaternion.identity);
                 x.Initialize(team);

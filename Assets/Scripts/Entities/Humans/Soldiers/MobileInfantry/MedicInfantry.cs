@@ -130,8 +130,6 @@ public class MedicInfantry : MobileInfantry
     // Update is called once per frame
     void Update() => FSM.Update();
 
-    private void FixedUpdate() => FSM.FixedUpdate();
-
     #region States and Transitions
     State<MEDIC_INFANTRY_STATES> CreateIdleState()
     {
