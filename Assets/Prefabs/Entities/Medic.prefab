@@ -217,14 +217,14 @@ GameObject:
   m_Component:
   - component: {fileID: 1468908866507245436}
   - component: {fileID: 1468908866507245427}
+  - component: {fileID: 799869367773415951}
+  - component: {fileID: 498329010947196824}
   - component: {fileID: 1468908866507245426}
   - component: {fileID: 1468908866507245425}
   - component: {fileID: 1468908866507245424}
   - component: {fileID: 1468908866507245431}
   - component: {fileID: 1468908866507245430}
   - component: {fileID: 2975615385518252724}
-  - component: {fileID: 498329010947196824}
-  - component: {fileID: 799869367773415951}
   m_Layer: 0
   m_Name: Medic
   m_TagString: Untagged
@@ -266,6 +266,40 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 80
   m_CollisionDetection: 0
+--- !u!114 &799869367773415951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1468908866507245428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac49b2b6d50c7a749bea4d8294713dac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OnGrid: 1
+--- !u!114 &498329010947196824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1468908866507245428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d22a9e514ec2c1e4bb6ec162e4d354e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  AimingPoint: {fileID: 1473321679671497367}
+  <Anim>k__BackingField: {fileID: 0}
+  <Team>k__BackingField: 0
+  _shootPos: {fileID: 0}
+  HealTarget: {fileID: 0}
+  _maxTimeHealing: 10
+  _healSpeed: 30
+  _maxHealDistance: 2.5
+  _healParticles: {fileID: 6150598716155100241}
 --- !u!114 &1468908866507245426
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -383,40 +417,6 @@ MonoBehaviour:
   _burstCD: 3
   _bulletCD: 0.3
   ShootPos: {fileID: 0}
---- !u!114 &498329010947196824
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1468908866507245428}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d22a9e514ec2c1e4bb6ec162e4d354e1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  AimingPoint: {fileID: 1473321679671497367}
-  <Anim>k__BackingField: {fileID: 0}
-  <Team>k__BackingField: 0
-  _shootPos: {fileID: 0}
-  HealTarget: {fileID: 0}
-  _maxTimeHealing: 10
-  _healSpeed: 30
-  _maxHealDistance: 2.5
-  _healParticles: {fileID: 6150598716155100241}
---- !u!114 &799869367773415951
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1468908866507245428}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ac49b2b6d50c7a749bea4d8294713dac, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  OnGrid: 1
 --- !u!1 &1469326162911107565
 GameObject:
   m_ObjectHideFlags: 0
