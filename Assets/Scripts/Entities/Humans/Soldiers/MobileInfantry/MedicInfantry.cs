@@ -8,19 +8,21 @@ using System.Linq;
 [RequireComponent(typeof(NewAIMovement))]
 public class MedicInfantry : MobileInfantry
 {
-    public enum MedicInputs
+    public enum MEDIC_INFANTRY_STATES
     {
-        IDLE,
-        RUN_TO,
+        AWAITING_ORDERS,
+        RUN_TO_HEAL,
+        LEADER_MOVE_TO,
+        FOLLOW_LEADER,
         HEAL,
         DIE
     }
 
-    public EventFSM<MedicInputs> FSM;
+    public EventFSM<MEDIC_INFANTRY_STATES> FSM;
 
     public MobileInfantry HealTarget;
 
-    State<MedicInputs> _idle, _runTo, _heal, _die;
+    State<MEDIC_INFANTRY_STATES> _idle, _runTo, _heal, _die;
 
     float _queryHealTargetsTime = 1f;
 
@@ -51,7 +53,7 @@ public class MedicInfantry : MobileInfantry
 
         ConfigureTransitions();
 
-        FSM = new EventFSM<MedicInputs>(_idle);
+        FSM = new EventFSM<MEDIC_INFANTRY_STATES>(_idle);
     }
 
 
@@ -131,9 +133,9 @@ public class MedicInfantry : MobileInfantry
     private void FixedUpdate() => FSM.FixedUpdate();
 
     #region States and Transitions
-    State<MedicInputs> CreateIdleState()
+    State<MEDIC_INFANTRY_STATES> CreateIdleState()
     {
-        var idle = new State<MedicInputs>("IDLE");
+        var idle = new State<MEDIC_INFANTRY_STATES>("IDLE");
 
         idle.OnEnter += _ =>
         {
@@ -144,7 +146,7 @@ public class MedicInfantry : MobileInfantry
         {
             if (HealTarget)
             {
-                SendInputToFSM(MedicInputs.RUN_TO);
+                SendInputToFSM(MEDIC_INFANTRY_STATES.RUN_TO_HEAL);
                 return;
             }
         };
@@ -156,9 +158,9 @@ public class MedicInfantry : MobileInfantry
         return idle;
     }
 
-    State<MedicInputs> CreateRunToState()
+    State<MEDIC_INFANTRY_STATES> CreateRunToState()
     {
-        var runTo = new State<MedicInputs>("RUN_TO");
+        var runTo = new State<MEDIC_INFANTRY_STATES>("RUN_TO");
         float recalculatePathTime = 2;
         float currentTime = 0;
         bool calculatingPath = false;
@@ -199,7 +201,7 @@ public class MedicInfantry : MobileInfantry
             if (!HealTarget) 
             {
                 // Si no se encontro camino volvemos a idle
-                SendInputToFSM(MedicInputs.IDLE);
+                SendInputToFSM(MEDIC_INFANTRY_STATES.AWAITING_ORDERS);
                 return;
             }
 
@@ -209,7 +211,7 @@ public class MedicInfantry : MobileInfantry
             if (Vector3.Distance(HealTarget.transform.position, transform.position) <= _maxHealDistance)
             {
                 Debug.Log("Entrando al estado de Heal");
-                SendInputToFSM(MedicInputs.HEAL);
+                SendInputToFSM(MEDIC_INFANTRY_STATES.HEAL);
                 return;
             }
 
@@ -236,9 +238,9 @@ public class MedicInfantry : MobileInfantry
 
     [SerializeField] ParticleSystem _healParticles;
 
-    State<MedicInputs> CreateHealState()
+    State<MEDIC_INFANTRY_STATES> CreateHealState()
     {
-        var heal = new State<MedicInputs>("HEAL");
+        var heal = new State<MEDIC_INFANTRY_STATES>("HEAL");
         float floatHealAmount = 0;
 
         heal.OnEnter += _ =>
@@ -258,14 +260,14 @@ public class MedicInfantry : MobileInfantry
             // Si ya no hay un objetivo a quien curar, pasar a idle.
             if (!HealTarget)
             {
-                SendInputToFSM(MedicInputs.IDLE);
+                SendInputToFSM(MEDIC_INFANTRY_STATES.AWAITING_ORDERS);
                 return;
             }
 
             // Si el objetivo se aleja, correr hacia el
             if (Vector3.Distance(HealTarget.transform.position, transform.position) > _maxHealDistance)
             {
-                SendInputToFSM(MedicInputs.RUN_TO);
+                SendInputToFSM(MEDIC_INFANTRY_STATES.RUN_TO_HEAL);
                 return;
             }
 
@@ -291,9 +293,9 @@ public class MedicInfantry : MobileInfantry
         return heal;
     }
 
-    State<MedicInputs> CreateDieState()
+    State<MEDIC_INFANTRY_STATES> CreateDieState()
     {
-        var die = new State<MedicInputs>("DIE");
+        var die = new State<MEDIC_INFANTRY_STATES>("DIE");
 
         die.OnEnter += _ =>
         {
@@ -325,27 +327,27 @@ public class MedicInfantry : MobileInfantry
     void ConfigureTransitions()
     {
         StateConfigurer.Create(_idle)
-            .SetTransition(MedicInputs.RUN_TO, _runTo)
-            .SetTransition(MedicInputs.DIE, _die)
+            .SetTransition(MEDIC_INFANTRY_STATES.RUN_TO_HEAL, _runTo)
+            .SetTransition(MEDIC_INFANTRY_STATES.DIE, _die)
             .Done();
 
         StateConfigurer.Create(_runTo)
-            .SetTransition(MedicInputs.IDLE, _idle)
-            .SetTransition(MedicInputs.HEAL, _heal)
-            .SetTransition(MedicInputs.DIE, _die)
+            .SetTransition(MEDIC_INFANTRY_STATES.AWAITING_ORDERS, _idle)
+            .SetTransition(MEDIC_INFANTRY_STATES.HEAL, _heal)
+            .SetTransition(MEDIC_INFANTRY_STATES.DIE, _die)
             .Done();
 
         StateConfigurer.Create(_heal)
-            .SetTransition(MedicInputs.RUN_TO, _runTo)
-            .SetTransition(MedicInputs.IDLE, _idle)
-            .SetTransition(MedicInputs.DIE, _die)
+            .SetTransition(MEDIC_INFANTRY_STATES.RUN_TO_HEAL, _runTo)
+            .SetTransition(MEDIC_INFANTRY_STATES.AWAITING_ORDERS, _idle)
+            .SetTransition(MEDIC_INFANTRY_STATES.DIE, _die)
             .Done();
 
         StateConfigurer.Create(_die).Done();
     }
     #endregion
 
-    private void SendInputToFSM(MedicInputs inp) => FSM.SendInput(inp);
+    private void SendInputToFSM(MEDIC_INFANTRY_STATES inp) => FSM.SendInput(inp);
 
     #region Transitions
     public override void LeaderMoveTo(Vector3 pos)
@@ -354,7 +356,7 @@ public class MedicInfantry : MobileInfantry
             return;
 
         Destination = pos;
-        FSM.SendInput(ASSAULT_INFANTRY_STATES.LEADER_MOVE_TO);
+        FSM.SendInput(MEDIC_INFANTRY_STATES.LEADER_MOVE_TO);
     }
 
     public override void FollowLeader()
@@ -362,7 +364,7 @@ public class MedicInfantry : MobileInfantry
         if (InCombat)
             return;
 
-        FSM.SendInput(ASSAULT_INFANTRY_STATES.FOLLOW_LEADER);
+        FSM.SendInput(MEDIC_INFANTRY_STATES.FOLLOW_LEADER);
     }
 
     public override void AwaitOrders()
@@ -370,7 +372,7 @@ public class MedicInfantry : MobileInfantry
         if (InCombat)
             return;
 
-        FSM.SendInput(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS);
+        FSM.SendInput(MEDIC_INFANTRY_STATES.AWAITING_ORDERS);
     }
     #endregion
 }

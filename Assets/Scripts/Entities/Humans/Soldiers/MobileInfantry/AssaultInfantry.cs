@@ -12,7 +12,6 @@ public class AssaultInfantry : MobileInfantry
     public Entity ShootTarget { get; private set; }
     [SerializeField] float _timeBeforeSelectingTarget;
 
-    public Vector3 Destination { get; private set; }
     [field: SerializeField] public float MinDistanceFromDestination { get; private set; }
 
     public enum ASSAULT_INFANTRY_STATES
@@ -315,16 +314,6 @@ public class AssaultInfantry : MobileInfantry
             for (int i = 0; i < _searchTargetWaitTime; i++)
                 yield return null;
         }
-    }
-
-
-    public IEnumerable<Soldier> GetMilitaryAround()
-    {
-        var col = _gridEntity.GetEntitiesInRange(_fovAgent.ViewRadius)
-         .Where(x => x != this)
-         .OfType<Soldier>();
-
-        return col;
     }
 
     IEnumerable<Soldier> LookForEnemiesAlive()

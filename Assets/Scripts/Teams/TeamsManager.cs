@@ -41,10 +41,10 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     [SerializeField, SerializedDictionary("Type", "Sprite")]
     public SerializedDictionary<SerializableType, Sprite> sprites = new SerializedDictionary<SerializableType, Sprite>()
     {
-        {new SerializableType(typeof(Plane)),default },
-        {new SerializableType(typeof(Sniper)),default },
-        {new SerializableType(typeof(Turret)),default },
-        {new SerializableType(typeof(IMilitary)),default }
+        {new SerializableType(typeof(Plane)), default },
+        {new SerializableType(typeof(Sniper)), default },
+        {new SerializableType(typeof(Turret)), default },
+        {new SerializableType(typeof(IMilitary)), default }
 
     };
 
@@ -171,7 +171,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
         for (int i = 0; i < param.FireteamQuantity; i++)
         {       
-           FList<AssaultInfantry> members = new FList<AssaultInfantry>();
+           FList<MobileInfantry> members = new FList<MobileInfantry>();
 
            GameObject fireteamGroup = Instantiate(new GameObject("Fireteam"+ ColomboMethods.GenerateName(5)), newGO.transform);
 

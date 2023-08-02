@@ -21,6 +21,7 @@ public abstract class MobileInfantry : Soldier, ICapturePointEntity, IFlockableE
     #endregion
 
     public NewAIMovement Movement { get; private set; }
+    public Vector3 Destination { get; protected set; }
 
     protected override void Awake()
     {
@@ -57,6 +58,15 @@ public abstract class MobileInfantry : Soldier, ICapturePointEntity, IFlockableE
     {
         DebugEntity.Log("PointStay");
         OnPointStay();
+    }
+
+    public IEnumerable<Soldier> GetMilitaryAround()
+    {
+        var col = _gridEntity.GetEntitiesInRange(_fovAgent.ViewRadius)
+         .Where(x => x != this)
+         .OfType<Soldier>();
+
+        return col;
     }
 
     public void PointExit(CapturePoint point)
