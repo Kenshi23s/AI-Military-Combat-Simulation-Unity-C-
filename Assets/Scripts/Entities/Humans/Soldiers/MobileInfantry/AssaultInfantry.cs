@@ -7,30 +7,26 @@ using UnityEngine;
 using IA2;
 using AlignmentType = NewPhysicsMovement.AlignmentType;
 
-public class AssaultInfantry : MobileInfantry, ICapturePointEntity, IFlockableEntity
+public class AssaultInfantry : MobileInfantry
 {
-    public Fireteam Fireteam { get; set; }
-
-    #region ICapturePointEntity Properties And Events
-    public bool CanCapture => Health.IsAlive;
-
-    public CapturePoint Zone { get; protected set; }
-
-    public event Action OnPointEnter = delegate { };
-    public event Action OnPointStay = delegate { };
-    public event Action OnPointExit = delegate { };
-    #endregion
-
     public Entity ShootTarget { get; private set; }
     [SerializeField] float _timeBeforeSelectingTarget;
 
     public Vector3 Destination { get; private set; }
     [field: SerializeField] public float MinDistanceFromDestination { get; private set; }
 
-    public EventFSM<ASSAULT_INFANTRY_STATES> FSM { get; private set; }
-    //#region States
+    public enum ASSAULT_INFANTRY_STATES
+    {
+        AWAITING_ORDERS,
+        LEADER_MOVE_TO,
+        FOLLOW_LEADER,
+        FIRE_AT_WILL,
+        DIE
+    }
 
-    State<ASSAULT_INFANTRY_STATES> _waitOrders, _moveTowards, _followLeader, _fireAtWill, _die;
+    public EventFSM<ASSAULT_INFANTRY_STATES> FSM { get; private set; }
+
+    State<ASSAULT_INFANTRY_STATES> _awaitingOrders, _leaderMoveTo, _followLeader, _fireAtWill, _die;
 
     const float _searchTargetWaitTime = 0.5f;
 
@@ -50,33 +46,24 @@ public class AssaultInfantry : MobileInfantry, ICapturePointEntity, IFlockableEn
         Health.OnKilled += () => FSM.SendInput(ASSAULT_INFANTRY_STATES.DIE);
     }
 
-    public void Initialize(MilitaryTeam team)
-    {
-        Team = team;
-
-        SetFSM();
-
-        InCombat = false;
-    }
-
     #region States
-    void SetFSM()
+    protected override void CreateFSM()
     {
-        _waitOrders = CreateWaitingOrdersState();
-        _moveTowards = CreateMoveTowardsState();
+        _awaitingOrders = CreateAwaitingOrdersState();
+        _leaderMoveTo = CreateMoveTowardsState();
         _followLeader = CreateFollowLeaderState();
         _fireAtWill = CreateFireAtWillState();
         _die = CreateDieState();
 
         ConfigureStateTransitions();
 
-        FSM = new EventFSM<ASSAULT_INFANTRY_STATES>(_waitOrders);
+        FSM = new EventFSM<ASSAULT_INFANTRY_STATES>(_awaitingOrders);
     }
 
     protected virtual void ConfigureStateTransitions()
     {
-        StateConfigurer.Create(_waitOrders)
-            .SetTransition(ASSAULT_INFANTRY_STATES.MOVE_TOWARDS, _moveTowards)
+        StateConfigurer.Create(_awaitingOrders)
+            .SetTransition(ASSAULT_INFANTRY_STATES.LEADER_MOVE_TO, _leaderMoveTo)
             .SetTransition(ASSAULT_INFANTRY_STATES.FOLLOW_LEADER, _followLeader)
             .SetTransition(ASSAULT_INFANTRY_STATES.FIRE_AT_WILL, _fireAtWill)
             .SetTransition(ASSAULT_INFANTRY_STATES.DIE, _die)
@@ -84,8 +71,8 @@ public class AssaultInfantry : MobileInfantry, ICapturePointEntity, IFlockableEn
 
 
 
-        StateConfigurer.Create(_moveTowards)
-            .SetTransition(ASSAULT_INFANTRY_STATES.WAITING_ORDERS, _waitOrders)
+        StateConfigurer.Create(_leaderMoveTo)
+            .SetTransition(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS, _awaitingOrders)
             .SetTransition(ASSAULT_INFANTRY_STATES.FOLLOW_LEADER, _followLeader)
             .SetTransition(ASSAULT_INFANTRY_STATES.FIRE_AT_WILL, _fireAtWill)
             .SetTransition(ASSAULT_INFANTRY_STATES.DIE, _die)
@@ -93,17 +80,17 @@ public class AssaultInfantry : MobileInfantry, ICapturePointEntity, IFlockableEn
 
 
         StateConfigurer.Create(_followLeader)
-            .SetTransition(ASSAULT_INFANTRY_STATES.WAITING_ORDERS, _waitOrders)
-            .SetTransition(ASSAULT_INFANTRY_STATES.MOVE_TOWARDS, _moveTowards)
+            .SetTransition(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS, _awaitingOrders)
+            .SetTransition(ASSAULT_INFANTRY_STATES.LEADER_MOVE_TO, _leaderMoveTo)
             .SetTransition(ASSAULT_INFANTRY_STATES.FIRE_AT_WILL, _fireAtWill)
             .SetTransition(ASSAULT_INFANTRY_STATES.DIE, _die)
             .Done();
 
 
         StateConfigurer.Create(_fireAtWill)
-            .SetTransition(ASSAULT_INFANTRY_STATES.WAITING_ORDERS, _waitOrders)
+            .SetTransition(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS, _awaitingOrders)
             .SetTransition(ASSAULT_INFANTRY_STATES.FOLLOW_LEADER, _followLeader)
-            .SetTransition(ASSAULT_INFANTRY_STATES.MOVE_TOWARDS, _moveTowards)
+            .SetTransition(ASSAULT_INFANTRY_STATES.LEADER_MOVE_TO, _leaderMoveTo)
             .SetTransition(ASSAULT_INFANTRY_STATES.DIE, _die)
             .Done();
 
@@ -111,7 +98,7 @@ public class AssaultInfantry : MobileInfantry, ICapturePointEntity, IFlockableEn
             .Done();
     }
 
-    protected virtual State<ASSAULT_INFANTRY_STATES> CreateWaitingOrdersState()
+    protected virtual State<ASSAULT_INFANTRY_STATES> CreateAwaitingOrdersState()
     {
         State<ASSAULT_INFANTRY_STATES> state = new State<ASSAULT_INFANTRY_STATES>("WaitingOrders");
 
@@ -145,7 +132,7 @@ public class AssaultInfantry : MobileInfantry, ICapturePointEntity, IFlockableEn
         {
             if (MinDistanceFromDestination > Vector3.Distance(Destination, transform.position))
             {
-                FSM.SendInput(ASSAULT_INFANTRY_STATES.WAITING_ORDERS);
+                FSM.SendInput(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS);
                 return;
             }
 
@@ -154,7 +141,7 @@ public class AssaultInfantry : MobileInfantry, ICapturePointEntity, IFlockableEn
             DebugEntity.Log("Me muevo hacia posicion x");
             Movement.SetDestination(Destination, () =>
             {
-                FSM.SendInput(ASSAULT_INFANTRY_STATES.WAITING_ORDERS);
+                FSM.SendInput(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS);
             });
 
             Anim.SetBool("Running", true);
@@ -179,7 +166,7 @@ public class AssaultInfantry : MobileInfantry, ICapturePointEntity, IFlockableEn
             Movement.ManualMovement.Alignment = AlignmentType.Velocity;
             if (Fireteam.IsNearLeader(this, MinDistanceFromDestination))
             {
-                FSM.SendInput(ASSAULT_INFANTRY_STATES.WAITING_ORDERS);
+                FSM.SendInput(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS);
                 return;
             }
 
@@ -299,7 +286,7 @@ public class AssaultInfantry : MobileInfantry, ICapturePointEntity, IFlockableEn
     {
         Movement.SetDestination(Fireteam.Leader.transform.position, () =>
         {
-            FSM.SendInput(ASSAULT_INFANTRY_STATES.WAITING_ORDERS);
+            FSM.SendInput(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS);
             DebugEntity.Log("Llegue al lider");
         });
 
@@ -371,7 +358,7 @@ public class AssaultInfantry : MobileInfantry, ICapturePointEntity, IFlockableEn
                     if (Fireteam.AlliesWithEnemiesNearby(this, out Entity ally))
                     {
                         Destination = ally.transform.position;
-                        FSM.SendInput(ASSAULT_INFANTRY_STATES.MOVE_TOWARDS);
+                        FSM.SendInput(ASSAULT_INFANTRY_STATES.LEADER_MOVE_TO);
                     }
                 }
                 else
@@ -401,57 +388,30 @@ public class AssaultInfantry : MobileInfantry, ICapturePointEntity, IFlockableEn
     }
 
     #region Transitions
-    public void MoveTowardsTransition(Vector3 posToGo)
+    public override void LeaderMoveTo(Vector3 pos)
     {
-        if (!InCombat)
-        {
-            Destination = posToGo;
-            FSM.SendInput(ASSAULT_INFANTRY_STATES.MOVE_TOWARDS);
-        }
+        if (InCombat)
+            return;
+
+        Destination = pos;
+        FSM.SendInput(ASSAULT_INFANTRY_STATES.LEADER_MOVE_TO);
     }
 
-    public void FollowLeaderTransition()
+    public override void FollowLeader()
     {
-        if (!InCombat)
-            FSM.SendInput(ASSAULT_INFANTRY_STATES.FOLLOW_LEADER);
+        if (InCombat)
+            return;
+
+        FSM.SendInput(ASSAULT_INFANTRY_STATES.FOLLOW_LEADER);
     }
 
-    public void WaitOrdersTransition()
+    public override void AwaitOrders()
     {
-        if (!InCombat)
-            FSM.SendInput(ASSAULT_INFANTRY_STATES.WAITING_ORDERS);
+        if (InCombat)
+            return;
+
+        FSM.SendInput(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS);
     }
     #endregion
-
-    #region ICapturePointEntity Methods
-
-    public void PointEnter(CapturePoint zone)
-    {
-        Zone = zone;
-        DebugEntity.Log("PointEnter");
-        OnPointEnter();
-    }
-
-    public void PointStay()
-    {
-        DebugEntity.Log("PointStay");
-        OnPointStay();
-    }
-
-    public void PointExit(CapturePoint zone)
-    {
-        Zone = null;
-        DebugEntity.Log("PointExit");
-        OnPointExit();
-    }
-
-    #endregion
-
-    #region IFlockable Methods
-    public Vector3 GetPosition() => transform.position;
-
-    public Vector3 GetVelocity() => Movement.ManualMovement.Velocity;
-    #endregion
-
 
 }

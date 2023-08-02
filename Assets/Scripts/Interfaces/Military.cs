@@ -22,11 +22,11 @@ public interface IMilitary
 
 public interface ICapturePointEntity 
 {
-    void PointEnter(CapturePoint zone);
+    void PointEnter(CapturePoint point);
     void PointStay();
-    void PointExit(CapturePoint zone);
+    void PointExit(CapturePoint point);
 
     public bool CanCapture { get; }
-    CapturePoint Zone { get; }
-    bool IsInZone => Zone != null;
+    CapturePoint Point { get; }
+    bool IsInZone => Point != null;
 }

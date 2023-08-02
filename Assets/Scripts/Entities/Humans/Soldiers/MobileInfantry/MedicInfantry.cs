@@ -16,7 +16,7 @@ public class MedicInfantry : MobileInfantry
         DIE
     }
 
-    public EventFSM<MedicInputs> _fsm;
+    public EventFSM<MedicInputs> FSM;
 
     public MobileInfantry HealTarget;
 
@@ -40,20 +40,24 @@ public class MedicInfantry : MobileInfantry
     protected override void Awake()
     {
         base.Awake();
+    }
 
+    protected override void CreateFSM() 
+    {
         _idle = CreateIdleState();
         _runTo = CreateRunToState();
         _heal = CreateHealState();
         _die = CreateDieState();
 
         ConfigureTransitions();
+
+        FSM = new EventFSM<MedicInputs>(_idle);
     }
+
 
     void Start()
     {
         StartCoroutine(QueryForHealTarget());
-        _fsm = new EventFSM<MedicInputs>(_idle);
-
     }
 
 
@@ -122,9 +126,9 @@ public class MedicInfantry : MobileInfantry
     }
 
     // Update is called once per frame
-    void Update() => _fsm.Update();
+    void Update() => FSM.Update();
 
-    private void FixedUpdate() => _fsm.FixedUpdate();
+    private void FixedUpdate() => FSM.FixedUpdate();
 
     #region States and Transitions
     State<MedicInputs> CreateIdleState()
@@ -341,5 +345,32 @@ public class MedicInfantry : MobileInfantry
     }
     #endregion
 
-    private void SendInputToFSM(MedicInputs inp) => _fsm.SendInput(inp);    
+    private void SendInputToFSM(MedicInputs inp) => FSM.SendInput(inp);
+
+    #region Transitions
+    public override void LeaderMoveTo(Vector3 pos)
+    {
+        if (InCombat)
+            return;
+
+        Destination = pos;
+        FSM.SendInput(ASSAULT_INFANTRY_STATES.LEADER_MOVE_TO);
+    }
+
+    public override void FollowLeader()
+    {
+        if (InCombat)
+            return;
+
+        FSM.SendInput(ASSAULT_INFANTRY_STATES.FOLLOW_LEADER);
+    }
+
+    public override void AwaitOrders()
+    {
+        if (InCombat)
+            return;
+
+        FSM.SendInput(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS);
+    }
+    #endregion
 }
