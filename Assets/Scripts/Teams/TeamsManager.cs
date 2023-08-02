@@ -317,12 +317,12 @@ public class TeamsManager : MonoSingleton<TeamsManager>
                 pos = hit.point;
                 return true;
             }
-            else
-                Debug.Log($"no puedo spawnear aca, hay {entityNearby.Count()} cerca, hago recursion C: ");
+            //else
+            //    Debug.Log($"no puedo spawnear aca, hay {entityNearby.Count()} cerca, hago recursion C: ");
         }
 
-        Debug.Log(randomPos);
-        Debug.Log(hit.point+"watchdog = "+_watchDog);
+        //Debug.Log(randomPos);
+        //Debug.Log(hit.point+"watchdog = "+_watchDog);
 
 
 

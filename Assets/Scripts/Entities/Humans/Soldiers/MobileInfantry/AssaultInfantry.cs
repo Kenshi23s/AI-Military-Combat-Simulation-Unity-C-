@@ -45,6 +45,11 @@ public class AssaultInfantry : MobileInfantry
         Health.OnKilled += () => FSM.SendInput(ASSAULT_INFANTRY_STATES.DIE);
     }
 
+    private void Update()
+    {
+        FSM.Update();
+    }
+
     #region States
     protected override void CreateFSM()
     {
@@ -372,7 +377,6 @@ public class AssaultInfantry : MobileInfantry
     Quaternion GetTargetRotation(Vector3 dir)
     {
         Vector3 gunForward = _shootPos.forward; gunForward.y = 0;
-
         dir.y = 0;
 
         Quaternion fromToRotation = Quaternion.FromToRotation(gunForward.normalized, dir.normalized);
