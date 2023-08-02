@@ -18,11 +18,14 @@ public class DebugableObject : MonoBehaviour
         if (!canDebug)
         {
             _lateUpdate += () => canDebug = Selection.activeObject == gameObject;
+            enabled = true;
         }
 
-#endif
+#else
         canDebug = false;
         enabled = false;
+
+#endif
     }
 
     private void LateUpdate()
