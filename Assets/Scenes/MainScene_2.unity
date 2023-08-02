@@ -4452,18 +4452,18 @@ MonoBehaviour:
     _serializedList:
     - Key: 0
       Value:
-        FireteamQuantity: 1
+        FireteamQuantity: 2
         membersPerFireteam: 5
-        planesQuantity: 5
+        planesQuantity: 0
         tanksQuantity: 0
         SpawnArea: {fileID: 1823427471}
         width: 20
         height: 20
     - Key: 1
       Value:
-        FireteamQuantity: 1
+        FireteamQuantity: 2
         membersPerFireteam: 5
-        planesQuantity: 5
+        planesQuantity: 0
         tanksQuantity: 0
         SpawnArea: {fileID: 1020563752}
         width: 20
@@ -12915,7 +12915,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1823427470}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5.2999997, y: 18.841778, z: -152.3}
+  m_LocalPosition: {x: 30, y: 18.841778, z: 122.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

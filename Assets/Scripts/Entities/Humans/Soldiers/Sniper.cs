@@ -37,9 +37,7 @@ public class Sniper : Soldier
     protected override void Awake()
     {
         base.Awake();
-
-        _laser = GetComponent<LineRenderer>();
-        _laser.enabled = false;
+        _laser = GetComponent<LineRenderer>(); _laser.enabled = false;
         ShootComponent.onHit += _ => TotalDamageDealt += ShootComponent.BulletDamage;
         Health.OnKilled += () => _fsm.SendInput(SNIPER_STATES.DIE);
       
@@ -187,8 +185,6 @@ public class Sniper : Soldier
         return state;
     }
 
-
-    
 
     State<SNIPER_STATES> ShootAtEnemy()
     {

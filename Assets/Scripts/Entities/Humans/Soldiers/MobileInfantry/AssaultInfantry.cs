@@ -131,6 +131,7 @@ public class AssaultInfantry : MobileInfantry
         {
             if (MinDistanceFromDestination > Vector3.Distance(Destination, transform.position))
             {
+                Movement.ManualMovement.Alignment = AlignmentType.Velocity;
                 FSM.SendInput(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS);
                 return;
             }
@@ -195,7 +196,7 @@ public class AssaultInfantry : MobileInfantry
 
         state.OnEnter += (x) =>
         {
-
+            Movement.ManualMovement.Alignment = AlignmentType.Custom;
             Movement.CancelMovement();
 
             Anim.SetBool("Running", true);
@@ -219,6 +220,16 @@ public class AssaultInfantry : MobileInfantry
             }
         };
 
+        state.OnUpdate += () =>
+        {
+            if (ShootTarget == null) return;
+        
+            
+            Movement.ManualMovement.Alignment = AlignmentType.Custom;
+
+            Vector3 dir = ShootTarget.AimPoint - transform.position;
+            Movement.ManualMovement.CustomAlignment = GetTargetRotation(dir);
+        };
 
         state.OnExit += (x) =>
         {
@@ -245,7 +256,7 @@ public class AssaultInfantry : MobileInfantry
 
             foreach (var item in colliders.Where(x => x != null)) item.enabled = false;
 
-            foreach (var item in this.GetComponents<MonoBehaviour>()) item.enabled = false;
+            foreach (var item in GetComponents<MonoBehaviour>()) item.enabled = false;
 
             GetComponent<Rigidbody>().useGravity = false;
 
@@ -331,10 +342,11 @@ public class AssaultInfantry : MobileInfantry
 
             if (ShootTarget != null)
             {
-                Movement.ManualMovement.AlignmentTarget = ShootTarget.transform;
-                Movement.ManualMovement.Alignment = AlignmentType.Target;
+         
+                //Movement.ManualMovement.Alignment = AlignmentType.Custom;
 
-                Vector3 dir = ShootTarget.transform.position - transform.position;
+                Vector3 dir = ShootTarget.AimPoint - transform.position;
+                //transform.rotation = GetTargetRotation(dir);
                 ShootComponent.Shoot(_shootPos, dir, CheckIfDifferentTeam);
             }
             else
@@ -357,6 +369,18 @@ public class AssaultInfantry : MobileInfantry
         }
     }
 
+    Quaternion GetTargetRotation(Vector3 dir)
+    {
+        Vector3 gunForward = _shootPos.forward; gunForward.y = 0;
+
+        dir.y = 0;
+
+        Quaternion fromToRotation = Quaternion.FromToRotation(gunForward.normalized, dir.normalized);
+
+        Quaternion targetRotation = transform.rotation * fromToRotation;
+
+        return targetRotation;
+    }
 
     #endregion
 
