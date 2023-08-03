@@ -295,10 +295,11 @@ MonoBehaviour:
   <Anim>k__BackingField: {fileID: 0}
   <Team>k__BackingField: 0
   _shootPos: {fileID: 0}
+  _minDistanceFromDestination: 3
   HealTarget: {fileID: 0}
-  _maxTimeHealing: 10
   _healSpeed: 30
   _maxHealDistance: 2.5
+  _idealHealDistance: 1
   _healParticles: {fileID: 6150598716155100241}
 --- !u!114 &1468908866507245426
 MonoBehaviour:

@@ -4435,7 +4435,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _canDebug: 1
-  _infantryPrefab: {fileID: 7684651609810558659, guid: 451e98b6690f4fe44a7f048fca3f0e32,
+  _assaultPrefab: {fileID: 7684651609810558659, guid: 451e98b6690f4fe44a7f048fca3f0e32,
+    type: 3}
+  _medicPrefab: {fileID: 498329010947196824, guid: d3937cd5dc2f8344780a1babe4c7953c,
     type: 3}
   _planePrefab: {fileID: 191271609524376827, guid: 9d3a7005447117e428bb737f379b1de0,
     type: 3}
@@ -4454,7 +4456,7 @@ MonoBehaviour:
       Value:
         FireteamQuantity: 2
         membersPerFireteam: 5
-        planesQuantity: 0
+        planesQuantity: 3
         tanksQuantity: 0
         SpawnArea: {fileID: 1823427471}
         width: 20
@@ -4463,7 +4465,7 @@ MonoBehaviour:
       Value:
         FireteamQuantity: 2
         membersPerFireteam: 5
-        planesQuantity: 0
+        planesQuantity: 3
         tanksQuantity: 0
         SpawnArea: {fileID: 1020563752}
         width: 20
@@ -4490,7 +4492,7 @@ MonoBehaviour:
     type: 3}
   _unitsAboveMilitary: 3
   _civilianPos: {fileID: 1632117066}
-  _civiliansQuantity: 36
+  _civiliansQuantity: 12
   _width_CivilianSpawn: 32.8
   _height_CivilianSpawn: 56.3
 --- !u!114 &658754924
@@ -12915,7 +12917,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1823427470}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 30, y: 18.841778, z: 122.2}
+  m_LocalPosition: {x: -5, y: 18.841778, z: -158}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

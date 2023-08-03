@@ -1770,8 +1770,8 @@ MonoBehaviour:
   <Anim>k__BackingField: {fileID: 0}
   <Team>k__BackingField: 0
   _shootPos: {fileID: 2889329660706087394}
+  _minDistanceFromDestination: 3
   _timeBeforeSelectingTarget: 2
-  <MinDistanceFromDestination>k__BackingField: 4
 --- !u!114 &6064664604643365114
 MonoBehaviour:
   m_ObjectHideFlags: 0

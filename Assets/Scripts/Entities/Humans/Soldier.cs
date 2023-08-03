@@ -17,9 +17,6 @@ public abstract class Soldier : Human, IMilitary
 
     [SerializeField] protected Transform _shootPos;
 
-
-    public bool InCombat { get; protected set; }
-
     public int TotalDamageDealt { get; protected set; }
 
     public event Action OnDeathInCombat;

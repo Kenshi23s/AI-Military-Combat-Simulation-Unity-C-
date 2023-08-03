@@ -12,8 +12,6 @@ public class AssaultInfantry : MobileInfantry
     public Entity ShootTarget { get; private set; }
     [SerializeField] float _timeBeforeSelectingTarget;
 
-    [field: SerializeField] public float MinDistanceFromDestination { get; private set; }
-
     public enum ASSAULT_INFANTRY_STATES
     {
         AWAITING_ORDERS,
@@ -54,7 +52,7 @@ public class AssaultInfantry : MobileInfantry
     protected override void CreateFSM()
     {
         _awaitingOrders = CreateAwaitingOrdersState();
-        _leaderMoveTo = CreateMoveTowardsState();
+        _leaderMoveTo = CreateLeaderMoveToState();
         _followLeader = CreateFollowLeaderState();
         _fireAtWill = CreateFireAtWillState();
         _die = CreateDieState();
@@ -102,7 +100,7 @@ public class AssaultInfantry : MobileInfantry
             .Done();
     }
 
-    protected virtual State<ASSAULT_INFANTRY_STATES> CreateAwaitingOrdersState()
+    State<ASSAULT_INFANTRY_STATES> CreateAwaitingOrdersState()
     {
         State<ASSAULT_INFANTRY_STATES> state = new State<ASSAULT_INFANTRY_STATES>("WaitingOrders");
 
@@ -115,7 +113,7 @@ public class AssaultInfantry : MobileInfantry
 
             StartCoroutine(LookForTargets());
 
-            if (Fireteam.Leader != this && !IsCapturing) return;
+            if (!IsLeader && !IsCapturing) return;
 
             StartCoroutine(Fireteam.FindNearestUntakenPoint());
 
@@ -128,13 +126,13 @@ public class AssaultInfantry : MobileInfantry
         return state;
     }
 
-    protected virtual State<ASSAULT_INFANTRY_STATES> CreateMoveTowardsState()
+    State<ASSAULT_INFANTRY_STATES> CreateLeaderMoveToState()
     {
         State<ASSAULT_INFANTRY_STATES> state = new State<ASSAULT_INFANTRY_STATES>("MoveTowards");
 
         state.OnEnter += (x) =>
         {
-            if (MinDistanceFromDestination > Vector3.Distance(Destination, transform.position))
+            if (_minDistanceFromDestination > Vector3.Distance(Destination, transform.position))
             {
                 Movement.ManualMovement.Alignment = AlignmentType.Velocity;
                 FSM.SendInput(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS);
@@ -162,14 +160,14 @@ public class AssaultInfantry : MobileInfantry
         return state;
     }
 
-    protected virtual State<ASSAULT_INFANTRY_STATES> CreateFollowLeaderState()
+    State<ASSAULT_INFANTRY_STATES> CreateFollowLeaderState()
     {
         State<ASSAULT_INFANTRY_STATES> state = new State<ASSAULT_INFANTRY_STATES>("FollowLeader");
 
         state.OnEnter += (x) =>
         {
             Movement.ManualMovement.Alignment = AlignmentType.Velocity;
-            if (Fireteam.IsNearLeader(this, MinDistanceFromDestination))
+            if (Fireteam.IsNearLeader(this, _minDistanceFromDestination))
             {
                 FSM.SendInput(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS);
                 return;
@@ -195,7 +193,7 @@ public class AssaultInfantry : MobileInfantry
         return state;
     }
 
-    protected virtual State<ASSAULT_INFANTRY_STATES> CreateFireAtWillState()
+    State<ASSAULT_INFANTRY_STATES> CreateFireAtWillState()
     {
         State<ASSAULT_INFANTRY_STATES> state = new State<ASSAULT_INFANTRY_STATES>("FireAtWill");
 
@@ -213,7 +211,7 @@ public class AssaultInfantry : MobileInfantry
 
             StartCoroutine(SetTarget());
 
-            if (Fireteam.Leader != this) return;
+            if (!IsLeader) return;
 
             var enemiesAlive = LookForEnemiesAlive().ToArray();
 
@@ -247,7 +245,7 @@ public class AssaultInfantry : MobileInfantry
         return state;
     }
 
-    protected virtual State<ASSAULT_INFANTRY_STATES> CreateDieState()
+    State<ASSAULT_INFANTRY_STATES> CreateDieState()
     {
         State<ASSAULT_INFANTRY_STATES> state = new State<ASSAULT_INFANTRY_STATES>("Die");
 
@@ -278,34 +276,6 @@ public class AssaultInfantry : MobileInfantry
         return state;
     }
     #endregion
-
-    IEnumerator FollowLeaderRoutine()
-    {
-        GoToLeader();
-        while (true)
-        {
-            for (int frames = 0; frames < 120; frames++) yield return null;
-
-            if (Fireteam.IsNearLeader(this, MinDistanceFromDestination))
-            {
-                DebugEntity.Log("El lider esta muy cerca, no es necesario calcular camino");
-                continue;
-            }
-
-            GoToLeader();
-        }
-
-    }
-
-    void GoToLeader()
-    {
-        Movement.SetDestination(Fireteam.Leader.transform.position, () =>
-        {
-            FSM.SendInput(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS);
-            DebugEntity.Log("Llegue al lider");
-        });
-
-    }
 
     public void StopMoving()
     {
@@ -357,7 +327,7 @@ public class AssaultInfantry : MobileInfantry
             else
             {
                 //si soy el lider
-                if (Fireteam.Leader == this)
+                if (IsLeader)
                 {
                     //pregunto si alguno de mis miembros tiene un enemigo cerca con vida
 

@@ -30,7 +30,7 @@ public class Sniper : Soldier
     [SerializeField] float _aimSpeed;
     float _currentAimLerp, _currentFocusTime;
 
-    [SerializeField,Header("Shoot State")] float _addPerTimesFocused;
+    [SerializeField, Header("Shoot State")] float _addPerTimesFocused;
     [SerializeField] float _requiredFocusTime, maxShootsInRow = 1;
     int timesFocused = 1;
 

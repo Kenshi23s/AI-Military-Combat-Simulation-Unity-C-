@@ -20,8 +20,14 @@ public abstract class MobileInfantry : Soldier, ICapturePointEntity, IFlockableE
     public event Action OnPointExit = delegate { };
     #endregion
 
+    public bool InCombat { get; protected set; }
+
     public NewAIMovement Movement { get; private set; }
     public Vector3 Destination { get; protected set; }
+
+    public bool IsLeader => this == Fireteam.Leader;
+
+    [SerializeField] protected float _minDistanceFromDestination;
 
     protected override void Awake()
     {
@@ -84,4 +90,39 @@ public abstract class MobileInfantry : Soldier, ICapturePointEntity, IFlockableE
     public Vector3 GetVelocity() => Movement.ManualMovement.Velocity;
     #endregion
 
+    protected IEnumerator FollowLeaderRoutine()
+    {
+        bool moving = true;
+        GoToLeader();
+
+        while (true)
+        {
+            for (int frames = 0; frames < 120; frames++) 
+                yield return null;
+
+            // Si estoy cerca, me dejo de mover y dejo de calcular el camino hacia el lider.
+            if (Fireteam.IsNearLeader(this, _minDistanceFromDestination))
+            {
+                // Si no me estaba moviendo, no repito esta logica
+                if (!moving)
+                {
+                    Movement.CancelMovement();
+                    Anim.SetBool("Running", false);
+                    moving = false;
+                }
+
+                DebugEntity.Log("El lider esta muy cerca, no es necesario calcular camino");
+                continue;
+            }
+
+            GoToLeader();
+        }
+
+    }
+
+    void GoToLeader()
+    {
+        Movement.SetDestination(Fireteam.Leader.transform.position);
+        Anim.SetBool("Running", true);
+    }
 }

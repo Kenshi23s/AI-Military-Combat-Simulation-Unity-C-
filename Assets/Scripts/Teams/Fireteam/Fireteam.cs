@@ -138,7 +138,7 @@ public class Fireteam
         if (col.Any())
         {
             //le dice que es verdadero y le devuelve el mas cercano en peligro
-            neartestInDanger = col.Minimum(x => Vector3.Distance(x.transform.position, whoAsks.transform.position));
+            neartestInDanger = col.Minimum(x => Vector3.SqrMagnitude(x.transform.position - whoAsks.transform.position));
             return true;
         }
         return false;
@@ -155,9 +155,9 @@ public class Fireteam
         return false;
     }
     //saber si la unidad esta cerca del lider
-    public bool IsNearLeader(MobileInfantry member, float MinimumDistanceFromLeader)
+    public bool IsNearLeader(MobileInfantry member, float maxDistanceFromLeader)
     {
-        return Vector3.Distance(Leader.transform.position, member.transform.position) < MinimumDistanceFromLeader;
+        return Vector3.SqrMagnitude(Leader.transform.position - member.transform.position) < maxDistanceFromLeader * maxDistanceFromLeader;
     }
     #endregion
 
@@ -184,7 +184,7 @@ public class Fireteam
         var nearestFireteam = TeamsManager.instance
             .GetAllyFireteams(Team)
             .Where(x => !x.FireteamInCombat())
-            .Minimum(x => Vector3.Distance(x.Leader.transform.position, Leader.transform.position));
+            .Minimum(x => Vector3.SqrMagnitude(x.Leader.transform.position - Leader.transform.position));
         if (nearestFireteam != null)
         {
             nearestFireteam.HelpNearFireteam(enemyPosition);
