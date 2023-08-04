@@ -315,7 +315,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Movement: 0
   _acceleration: 37.5
-  _maxSpeed: 8
+  _maxSpeed: 10
   _maxGroundAngle: 45
   GroundSnapping: 1
   _groundProbeDistance: 0.5

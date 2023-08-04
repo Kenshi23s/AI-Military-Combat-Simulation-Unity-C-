@@ -132,7 +132,7 @@ public class AssaultInfantry : MobileInfantry
 
         state.OnEnter += (x) =>
         {
-            if (_minDistanceFromDestination > Vector3.Distance(Destination, transform.position))
+            if (_minDistanceFromDestination > Vector3.SqrMagnitude(Destination - transform.position))
             {
                 Movement.ManualMovement.Alignment = AlignmentType.Velocity;
                 FSM.SendInput(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS);

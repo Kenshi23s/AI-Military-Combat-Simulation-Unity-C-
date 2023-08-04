@@ -132,25 +132,41 @@ public class MedicInfantry : MobileInfantry
 
         awaitingOrders.OnEnter += _ =>
         {
-
+            StartCoroutine(Fireteam.FindNearestUntakenPoint());
         };
 
         awaitingOrders.OnUpdate += () => 
         {
-            if (HealTarget)
+            // Transiciones si no es lider. Se prioriza curar
+            if (!IsLeader)
             {
-                SendInputToFSM(MEDIC_INFANTRY_STATES.RUN_TO_HEAL);
+                if (HealTarget)
+                {
+                    SendInputToFSM(MEDIC_INFANTRY_STATES.RUN_TO_HEAL);
+                    return;
+                }
+
+                if (!Fireteam.IsNearLeader(this, _minDistanceFromDestination))
+                {
+                    SendInputToFSM(MEDIC_INFANTRY_STATES.FOLLOW_LEADER);
+                    return;
+                }
+
                 return;
             }
 
-            if (!Fireteam.IsNearLeader(this, _minDistanceFromDestination))
+            // Transiciones si es lider. Se prioriza ir al punto, solo que el Fireteam es el que le da la orden.
+            if (HealTarget)
             {
-                SendInputToFSM(MEDIC_INFANTRY_STATES.FOLLOW_LEADER);
+
+                SendInputToFSM(MEDIC_INFANTRY_STATES.RUN_TO_HEAL);
             }
         };
 
         awaitingOrders.OnExit += _ =>
         {
+            StopCoroutine(Fireteam.FindNearestUntakenPoint());
+
         };
 
         return awaitingOrders;
@@ -191,10 +207,9 @@ public class MedicInfantry : MobileInfantry
                 return;
             }
 
-            Anim.SetBool("Running", true);
-
-            // En el ai movement, estaria bueno un metodo de "Follow"
             StartCoroutine(FollowLeaderRoutine());
+
+            Anim.SetBool("Running", true);
         };
 
         followLeader.OnUpdate += () =>
@@ -209,15 +224,16 @@ public class MedicInfantry : MobileInfantry
             // Si esta lo suficientemente cerca del lider, pasar a await orders 
             if (Fireteam.IsNearLeader(this, _minDistanceFromDestination))
             {
-
+                SendInputToFSM(MEDIC_INFANTRY_STATES.AWAITING_ORDERS);
+                return;
             }
         };
 
         followLeader.OnExit += (x) =>
         {
-            Anim.SetBool("Running", false);
-            
             StopCoroutine(FollowLeaderRoutine());
+            
+            Anim.SetBool("Running", false);
             Movement.CancelMovement();
         };
 
@@ -336,7 +352,6 @@ public class MedicInfantry : MobileInfantry
             }
             //
 
-
             floatHealAmount += _healSpeed * Time.deltaTime;
             
             // Transformamos el valor de curacion de flotante a entero
@@ -348,6 +363,7 @@ public class MedicInfantry : MobileInfantry
 
         heal.OnExit += _ =>
         {
+            Movement.ManualMovement.Alignment = NewPhysicsMovement.AlignmentType.Velocity;
             Anim.SetBool("Healing", false);
             _healParticles.Stop();
         };
@@ -372,8 +388,6 @@ public class MedicInfantry : MobileInfantry
 
             foreach (var item in GetComponents<MonoBehaviour>()) 
                 item.enabled = false;
-
-            GetComponent<Rigidbody>().useGravity = false;
 
             Movement.CancelMovement();
             Movement.ManualMovement.UseGravity(false);
@@ -426,25 +440,17 @@ public class MedicInfantry : MobileInfantry
 
     public override void LeaderMoveTo(Vector3 pos)
     {
-        if (InCombat)
-            return;
-
         Destination = pos;
         SendInputToFSM(MEDIC_INFANTRY_STATES.LEADER_MOVE_TO);
     }
 
     public override void FollowLeader()
     {
-        if (InCombat)
-            return;
-
         SendInputToFSM(MEDIC_INFANTRY_STATES.FOLLOW_LEADER);
     }
 
     public override void AwaitOrders()
     {
-        if (InCombat)
-            return;
 
         SendInputToFSM(MEDIC_INFANTRY_STATES.AWAITING_ORDERS);
     }
