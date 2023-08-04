@@ -84,6 +84,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
     public void AddToTeam(MilitaryTeam key, IEnumerable<Entity> values,Sprite icon = default)
     {
+     
         foreach (var item in values.Where(x => !_teams[key].Contains(x)))
         {            
             _teams[key].Add(item);
@@ -95,8 +96,8 @@ public class TeamsManager : MonoSingleton<TeamsManager>
             if (icon == default)
                 icon = GetSprite(typeof(IMilitary));
 
-            var z = item.gameObject.name.Split("-");
-            indicator.SetName(z.Last());
+            var name = item.gameObject.name.Split("-");
+            indicator.SetName(name.Last());
             indicator.AssignOwner(item as IMilitary, icon);
         }
     }
@@ -140,7 +141,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
         foreach (MilitaryTeam key in _teams.Keys)
         {
             StartCoroutine(SpawnFireteams(key, _matchParameters[key]));
-           StartCoroutine(SpawnPlanes(key, _matchParameters[key]));
+            StartCoroutine(SpawnPlanes(key, _matchParameters[key]));
         }
         StartCoroutine(SpawnCivilians());
     }
@@ -173,7 +174,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
             GameObject fireteamGroup = Instantiate(new GameObject("Fireteam"+ ColomboMethods.GenerateName(5)), newGO.transform);
             bool medicSpawned = false;
-            
+            string[] surname = new string[param.membersPerFireteam];
             for (int j = 0; j < param.membersPerFireteam; j++)
             {
                 _watchDog = 0;
@@ -191,13 +192,28 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
 
                     newUnit.transform.parent = fireteamGroup.transform;
+
+                 
+                    //IA2-LINQ
                     members += newUnit;
                 }
                 else
                     break;
             }
-         
-            Fireteam newFT = new Fireteam(team, members.ToList());
+
+
+            //IA2-LINQ
+            var nameAndSurname = members.Zip(members.Count().GenerateNames(6),(x,y) =>
+            {
+
+                return Tuple.Create(x, x.name + " " + y);
+            });
+
+
+            foreach (var zip in nameAndSurname) zip.Item1.gameObject.name = zip.Item2;
+
+
+            Fireteam.Create(team, members.ToList());
            
             for (int k = 0; k < WaitFramesBeforeContinuing; k++) yield return null;
             
@@ -213,12 +229,10 @@ public class TeamsManager : MonoSingleton<TeamsManager>
         {
             if (GetRandomFreePosOnAir(parameters, out Vector3 pos))
             {
-                var x = Instantiate(_planePrefab,pos,Quaternion.identity);
-                x.Initialize(team);
+                var x = Instantiate(_planePrefab,pos,Quaternion.identity); x.Initialize(team);
+
                 AddToTeam(team, x, GetSprite(typeof(Plane)));
                 x.transform.parent = newGO.transform;
-
-                int actualFrameRate = ColomboMethods.GetActualFrameRate;
 
                 for (int j = 0; j < WaitFramesBeforeContinuing; j++) yield return null;             
                

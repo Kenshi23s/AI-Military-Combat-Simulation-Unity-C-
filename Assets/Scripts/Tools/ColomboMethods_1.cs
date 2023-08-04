@@ -168,6 +168,19 @@ namespace FacundoColomboMethods
 
         }
 
+        public static IEnumerable<string> GenerateNames(this int quantity,int wordLenght)
+        {
+            var names = new List<string>();
+            for (int i = 0; i < quantity; i++)
+            {
+                names.Add(GenerateName(wordLenght));
+            }
+
+            return names;
+
+
+        }
+
         public static int LayerMaskToLayerNumber(this LayerMask x) => Mathf.RoundToInt(Mathf.Log(x, 2));
 
         public static void CheckAndAdd<T>(this List<T> col,T item)

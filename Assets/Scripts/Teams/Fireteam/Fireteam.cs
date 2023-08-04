@@ -7,7 +7,10 @@ using UnityEngine;
 
 public class Fireteam
 {
-
+    public static void Create(MilitaryTeam newTeam, List<MobileInfantry> members)
+    {
+        new Fireteam(newTeam, members);
+    }
     public Fireteam(MilitaryTeam newTeam, List<MobileInfantry> members)
     {
         Team = newTeam;
@@ -111,7 +114,9 @@ public class Fireteam
 
     bool IsPointPriority(CapturePoint point)
     {
-        return point.CapturedBy != Team || point.CurrentState == CaptureState.Disputed || (point.CurrentState == CaptureState.BeingCaptured && point.BeingCapturedBy != Team);
+        return point.CapturedBy != Team 
+            || point.CurrentState == CaptureState.Disputed 
+            || (point.CurrentState == CaptureState.BeingCaptured && point.BeingCapturedBy != Team);
     }
 
     void SendPatrolOrders(Vector3 newDestination)

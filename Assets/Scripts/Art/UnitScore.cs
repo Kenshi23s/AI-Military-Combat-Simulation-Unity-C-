@@ -17,5 +17,7 @@ public class UnitScore : MonoBehaviour
         UnitName.text = (military as MonoBehaviour).gameObject.name;
         damageDealtTXT.text = military.TotalDamageDealt.ToString();
     }
+
+  
    
 }

@@ -30,7 +30,9 @@ public class Node : MonoBehaviour
         AI_Manager I = AI_Manager.instance;
 
         Neighbors = I.nodes.GetWhichAreOnSight(transform.position, wallMask, RaycastType.Sphere, 1f)
-                    .Where(x => x != this).Where(x => Vector3.Distance(x.transform.position,transform.position) < I.MaxDistanceBetweenNodes).ToList();
+                    .Where(x => x != this)
+                    .Where(x => Vector3.Distance(x.transform.position,transform.position) < I.MaxDistanceBetweenNodes)
+                    .ToList();
 
         GetComponent<DebugableObject>().AddGizmoAction(NodeGizmo);
         GetComponent<MeshRenderer>().enabled = false;
@@ -40,11 +42,11 @@ public class Node : MonoBehaviour
     {
        if (Neighbors.Count < 0) return;
 
-        List<Node> nodes2 = Neighbors.Aggregate(new List<Node>(), (x, y) =>
-        {
-            if (y.Neighbors.Contains(this)) x.Add(y);
-            return x;
-        });
+       List<Node> nodes2 = Neighbors.Aggregate(new List<Node>(), (x, y) =>
+       {
+           if (y.Neighbors.Contains(this)) x.Add(y);
+           return x;
+       });
        foreach (Node node in nodes2)
        {      
          Gizmos.color = Color.blue;

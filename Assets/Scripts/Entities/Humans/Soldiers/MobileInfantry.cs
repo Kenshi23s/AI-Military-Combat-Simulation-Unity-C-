@@ -46,7 +46,6 @@ public abstract class MobileInfantry : Soldier, ICapturePointEntity, IFlockableE
     }
 
     protected abstract void CreateFSM();
-
     public abstract void AwaitOrders();
     public abstract void FollowLeader();
     public abstract void LeaderMoveTo(Vector3 newDestination);
