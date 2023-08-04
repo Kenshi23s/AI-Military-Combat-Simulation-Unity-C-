@@ -33,6 +33,7 @@ public interface ILifeObject : IDamageable, IHealable
     public int MaxLife { get; }
     public int Life { get; }
     public event Action OnTakeDamage;
+    public event Action OnHeal;
 }
 
 

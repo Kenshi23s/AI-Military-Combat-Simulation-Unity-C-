@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class ProjectilePool : MonoSingleton<ProjectilePool>
 {
-    //estaria bueno tener una pool con timeSlicing
+    //estaria bueno tener una pool con timeSlicing(?)
     PoolObject<Misile> pool = new PoolObject<Misile>();
 
     [SerializeField] Misile _prefab;

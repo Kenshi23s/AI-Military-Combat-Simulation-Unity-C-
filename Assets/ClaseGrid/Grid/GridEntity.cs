@@ -55,6 +55,7 @@ public class GridEntity : MonoBehaviour
                 return position3d.sqrMagnitude < sqrDistance;
             })
             .Select(x => x.Owner);
+        //IA2-LINQ
     }
 
     public void SetSpatialGrid(SpatialGrid3D spatialGrid) 

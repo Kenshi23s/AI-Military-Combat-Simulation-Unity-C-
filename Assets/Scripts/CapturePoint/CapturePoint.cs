@@ -219,6 +219,7 @@ public class CapturePoint : MonoBehaviour
                 .ToLookup(x => x.Team)
                 .ToDictionary(x => x.Key, x => x.ToArray())
                 .EmptyIfNull();
+            //IA2-LINQ
 
             OnTeamsInPointUpdate?.Invoke(_teamSplit);
             yield return new WaitForSeconds(_searchTime);

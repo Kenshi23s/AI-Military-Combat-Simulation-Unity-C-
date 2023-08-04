@@ -35,11 +35,13 @@ public abstract class Entity : MonoBehaviour, ILifeObject
         IsCapturing = false;
         gameObject.name = GetType().Name + " - " + ColomboMethods.GenerateName(Random.Range(3,7));
         Health.OnTakeDamage += _ => OnTakeDamage?.Invoke();
+        Health.OnHeal += () => OnHeal?.Invoke();
     }
 
     #region Redirect To Health Component
 
     public event Action OnTakeDamage;
+    public event Action OnHeal;
 
     public bool IsAlive => Health.IsAlive;
 

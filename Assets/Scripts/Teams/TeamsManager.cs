@@ -13,7 +13,6 @@ public struct TeamParameters
     [Range(0,50)]public int FireteamQuantity;
     [Range(0,5)] public int membersPerFireteam;
     [Range(0,50)]public int planesQuantity;
-    [Range(0,50)]public int tanksQuantity;
     public Transform SpawnArea;
     public float width, height;
  

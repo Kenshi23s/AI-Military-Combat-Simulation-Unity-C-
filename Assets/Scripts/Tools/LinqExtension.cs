@@ -48,6 +48,7 @@ public static class LinqExtension
     }
 
     //no me dejaba con IEnumerable de tipo T
+
     public static Dictionary<K, V[]> EmptyIfNull<K,V>(this Dictionary<K, V[]> dic)
     {
         if (!typeof(K).IsEnum)

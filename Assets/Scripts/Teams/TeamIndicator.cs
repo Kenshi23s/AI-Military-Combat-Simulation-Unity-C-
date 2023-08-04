@@ -45,8 +45,11 @@ public class TeamIndicator : MonoBehaviour
         var x = NewOwner as ILifeObject;
         if (x == null) return;
 
-        nameText.color = _lifeGradient.Evaluate(x.NormalizedLife);
-        x.OnTakeDamage += () => nameText.color = _lifeGradient.Evaluate(x.NormalizedLife);
+
+        EvaluateLife();
+        x.OnTakeDamage += EvaluateLife;
+        x.OnHeal += () => EvaluateLife();
+
     }
 
     public void SetName(string x)
@@ -54,7 +57,12 @@ public class TeamIndicator : MonoBehaviour
         nameText.text = x;
     }
     
-
+    void EvaluateLife()
+    {
+        var x = Owner as ILifeObject;
+      
+        nameText.color = _lifeGradient.Evaluate(x.NormalizedLife);
+    }
 
 
 
