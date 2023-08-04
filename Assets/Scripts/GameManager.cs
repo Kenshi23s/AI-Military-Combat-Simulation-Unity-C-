@@ -11,11 +11,13 @@ public class GameManager : MonoSingleton<GameManager>
     List<Bunker> _bunkers=new List<Bunker>();
     public ReadOnlyCollection<Bunker> Bunkers;
     DebugableObject DebugGM;
+    public int timeScale = 1;
 
     public const int targetFrameRate = 144;
 
     protected override void SingletonAwake()
     {
+        Time.timeScale = timeScale;
         Application.targetFrameRate = targetFrameRate;
         Bunkers = new ReadOnlyCollection<Bunker>(_bunkers);
         DebugGM = GetComponent<DebugableObject>();

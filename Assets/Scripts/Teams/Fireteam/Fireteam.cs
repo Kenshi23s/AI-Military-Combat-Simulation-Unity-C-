@@ -93,12 +93,16 @@ public class Fireteam
         yield return null;
         // Conseguir el punto mas cercano
         var untakenPoint = CapturePointManager.instance.CapturePoints.Where(IsPointPriority);
-        targetCapturePoint = untakenPoint.Minimum(x => Vector3.SqrMagnitude(x.transform.position - Leader.transform.position));
 
-        targetCapturePoint.OnCaptureComplete += OnTargetPointCaptured;
+        if (untakenPoint.Any()) 
+        {
+            targetCapturePoint = untakenPoint.Minimum(x => Vector3.SqrMagnitude(x.transform.position - Leader.transform.position));
 
-        Leader.DebugEntity.Log($"Moviendome a la bandera {targetCapturePoint}");
-        SendPatrolOrders(targetCapturePoint.transform.position);
+            targetCapturePoint.OnCaptureComplete += OnTargetPointCaptured;
+
+            Leader.DebugEntity.Log($"Moviendome a la bandera {targetCapturePoint}");
+            SendPatrolOrders(targetCapturePoint.transform.position);
+        }   
     }
 
     void OnTargetPointCaptured(MilitaryTeam capturedBy) 
