@@ -19,7 +19,11 @@ public enum CaptureState
 /// Cylinder zone that a team captures by keeping more units inside it.
 /// CaptureProgress goes from -ProgressRequiredForCapture to ProgressRequiredForCapture, one sign per team.
 /// </summary>
-/// <remarks>The units inside are queried from the SpatialGrid3D every _searchTime seconds.</remarks>
+/// <remarks>
+/// <para>The units inside are queried from the SpatialGrid3D every _searchTime seconds.</para>
+/// <para>A new state applies after it holds for StateChangeDelay seconds.</para>
+/// <para>Each unit of the capturing team adds _captureSpeed of progress per second.</para>
+/// </remarks>
 [RequireComponent(typeof(DebugableObject))]
 public class CapturePoint : MonoBehaviour
 {
@@ -42,6 +46,14 @@ public class CapturePoint : MonoBehaviour
     private SpatialGrid3D _targetGrid;
 
     private EventFSM<CaptureState> _fsm;
+
+    // State that CheckState waits to apply, and the seconds it has held.
+    private CaptureState _pendingState = CaptureState.Inactive;
+    private MilitaryTeam _pendingCapturer = MilitaryTeam.None;
+    private float _pendingTime;
+
+    // Seconds a new state has to hold before the point switches to it.
+    private const float StateChangeDelay = 0.3f;
     public float CaptureProgress
     {
         get => _captureProgress;
@@ -113,7 +125,7 @@ public class CapturePoint : MonoBehaviour
 
     private bool CanTeamCapture(MilitaryTeam team)
     {
-        return _teamSplit[team].Any() && (!IsFullyCaptured || CapturedBy != team);
+        return UnitsOf(team) > 0 && (!IsFullyCaptured || CapturedBy != team);
     }
 
     #region FSM States
@@ -221,7 +233,8 @@ public class CapturePoint : MonoBehaviour
     {
         int sign = BeingCapturedBy == MilitaryTeam.Red ? 1 : -1;
 
-        CaptureProgress += Time.deltaTime * sign * _captureSpeed * _teamSplit.Count();
+        // Each unit of the capturing team adds _captureSpeed per second.
+        CaptureProgress += Time.deltaTime * sign * _captureSpeed * UnitsOf(BeingCapturedBy);
         OnProgressChange?.Invoke(CaptureProgress);
 
         if (CheckNeutralization())
@@ -239,38 +252,71 @@ public class CapturePoint : MonoBehaviour
         }
     }
 
+    // Applies the state the units in the point ask for, once it holds for StateChangeDelay seconds.
     private void CheckState()
     {
-        // Chequear si esta siendo disputada.
-        if (_teamSplit[MilitaryTeam.Red].Any() && _teamSplit[MilitaryTeam.Blue].Any() && CurrentState != CaptureState.Disputed)
+        GetDesiredState(out CaptureState desiredState, out MilitaryTeam desiredCapturer);
+
+        // Already in that state: nothing pending.
+        if (desiredState == CurrentState && desiredCapturer == BeingCapturedBy)
         {
-            SendInputToFSM(CaptureState.Disputed);
+            _pendingTime = 0f;
             return;
         }
 
-        // Chequear si esta siendo capturada por el equipo rojo.
-        if (CanTeamCapture(MilitaryTeam.Red) && BeingCapturedBy != MilitaryTeam.Red)
+        // A different request restarts the wait.
+        if (desiredState != _pendingState || desiredCapturer != _pendingCapturer)
         {
-            BeingCapturedBy = MilitaryTeam.Red;
-            SendInputToFSM(CaptureState.BeingCaptured);
-            return;
+            _pendingState = desiredState;
+            _pendingCapturer = desiredCapturer;
+            _pendingTime = 0f;
         }
 
-        // Chequear si esta siendo capturada por el equipo azul.
-        if (CanTeamCapture(MilitaryTeam.Blue) && BeingCapturedBy != MilitaryTeam.Blue)
-        {
-            BeingCapturedBy = MilitaryTeam.Blue;
-            SendInputToFSM(CaptureState.BeingCaptured);
+        _pendingTime += Time.deltaTime;
+        if (_pendingTime < StateChangeDelay)
             return;
-        }
 
-        // Si estaba siendo capturada, pasar al estado inactivo
-        if (IsBeingCaptured)
+        _pendingTime = 0f;
+
+        // BeingCapturedBy is set before the transition, so OnBeingCaptured carries the new team.
+        BeingCapturedBy = desiredCapturer;
+        SendInputToFSM(desiredState);
+    }
+
+    // Both teams in the point: Disputed.
+    // One team that can capture: BeingCaptured by that team.
+    // Any other case: Inactive.
+    private void GetDesiredState(out CaptureState state, out MilitaryTeam capturer)
+    {
+        int red = UnitsOf(MilitaryTeam.Red);
+        int blue = UnitsOf(MilitaryTeam.Blue);
+
+        if (red > 0 && blue > 0)
         {
-            BeingCapturedBy = MilitaryTeam.None;
-            SendInputToFSM(CaptureState.Inactive);
-            return;
+            state = CaptureState.Disputed;
+            capturer = MilitaryTeam.None;
         }
+        else if (CanTeamCapture(MilitaryTeam.Red))
+        {
+            state = CaptureState.BeingCaptured;
+            capturer = MilitaryTeam.Red;
+        }
+        else if (CanTeamCapture(MilitaryTeam.Blue))
+        {
+            state = CaptureState.BeingCaptured;
+            capturer = MilitaryTeam.Blue;
+        }
+        else
+        {
+            state = CaptureState.Inactive;
+            capturer = MilitaryTeam.None;
+        }
+    }
+
+    /// <summary>Returns the number of units of team in the point.</summary>
+    public int UnitsOf(MilitaryTeam team)
+    {
+        return _teamSplit.TryGetValue(team, out IMilitary[] units) ? units.Length : 0;
     }
 
     private bool CheckNeutralization() 
@@ -320,8 +366,9 @@ public class CapturePoint : MonoBehaviour
             transform.position + new Vector3(-_pointRadius, 0, -_pointRadius),
             transform.position + new Vector3(_pointRadius, _pointHeight, _pointRadius),
             pos => {
+                // Horizontal distance: the cylinder is vertical.
                 var distance = pos - transform.position;
-                distance.y = transform.position.y;
+                distance.y = 0;
                 return distance.sqrMagnitude < _pointRadius * _pointRadius;
             });
 
