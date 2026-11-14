@@ -48,7 +48,9 @@ public abstract class Vehicle : Entity, IMilitary, IFlockableEntity
         _shootComponent = GetComponent<ShootComponent>();
         _shootComponent.onHit += _ => TotalDamageDealt += _shootComponent.BulletDamage;
 
+        // The neighborhood of the flocking is the field of view of the vehicle.
         _flockingParameters.myTransform = transform;
+        _flockingParameters.viewRadius = _fov.ViewRadius;
         VehicleAwake();
     }
 

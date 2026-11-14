@@ -59,7 +59,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     [SerializeField] private TeamIndicator _prefabTeamIndicator;
     [SerializeField] private float _unitsAboveMilitary;
 
-        [Header("Civilian Spawn")]
+    [Header("Civilian Spawn")]
     [SerializeField] private Transform _civilianPos;
     [SerializeField] private int _civiliansQuantity;
     [SerializeField] private float _width_CivilianSpawn, _height_CivilianSpawn;

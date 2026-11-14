@@ -25,14 +25,14 @@ public class CapturePoint : MonoBehaviour
 {
     [field: SerializeField] public float ProgressRequiredForCapture { get; private set; } = 100f;
 
-        public UnityEvent<MilitaryTeam> OnPointOwnerChange;
+    public UnityEvent<MilitaryTeam> OnPointOwnerChange;
     public UnityEvent OnPointNeutralized;
     public UnityEvent<float> OnProgressChange;
     public UnityEvent<Dictionary<MilitaryTeam, IMilitary[]>> OnTeamsInPointUpdate;
-        [SerializeField, Min(0)] private float _searchTime = 0.2f;
+    [SerializeField, Min(0)] private float _searchTime = 0.2f;
     [SerializeField, Min(0)] private float _pointRadius = 15, _pointHeight = 8;
     [SerializeField, Min(0)] private float _captureSpeed = 5f;
-        private DebugableObject _debug;
+    private DebugableObject _debug;
 
     private HashSet<ICapturePointEntity> _entitiesInPoint = new HashSet<ICapturePointEntity>();
     private Dictionary<MilitaryTeam, IMilitary[]> _teamSplit = new Dictionary<MilitaryTeam, IMilitary[]>();
@@ -56,11 +56,11 @@ public class CapturePoint : MonoBehaviour
     public MilitaryTeam BeingCapturedBy { get; private set; } = MilitaryTeam.None;
     public MilitaryTeam CapturedBy { get; private set; } = MilitaryTeam.None;
 
-        public bool IsBeingCaptured => BeingCapturedBy != MilitaryTeam.None;
+    public bool IsBeingCaptured => BeingCapturedBy != MilitaryTeam.None;
     public bool IsCaptured => CapturedBy != MilitaryTeam.None;
     public bool IsFullyCaptured => Mathf.Abs(_captureProgress) >= ProgressRequiredForCapture;
 
-        public event Action OnDisputeStart, OnDisputeEnd,OnStopCapture;
+    public event Action OnDisputeStart, OnDisputeEnd,OnStopCapture;
     public event Action<MilitaryTeam> OnCaptureComplete;
     public event Action<MilitaryTeam> OnBeingCaptured;
 

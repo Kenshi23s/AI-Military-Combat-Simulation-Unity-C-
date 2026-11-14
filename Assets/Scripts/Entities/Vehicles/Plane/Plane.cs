@@ -30,13 +30,13 @@ public class Plane : Vehicle
     [SerializeField, Min(0)] private float _collisionCheckDistance = 30f;
     [SerializeField] private int _ExplosionDamageOnDeath = 50;
 
-        [SerializeField]
+    [SerializeField]
     private Transform[] misilePos;
     [SerializeField] private Misile.MisileStats misileStats;
     [SerializeField]private float misileCD;
     [SerializeField] private float minimumDistanceForStrike;
 
-        [Header("Shooting Parameters")]
+    [Header("Shooting Parameters")]
     [SerializeField] private float bulletsPerBurst;
     [SerializeField] private float burstCD = 3;
     [SerializeField] private float BulletCD = 0.3f;

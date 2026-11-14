@@ -55,7 +55,7 @@ public class LifeComponent : MonoBehaviour, IDamageable, IHealable,ILifeObject
         }
     }
 
-        public event Action<Vector3> OnKnockBack;
+    public event Action<Vector3> OnKnockBack;
     public event Action<int, int> OnHealthChange;
     public event Action OnHeal;
 
@@ -91,13 +91,12 @@ public class LifeComponent : MonoBehaviour, IDamageable, IHealable,ILifeObject
     }
 
     /// <summary>Pops up x as floating text at the last hit position, or at the object position.</summary>
+    /// <remarks>Runs only while the scene has a FloatingTextManager.</remarks>
     public void DisplayDamageNumber(int x)
     {
-        if (FloatingTextManager.instance==null)
-        {
-            Debug.Log("es Null");
-        }
-        
+        if (FloatingTextManager.instance == null)
+            return;
+
         FloatingTextManager.instance.PopUpText(x.ToString(), hitPos != Vector3.zero? hitPos : transform.position, IsCrit);
         hitPos = Vector3.zero;
     }

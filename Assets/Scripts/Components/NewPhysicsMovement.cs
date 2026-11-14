@@ -19,7 +19,7 @@ public class NewPhysicsMovement : MonoBehaviour
     public bool GroundSnapping = true;
     public LayerMask GroundMask = -1;
 
-        public AlignmentType Alignment = AlignmentType.Velocity;
+    public AlignmentType Alignment = AlignmentType.Velocity;
     public Transform AlignmentTarget;
 
     public bool FreezeXAlignment, FreezeYAlignment, FreezeZAlignment;
@@ -36,7 +36,7 @@ public class NewPhysicsMovement : MonoBehaviour
     [SerializeField, Min(0), Tooltip("El tiempo maximo que puede llegar a tardar en alinearse")]
     private float _alignTime = 0f;
 
-        private int _groundContactCount;
+    private int _groundContactCount;
     private Vector3 _groundContactNormal;
     private float _minGroundDotProduct;
     private int _stepsSinceLastGrounded;
@@ -44,7 +44,8 @@ public class NewPhysicsMovement : MonoBehaviour
     private Quaternion _customAlignment = Quaternion.identity;
     private bool _hasAlignTime = false;
 
-    private float _radiansAlignSpeed;
+    // Degrees per second that cover a 180 degree turn in _alignTime seconds.
+    private float _alignDegreesPerSecond;
     private DebugableObject _debug;
 
     private Vector3 _velocity;
@@ -78,7 +79,8 @@ public class NewPhysicsMovement : MonoBehaviour
         get => _maxSpeed;
         set => _maxSpeed = Mathf.Max(0, value);
     }
-    public float MaxGroundAngle 
+    /// <summary>Steepest slope, in degrees, that counts as ground. From 0 to 90.</summary>
+    public float MaxGroundAngle
     {
         get => _maxGroundAngle;
         set 
@@ -88,42 +90,54 @@ public class NewPhysicsMovement : MonoBehaviour
         }
     }
 
+    /// <summary>true while the body touches ground.</summary>
     public bool OnGround => _groundContactCount > 0;
-    public float GroundProbeDistance 
+
+    /// <summary>Length of the downward raycast that snaps the body to the ground. The minimum is 0.</summary>
+    public float GroundProbeDistance
     {
         get => _groundProbeDistance;
         set => _groundProbeDistance = Mathf.Max(0, value);
     }
 
-    public float AlignmentMix 
+    /// <summary>Weight of the desired direction against the velocity in AlignmentType.Mix. From 0 to 1.</summary>
+    public float AlignmentMix
     {
         get => _alignmentMix;
         set => _alignmentMix = Mathf.Clamp01(value);
     }
 
+    /// <summary>Rotation used by AlignmentType.Custom.</summary>
     public Quaternion CustomAlignment
     {
         get => _customAlignment;
         set => _customAlignment = value.normalized;
     }
 
+    /// <summary>Seconds a 180 degree turn takes. 0 aligns in a single step.</summary>
     public float AlignTime
     {
         get => _alignTime;
         set
         {
-            _alignTime = value;
+            _alignTime = Mathf.Max(0, value);
             _hasAlignTime = !Mathf.Approximately(_alignTime, 0);
 
             if (_hasAlignTime)
-                _radiansAlignSpeed = (180f / _alignTime) * Mathf.Deg2Rad;
+                _alignDegreesPerSecond = 180f / _alignTime;
         }
     }
 
-        public Vector3 Right => Rigidbody.rotation * Vector3.right;
+    /// <summary>Right axis of the Rigidbody.</summary>
+    public Vector3 Right => Rigidbody.rotation * Vector3.right;
+
+    /// <summary>Up axis of the Rigidbody.</summary>
     public Vector3 Up => Rigidbody.rotation * Vector3.up;
+
+    /// <summary>Forward axis of the Rigidbody.</summary>
     public Vector3 Forward => Rigidbody.rotation * Vector3.forward;
 
+    /// <summary>The Rigidbody that moves.</summary>
     public Rigidbody Rigidbody { get; private set; }
 
     /// <summary>Grounded moves along the ground plane. Free moves in any direction.</summary>
@@ -149,6 +163,10 @@ public class NewPhysicsMovement : MonoBehaviour
 
         _debug = GetComponent<DebugableObject>();
         _debug.AddGizmoAction(DrawSpeedArrow);
+
+        // The setters compute _minGroundDotProduct and the align speed from the serialized values.
+        MaxGroundAngle = _maxGroundAngle;
+        AlignTime = _alignTime;
     }
     private void FixedUpdate()
     {
@@ -225,7 +243,7 @@ public class NewPhysicsMovement : MonoBehaviour
 
         // Si tiene tiempo de alineacion, alinear de a poco
         if (_hasAlignTime)
-            _rotation = Quaternion.RotateTowards(_rotation, desiredRotation, _radiansAlignSpeed);
+            _rotation = Quaternion.RotateTowards(_rotation, desiredRotation, _alignDegreesPerSecond * Time.fixedDeltaTime);
         // Si no, alinear directo.
         else
             _rotation = desiredRotation;
