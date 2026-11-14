@@ -1,492 +1,312 @@
-using System.Collections.Generic;
-using UnityEngine;
-using System.Linq;
 using System;
 using System.Collections;
-using System.IO;
-//Todos los algoritmos de pathfinding visto en la materia de IA 1
-//los nodos deben tener de nombre de clase "Node" y las siguientes variables con los siguientes nombres:
+using System.Collections.Generic;
+using FacundoColomboMethods;
+using UnityEngine;
 
-// int cost = 1;
-// public List<Node> Neighbors = new List<Node>();
-
-//clase creada por Facundo Colombo
+/// <summary>
+/// Pathfinding algorithms over the Node graph.
+/// </summary>
+/// <remarks>
+/// <para>Each method receives a Tuple of nodes. Item1 is the start node. Item2 is the goal node.</para>
+/// <para>The cost of entering a node is Node.cost. The heuristic is the Euclidean distance to the goal node.</para>
+/// <para>A* runs in O(E log V). Theta* runs A* and then smooths the path.</para>
+/// <para>Author: Facundo Colombo.</para>
+/// </remarks>
 public static class Pathfinding_Algorithm
 {
-    //public static LinkedList<Vector3> CalculateBFS(Node startingNode, Node goalNode)
-    //{
-    //    LinkedList<Vector3> result = new LinkedList<Vector3>();
+    /// <summary>Length of the downward raycast that snaps endpos to the ground.</summary>
+    const float GroundSnapDistance = 10f;
 
-    //    Queue<Node> frontier = new Queue<Node>();
-    //    frontier.Enqueue(startingNode);
+    #region A*
 
-    //    Dictionary<Node, Node> cameFrom = new Dictionary<Node, Node>();w
-    //    cameFrom.Add(startingNode, null);
-
-    //    while (frontier.Count > 0)
-    //    {
-    //        Node current = frontier.Dequeue();
-
-    //        if (current == goalNode)
-    //        {
-
-
-    //            while (current != startingNode)
-    //            {
-    //                result.Add(current.transform.position);
-    //                current = cameFrom[current];
-    //            }
-
-               
-    //            return result;
-    //        }
-
-    //        foreach (var next in current.Neighbors)
-    //        {
-    //            if (!cameFrom.ContainsKey(next))
-    //            {
-    //                frontier.Enqueue(next);
-    //                cameFrom.Add(next, current);
-    //            }
-    //        }
-    //    }
-
-    //    return new LinkedList<Vector3>();
-    //}
-
-    //public static LinkedList<Vector3> CalculateDijkstra(Node startingNode, Node goalNode)
-    //{
-    //    PriorityQueue<Node> frontier = new PriorityQueue<Node>();
-    //    frontier.Enqueue(startingNode, 0);
-
-    //    Dictionary<Node, Node> cameFrom = new Dictionary<Node, Node>();
-    //    cameFrom.Add(startingNode, null);
-
-    //    Dictionary<Node, int> costSoFar = new Dictionary<Node, int>();
-    //    costSoFar.Add(startingNode, 0);
-
-    //    while (frontier.Count > 0)
-    //    {
-    //        Node current = frontier.Dequeue();
-
-    //        if (current == goalNode)
-    //        {
-    //            LinkedList<Vector3> path = new LinkedList<Vector3>();
-
-    //            while (current != startingNode)
-    //            {
-    //                path.Add(current.transform.position);
-    //                current = cameFrom[current];
-    //            }
-
-             
-    //            return path;
-    //        }
-
-    //        foreach (var next in current.Neighbors)
-    //        {
-                
-
-    //            int newCost = costSoFar[current] + next.cost;
-
-    //            if (!costSoFar.ContainsKey(next))
-    //            {
-    //                frontier.Enqueue(next, newCost);
-    //                cameFrom.Add(next, current);
-    //                costSoFar.Add(next, newCost);
-    //            }
-    //            else if (costSoFar[next] > newCost)
-    //            {
-    //                frontier.Enqueue(next, newCost);
-    //                cameFrom[next] = current;
-    //                costSoFar[next] = newCost;
-    //            }
-
-    //        }
-    //    }
-
-    //    return new LinkedList<Vector3>();
-    //}
-
-    //public static LinkedList<Vector3> CalculateGreedyBFS(Node startingNode, Node goalNode)
-    //{
-    //    LinkedList<Vector3> result = new LinkedList<Vector3>();
-    //    PriorityQueue<Node> frontier = new PriorityQueue<Node>();
-    //    frontier.Enqueue(startingNode, 0);
-
-    //    Dictionary<Node, Node> cameFrom = new Dictionary<Node, Node>();
-    //    cameFrom.Add(startingNode, null);
-
-    //    while (frontier.Count > 0)
-    //    {
-    //        Node current = frontier.Dequeue();
-
-    //        if (current == goalNode)
-    //        {
-    //            while (current != startingNode)
-    //            {
-    //                result.Add(current.transform.position);
-    //                current = cameFrom[current];
-    //            }
-    //            return result;
-
-              
-    //        }
-
-    //        foreach (var next in current.Neighbors)
-    //        {
-    //            if (!cameFrom.ContainsKey(next))
-    //            {
-    //                float priority = Vector3.Distance(next.transform.position, goalNode.transform.position);
-    //                frontier.Enqueue(next, priority);
-    //                cameFrom.Add(next, current);
-    //            }
-    //        }
-    //    }
-    //    return new LinkedList<Vector3>();
-
-    //}
-
-    public static List<Node> CalculateAStar(Tuple<Node,Node> nodes)
+    /// <summary>
+    /// Runs A* from the start node to the goal node within one frame.
+    /// </summary>
+    /// <param name="nodes">Start node and goal node.</param>
+    /// <returns>
+    /// The nodes of the path from start to goal, both included.
+    /// An empty list when the goal is unreachable.
+    /// </returns>
+    /// <remarks>O(E log V).</remarks>
+    public static List<Node> CalculateAStar(Tuple<Node, Node> nodes)
     {
-        //el vecino del nodo
+        var search = new AStarSearch(nodes.Item1, nodes.Item2);
+        while (search.Step()) { }
 
-        PriorityQueue<Node> frontier = new PriorityQueue<Node>();
-        frontier.Enqueue(nodes.Item1, 0f);
-
-        //de donde vino, mi key es el nodo siguiente y el value es el nodo actual
-
-        Dictionary<Node, Node> cameFrom = new Dictionary<Node, Node>();
-        cameFrom.Add(nodes.Item1, null);
-        //el costo de cada nodo y cuanto costo lleva acumulando el camino
-        Dictionary<Node, float> costSoFar = new Dictionary<Node, float>();
-        costSoFar.Add(nodes.Item1, 0f);
-
-        while (frontier.Count > 0)
-        {
-            Node current = frontier.Dequeue();
-
-            if (current == nodes.Item2)
-            {
-                var path = new List<Node>();
-                while (current != nodes.Item1)
-                {
-                    path.Add(current);
-                    current = cameFrom[current];
-                }
-                path.Add(nodes.Item1);
-                path.Reverse();
-
-                return path;
-            }
-
-            foreach (Node next in current.Neighbors)
-            {
-
-                float newCost = costSoFar[current] + next.cost;
-                float priority = newCost + Vector3.Distance(next.transform.position, nodes.Item2.transform.position);
-
-                if (!costSoFar.ContainsKey(next))
-                {
-                    frontier.Enqueue(next, priority);
-                    cameFrom.Add(next, current);
-                    costSoFar.Add(next, newCost);
-                }
-
-                else if (costSoFar[next] > newCost)
-                {
-                    frontier.Enqueue(next, priority);
-                    cameFrom[next] = current;
-                    costSoFar[next] = newCost;
-                }
-
-            }
-        }
-
-        return new List<Node>();
+        return search.Path;
     }
 
-    public static void AddNodes(List<Vector3> x)
+    /// <summary>
+    /// Runs A* from the start node to the goal node as a coroutine.
+    /// The search expands stepsPerFrame nodes per frame.
+    /// </summary>
+    /// <param name="nodes">Start node and goal node.</param>
+    /// <param name="onFinish">
+    /// Called once when the search ends.
+    /// Receives true and the path when the goal is reached.
+    /// Receives false and an empty list when the goal is unreachable.
+    /// </param>
+    /// <param name="stepsPerFrame">Number of nodes expanded per frame.</param>
+    /// <remarks>O(E log V) in total.</remarks>
+    public static IEnumerator CalculateLazyAStar(this Tuple<Node, Node> nodes, Action<bool, List<Node>> onFinish, int stepsPerFrame = 6)
     {
-        List<Vector3> myPathList = x;
-    }
-
-    public static IEnumerator CalculateLazyAStar(this Tuple<Node, Node> nodes, Action<bool,List<Node>> onFinish, int stepsPerFrame = 6)
-    {
+        var search = new AStarSearch(nodes.Item1, nodes.Item2);
         int stepCount = 0;
-        bool pathMade = false;
 
-        //el vecino del nodo    
-        PriorityQueue<Node> frontier = new PriorityQueue<Node>();
-        frontier.Enqueue(nodes.Item1, 0f);
-
-        //de donde vino, mi key es el nodo siguiente y el value es el nodo actual
-        Dictionary<Node, Node> cameFrom = new Dictionary<Node, Node>();
-        cameFrom.Add(nodes.Item1, null);
-
-        //el costo de cada nodo y cuanto costo lleva acumulando el camino
-        Dictionary<Node, float> costSoFar = new Dictionary<Node, float>();
-        costSoFar.Add(nodes.Item1, 0f);
-
-        while (frontier.Count > 0)
+        while (search.Step())
         {
-            Node current = frontier.Dequeue();
+            if (++stepCount < stepsPerFrame)
+                continue;
 
-            if (current == nodes.Item2)
+            stepCount = 0;
+            yield return null;
+        }
+
+        if (!search.Found)
+            Debug.LogWarning("No se pudo hacer el camino en Lazy A STAR");
+
+        onFinish(search.Found, search.Path);
+    }
+
+    /// <summary>
+    /// A* search state that expands one node per Step call.
+    /// A cheaper path to a node enqueues the node again.
+    /// Step discards the stale frontier entries.
+    /// </summary>
+    sealed class AStarSearch
+    {
+        /// <summary>Node in the frontier with the cost it was enqueued with.</summary>
+        readonly struct FrontierEntry
+        {
+            public readonly Node Node;
+            public readonly float CostSoFar;
+
+            public FrontierEntry(Node node, float costSoFar)
             {
-                var path = new List<Node>();          
-                while (current != nodes.Item1)
-                {
-                    path.Add(current);
-                    current = cameFrom[current];
-                }
-                path.Add(nodes.Item1);
-                path.Reverse();
-               
-                pathMade = true;
-                onFinish(pathMade, path);
-                break;
+                Node = node;
+                CostSoFar = costSoFar;
+            }
+        }
+
+        readonly Node _goal;
+        readonly Vector3 _goalPosition;
+
+        readonly PriorityQueue<FrontierEntry> _frontier = new PriorityQueue<FrontierEntry>();
+
+        // For each visited node: the node we came from (the start maps to null).
+        readonly Dictionary<Node, Node> _cameFrom = new Dictionary<Node, Node>();
+
+        // For each visited node: the lowest known accumulated cost from the start.
+        readonly Dictionary<Node, float> _costSoFar = new Dictionary<Node, float>();
+
+        bool _finished;
+
+        /// <summary>Nodes of the path from start to goal. Empty until the search reaches the goal.</summary>
+        public List<Node> Path { get; private set; } = new List<Node>();
+
+        /// <summary>true when the search reached the goal.</summary>
+        public bool Found { get; private set; }
+
+        public AStarSearch(Node start, Node goal)
+        {
+            _goal = goal;
+            _goalPosition = goal.transform.position;
+
+            _cameFrom[start] = null;
+            _costSoFar[start] = 0f;
+            _frontier.Enqueue(new FrontierEntry(start, 0f), 0f);
+        }
+
+        /// <summary>Expands the frontier entry with the lowest priority.</summary>
+        /// <returns>true while the search is running. false when the search has finished.</returns>
+        /// <remarks>O(k log V), where k is the number of Neighbors of the expanded node.</remarks>
+        public bool Step()
+        {
+            if (_finished)
+                return false;
+
+            if (!TryPopValidEntry(out FrontierEntry entry))
+            {
+                _finished = true;
+                return false;
+            }
+
+            Node current = entry.Node;
+
+            if (current == _goal)
+            {
+                Path = BuildPath(current);
+                Found = true;
+                _finished = true;
+                return false;
             }
 
             foreach (Node next in current.Neighbors)
             {
+                if (next == null)
+                    continue;
 
-                float newCost = costSoFar[current] + next.cost;
-                float priority = newCost + Vector3.Distance(next.transform.position, nodes.Item2.transform.position);
+                float newCost = entry.CostSoFar + next.cost;
 
-                if (!costSoFar.ContainsKey(next))
-                {
-                    frontier.Enqueue(next, priority);
-                    cameFrom.Add(next, current);
-                    costSoFar.Add(next, newCost);
-                }
+                // Only relevant if it's the first time we reach it or this path is cheaper.
+                if (_costSoFar.TryGetValue(next, out float knownCost) && knownCost <= newCost)
+                    continue;
 
-                else if (costSoFar[next] > newCost)
-                {
-                    frontier.Enqueue(next, priority);
-                    cameFrom[next] = current;
-                    costSoFar[next] = newCost;
-                }
+                _costSoFar[next] = newCost;
+                _cameFrom[next] = current;
 
+                float priority = newCost + Vector3.Distance(next.transform.position, _goalPosition);
+                _frontier.Enqueue(new FrontierEntry(next, newCost), priority);
             }
 
-            stepCount++;
-            
-            if (stepCount >= stepsPerFrame)
-            {
-                Debug.LogWarning("Espero 1 frame");
-                yield return null;
-                stepCount = 0;
-            }
+            return true;
         }
 
-        if (!pathMade)
+        /// <summary>
+        /// Dequeues frontier entries until one has the lowest known cost for its node.
+        /// </summary>
+        bool TryPopValidEntry(out FrontierEntry entry)
         {
-            onFinish(pathMade, new List<Node>());
-            Debug.LogWarning("No se pudo hacer el camino en Lazy A STAR");
-        }
-       
-    }
-
-    public static IEnumerator CalculateLazyThetaStar(this Tuple<Node, Node> nodes, LayerMask wallMask, Action<bool,List<Vector3>> onFinish, Vector3 endpos = default, int iterationPerFrame = 30, float maxDistance = 20f)
-    {
-        
-
-        Action<bool,List<Node>> CutNodes = (pathmade,pathToCut) =>
-        {
-            if (!pathmade)
+            while (_frontier.TryDequeue(out entry, out _))
             {
-                onFinish(pathmade, new List<Vector3>());
+                if (entry.CostSoFar <= _costSoFar[entry.Node])
+                    return true;
             }
-            int current = 0;
 
-            while (current + 2 < pathToCut.Count)
-            {
-                if (InLineOffSight(pathToCut[current].transform.position, pathToCut[current + 2].transform.position, wallMask, maxDistance))
-                    pathToCut.RemoveAt(current + 1);
-                else
-                    current++;
-            }
-            // Conseguir las posiciones en el piso
-
-
-            List<Vector3> select = pathToCut.Select(node => node.groundPosition).ToList();
-            if (endpos != default)
-                select.Add(endpos);
-
-            onFinish(pathmade, select);
-        };
-
-        return nodes.CalculateLazyAStar(CutNodes, iterationPerFrame);
-
-        //if (endpos != Vector3.zero) _pathList.Add(endpos);
-
-      
-        
-        #region Leer despues
-        //// Chequear si la posicion final es la default.
-        //// Para saber esto en realidad se podria hacer una sobrecarga del metodo
-        //if (endpos == Vector3.zero)
-        //    return groundedPositions;
-
-        //// Si la posicion final se puede pegar al piso, hacerle theta star y agregarla
-
-        //if (Physics.Raycast(endpos, Vector3.down, out RaycastHit hitInfo, 10f, wallMask))
-        //{
-        //    if (pathList.Count > 1)
-        //        if (InLineOffSight(pathList[pathList.Count - 2].transform.position, endpos, wallMask))
-        //            pathList.RemoveAt(pathList.Count - 1);
-
-        //    groundedPositions.Add(hitInfo.point);
-        //}
-
-        //return groundedPositions;
-        #endregion
-    }
-
-   
-
-    public static List<Vector3> CalculateThetaStar(this Tuple<Node, Node> nodes, LayerMask wallMask,Vector3 endpos=default)
-    {
-        List<Node> pathList = CalculateAStar(nodes);
-
-        //if (endpos != Vector3.zero) _pathList.Add(endpos);
-        
-        int current = 0;
-
-        while (current + 2 < pathList.Count)
-        {      
-            if (InLineOffSight(pathList[current].transform.position, pathList[current + 2].transform.position, wallMask))
-                pathList.RemoveAt(current + 1);                              
-            else
-                current++;
-        }
-
-        // Conseguir las posiciones en el piso
-        List<Vector3> groundedPositions = pathList.Select(node => node.groundPosition).ToList();
-
-        // Chequear si la posicion final es la default.
-        // Para saber esto en realidad se podria hacer una sobrecarga del metodo
-        if (endpos == Vector3.zero)
-            return groundedPositions;
-
-        // Si la posicion final se puede pegar al piso, hacerle theta star y agregarla
-
-        if (Physics.Raycast(endpos, Vector3.down, out RaycastHit hitInfo, 10f, wallMask))
-        {
-            if (pathList.Count > 1)
-                if (InLineOffSight(pathList[pathList.Count - 2].transform.position, endpos, wallMask))
-                    pathList.RemoveAt(pathList.Count - 1);
-
-            groundedPositions.Add(hitInfo.point);
-        }
-
-        return groundedPositions;
-    }
-
-
-    //public static IEnumerator CalculateThetaStar(this Tuple<Node, Node> nodes,Action<Vector3> returnNode ,LayerMask wallMask, Vector3 endpos = default)
-    //{
-    //    List<Node> pathList = CalculateAStar(nodes);
-
-    //    //if (endpos != Vector3.zero) _pathList.Add(endpos);
-
-    //    int current = 0;
-
-    //    while (current + 2 < pathList.Count)
-    //    {
-    //        if (InLineOffSight(pathList[current].transform.position, pathList[current + 2].transform.position, wallMask))
-    //            pathList.RemoveAt(current + 1);
-    //        else
-    //        {
-    //            current++;
-    //            returnNode(pathList[current].groundPosition);
-    //        }
-               
-    //        yield return null;
-    //    }
-    //    if (endpos!=default)
-    //    {
-    //        returnNode(endpos);
-    //    }
-        
-
-    //    //// Conseguir las posiciones en el piso
-    //    //List<Vector3> groundedPositions = pathList.Select(node => node.groundPosition).ToList();
-
-    //    //// Chequear si la posicion final es la default.
-    //    //// Para saber esto en realidad se podria hacer una sobrecarga del metodo
-    //    //if (endpos == Vector3.zero)
-    //    //    return groundedPositions;
-
-    //    //// Si la posicion final se puede pegar al piso, hacerle theta star y agregarla
-
-    //    //if (Physics.Raycast(endpos, Vector3.down, out RaycastHit hitInfo, 10f, wallMask))
-    //    //{
-    //    //    if (pathList.Count > 1)
-    //    //        if (InLineOffSight(pathList[pathList.Count - 2].transform.position, endpos, wallMask))
-    //    //            pathList.RemoveAt(pathList.Count - 1);
-
-    //    //    groundedPositions.Add(hitInfo.point);
-    //    //}
-
-    //    //return groundedPositions;
-    //}
-
-    public static bool InLineOffSight(Vector3 InitialPos, Vector3 finalPos, LayerMask maskWall)
-    {
-         Vector3 dir = finalPos - InitialPos;
-         return !Physics.Raycast(InitialPos, dir, dir.magnitude, maskWall);
-    }
-
-    public static bool InLineOffSight(Vector3 InitialPos, Vector3 finalPos, LayerMask maskWall, float maxDistance)
-    {
-        Vector3 dir = finalPos - InitialPos;
-
-        if (dir.sqrMagnitude > maxDistance * maxDistance)
             return false;
+        }
 
-        return !Physics.Raycast(InitialPos, dir, maxDistance, maskWall);
-    }
-}
-
-
-public class PriorityQueue<T>
-{
-    Dictionary<T, float> ElementsDictionary = new Dictionary<T, float>();
-
-    public int Count => ElementsDictionary.Count;
-     
-
-   
-
-    // Update is called once per frame
-    public void Enqueue(T elem, float Value)
-    {
-        if (!ElementsDictionary.ContainsKey(elem)&&elem!=null)
+        /// <summary>Builds the path by following _cameFrom back from the goal.</summary>
+        List<Node> BuildPath(Node goal)
         {
-            ElementsDictionary.Add(elem, Value);
+            var path = new List<Node>();
+            for (Node node = goal; node != null; node = _cameFrom[node])
+                path.Add(node);
 
+            path.Reverse();
+            return path;
         }
     }
 
+    #endregion
 
-    public T Dequeue()
+    #region Theta*
+
+    /// <summary>
+    /// Runs Theta* from the start node to the goal node as a coroutine.
+    /// The path is smoothed by line of sight.
+    /// The result is the groundPosition of each node in the smoothed path.
+    /// </summary>
+    /// <param name="nodes">Start node and goal node.</param>
+    /// <param name="wallMask">Layers that block line of sight.</param>
+    /// <param name="onFinish">
+    /// Called once when the search ends.
+    /// Receives true and the path positions when the goal is reached.
+    /// Receives false and an empty list when the goal is unreachable.
+    /// </param>
+    /// <param name="endpos">Position appended at the end of the path when it differs from default.</param>
+    /// <param name="iterationPerFrame">Number of nodes expanded per frame.</param>
+    /// <param name="maxDistance">Maximum line of sight distance between two nodes.</param>
+    /// <remarks>O(E log V) for A* plus O(L) raycasts for the smoothing, where L is the path length.</remarks>
+    public static IEnumerator CalculateLazyThetaStar(this Tuple<Node, Node> nodes, LayerMask wallMask, Action<bool, List<Vector3>> onFinish, Vector3 endpos = default, int iterationPerFrame = 30, float maxDistance = 20f)
     {
-        float lowestValue = float.MaxValue;
-
-        T elem = default(T);
-        foreach (var item in ElementsDictionary)
+        return nodes.CalculateLazyAStar((pathMade, path) =>
         {
-            if (lowestValue > item.Value)
+            if (!pathMade)
             {
-                elem = item.Key;
-                lowestValue = item.Value;
+                onFinish(false, new List<Vector3>());
+                return;
             }
 
-        }
-        ElementsDictionary.Remove(elem);
+            List<Node> smoothed = SmoothPath(path, (from, to) => ColomboMethods.InLineOffSight(from, to, wallMask, maxDistance));
 
-        return elem;
+            List<Vector3> positions = ToGroundPositions(smoothed);
+            if (endpos != default)
+                positions.Add(endpos);
+
+            onFinish(true, positions);
+        }, iterationPerFrame);
     }
+
+    /// <summary>
+    /// Runs Theta* from the start node to the goal node within one frame.
+    /// The result is the groundPosition of each node in the smoothed path.
+    /// </summary>
+    /// <param name="nodes">Start node and goal node.</param>
+    /// <param name="wallMask">Layers that block line of sight.</param>
+    /// <param name="endpos">
+    /// Position snapped to the ground and appended at the end of the path when it differs from default.
+    /// The last node is removed when the second-to-last node has line of sight to endpos.
+    /// </param>
+    /// <returns>The positions of the path. An empty list when the goal is unreachable.</returns>
+    public static List<Vector3> CalculateThetaStar(this Tuple<Node, Node> nodes, LayerMask wallMask, Vector3 endpos = default)
+    {
+        List<Node> smoothed = SmoothPath(CalculateAStar(nodes), (from, to) => ColomboMethods.InLineOffSight(from, to, wallMask));
+        List<Vector3> positions = ToGroundPositions(smoothed);
+
+        if (endpos == default || positions.Count == 0)
+            return positions;
+
+        if (Physics.Raycast(endpos, Vector3.down, out RaycastHit hitInfo, GroundSnapDistance, wallMask))
+        {
+            if (smoothed.Count > 1 && ColomboMethods.InLineOffSight(smoothed[smoothed.Count - 2].transform.position, endpos, wallMask))
+                positions.RemoveAt(positions.Count - 1);
+
+            positions.Add(hitInfo.point);
+        }
+
+        return positions;
+    }
+
+    /// <summary>
+    /// Returns a new list with the smoothed path.
+    /// Each pending node is removed when the anchor has line of sight to the node after it.
+    /// </summary>
+    /// <param name="path">Path returned by A*.</param>
+    /// <param name="hasLineOfSight">Returns true when two positions have line of sight.</param>
+    /// <remarks>O(L) calls to hasLineOfSight, where L is the path length.</remarks>
+    static List<Node> SmoothPath(List<Node> path, Func<Vector3, Vector3, bool> hasLineOfSight)
+    {
+        if (path.Count <= 2)
+            return new List<Node>(path);
+
+        var result = new List<Node>(path.Count) { path[0] };
+
+        Node anchor = path[0];   // last node that is guaranteed to stay in the path
+        Node pending = path[1];  // candidate for removal if anchor can see the next node
+
+        for (int i = 2; i < path.Count; i++)
+        {
+            Node next = path[i];
+
+            if (hasLineOfSight(anchor.transform.position, next.transform.position))
+            {
+                // anchor sees next directly: pending is redundant.
+                pending = next;
+            }
+            else
+            {
+                // No direct line of sight: pending stays and becomes the new anchor.
+                result.Add(pending);
+                anchor = pending;
+                pending = next;
+            }
+        }
+
+        result.Add(pending);
+        return result;
+    }
+
+    /// <summary>Returns the groundPosition of each node in the path.</summary>
+    static List<Vector3> ToGroundPositions(List<Node> path)
+    {
+        var positions = new List<Vector3>(path.Count + 1);
+        foreach (Node node in path)
+            positions.Add(node.groundPosition);
+
+        return positions;
+    }
+
+    #endregion
 }
