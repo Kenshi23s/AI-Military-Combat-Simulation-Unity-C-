@@ -1,33 +1,60 @@
-using System.Collections.Generic;
-using UnityEngine;
 using System;
+using System.Collections.Generic;
 using FacundoColomboMethods;
-using System.Linq;
-using static UnityEngine.UI.GridLayoutGroup;
+using UnityEngine;
 
+/// <summary>
+/// Moves the agent to a destination with NewPhysicsMovement.
+/// The agent moves straight to a destination in line of sight and follows a Theta* path to any other destination.
+/// </summary>
 [RequireComponent(typeof(NewPhysicsMovement))]
 [RequireComponent(typeof(DebugableObject))]
 [DisallowMultipleComponent]
 public class NewAIMovement : MonoBehaviour
 {
+    // Maximum distance for the straight movement without a path.
+    private const float DirectPathMaxDistance = 20f;
+
+    // Nodes that CalculateLazyThetaStar expands per frame.
+    private const int PathStepsPerFrame = 200;
+
+    /// <summary>The NewPhysicsMovement that applies the forces.</summary>
     public NewPhysicsMovement ManualMovement { get; private set; }
+
+    /// <summary>The GridEntity on the same GameObject.</summary>
     public GridEntity Owner { get; private set; }
 
-    public event Action OnAnyDestinationReached, OnDestinationChanged, OnMovementCanceled;
-    Action OnCurrentDestinationReached;
+    /// <summary>Raised when the agent reaches any destination.</summary>
+    public event Action OnAnyDestinationReached;
 
-    DebugableObject _debug;
+    /// <summary>Raised when SetDestination receives a destination different from Destination.</summary>
+    public event Action OnDestinationChanged;
 
+    /// <summary>Raised by CancelMovement.</summary>
+    public event Action OnMovementCanceled;
+
+    // Callback of the current destination. SetDestination replaces it.
+    private Action OnCurrentDestinationReached;
+
+    private DebugableObject _debug;
+
+    /// <summary>Distance to a point at which the agent counts it as reached.</summary>
     public float DestinationArriveDistance;
 
-    Action _update, _fixedUpdate;
+    private Action _fixedUpdate;
 
-    List<Vector3> _path = new List<Vector3>();
+    private readonly List<Vector3> _path = new List<Vector3>();
 
-    [SerializeField] LayerMask obstacleMask;
+    // Index in _path of the next waypoint.
+    private int _pathIndex;
 
+    // Coroutine of the path calculation in progress.
+    private Coroutine _pathCalculation;
+
+    [SerializeField] private LayerMask obstacleMask;
+
+    /// <summary>The last destination given to SetDestination.</summary>
     public Vector3 Destination { get; private set; }
-
 
     private void Awake()
     {
@@ -37,69 +64,52 @@ public class NewAIMovement : MonoBehaviour
 
         _debug.AddGizmoAction(DrawPath); _debug.AddGizmoAction(DrawDestination);
 
-        OnDestinationChanged += () => { OnCurrentDestinationReached = delegate { }; };
-        OnMovementCanceled +=   () => { OnCurrentDestinationReached = delegate { }; };
+        OnDestinationChanged += () => OnCurrentDestinationReached = null;
+        OnMovementCanceled += () => OnCurrentDestinationReached = null;
     }
 
+    private void FixedUpdate() => _fixedUpdate?.Invoke();
 
-    #region SetDestinations
-    public void SetDestination(Vector3 newDestination)
+    /// <summary>
+    /// Moves the agent to newDestination.
+    /// The agent moves straight when it has line of sight to newDestination within DirectPathMaxDistance.
+    /// The agent follows a Theta* path in every other case.
+    /// </summary>
+    /// <param name="newDestination">Point to reach.</param>
+    /// <param name="onDestinationReached">Called once when the agent reaches newDestination.</param>
+    /// <param name="onFinishCalculating">
+    /// Called once with true when the agent starts moving.
+    /// Called once with false when the path calculation fails.
+    /// </param>
+    public void SetDestination(Vector3 newDestination, Action onDestinationReached = null, Action<bool> onFinishCalculating = null)
     {
+        StopPathCalculation();
+
         if (newDestination != Destination) OnDestinationChanged?.Invoke();
 
         Destination = newDestination;
+        OnCurrentDestinationReached = onDestinationReached;
 
-        if (transform.position.InLineOffSight(newDestination, AI_Manager.instance.WallMask, 20f))
-        {
-            OnDesinationAtSight(newDestination);
-        }
-        else
-        {
-            CalculatePath(newDestination);
-        }
-    }
-
-    public void SetDestination(Vector3 newDestination, Action onDestinationReached)
-    {
-        if (newDestination != Destination) OnDestinationChanged?.Invoke();
-
-        Destination = newDestination;
-
-        
-        if (onDestinationReached != null) OnCurrentDestinationReached += onDestinationReached;
-
-        if (transform.position.InLineOffSight(newDestination, AI_Manager.instance.WallMask, 20f))
-        {
-            OnDesinationAtSight(newDestination);
-        }
-        else
-        {
-            CalculatePath(newDestination);
-        }
-    }
-
-    public void SetDestination(Vector3 newDestination, Action<bool> onFinishCalculating = null, Action onDestinationReached = null)
-    {
-        if (_path.Any() && newDestination != Destination) OnDestinationChanged?.Invoke();
-
-        if (onDestinationReached != null) OnCurrentDestinationReached += onDestinationReached;
-
-        Destination = newDestination;
-
-        Action<bool, List<Vector3>> onCalculate = (boolean,list) => onFinishCalculating(boolean);
-
-        if (transform.position.InLineOffSight(newDestination, AI_Manager.instance.WallMask, 20f))
+        if (transform.position.InLineOffSight(newDestination, AI_Manager.instance.WallMask, DirectPathMaxDistance))
         {
             onFinishCalculating?.Invoke(true);
             OnDesinationAtSight(newDestination);
         }
-        else       
-            CalculatePath(newDestination, onCalculate);
-        
+        else
+        {
+            CalculatePath(newDestination, onFinishCalculating);
+        }
     }
-    #endregion
 
-    void OnDesinationAtSight(Vector3 newDestination)
+    /// <summary>Stops the agent and clears the current destination callback.</summary>
+    public void CancelMovement()
+    {
+        StopPathCalculation();
+        ClearPath();
+        OnMovementCanceled?.Invoke();
+    }
+
+    private void OnDesinationAtSight(Vector3 newDestination)
     {
         // Conseguir la posicion en el piso
         if (Physics.Raycast(newDestination, Vector3.down, out RaycastHit hitInfo, 10f, AI_Manager.instance.WallMask))
@@ -108,166 +118,162 @@ public class NewAIMovement : MonoBehaviour
             Destination = newDestination;
         }
 
+        if (_debug.canDebug)
+            _debug.Log("Veo el destino, voy directo a " + newDestination);
+
         _fixedUpdate = () =>
         {
-            _debug.Log("Veo el destino, voy directo.");
-            _debug.Log(newDestination.ToString());
-
             if (Vector3.Distance(newDestination, transform.position) < DestinationArriveDistance)
             {
-                OnCurrentDestinationReached?.Invoke();
-                OnAnyDestinationReached?.Invoke();
+                Action onReached = OnCurrentDestinationReached;
+
+                // The path is cleared before the callbacks, so a callback can set a new destination.
                 ClearPath();
+                onReached?.Invoke();
+                OnAnyDestinationReached?.Invoke();
             }
             else
             {
-                Vector3 dir  =  newDestination - transform.position;
-                //newDestination += ObstacleAvoidance();
+                Vector3 dir = newDestination - transform.position;
                 ManualMovement.AccelerateTowards(dir + ObstacleAvoidance());
             }
         };
     }
 
     #region CalculatePath
-    void CalculatePath(Vector3 newDestination)
+
+    private void CalculatePath(Vector3 newDestination, Action<bool> onFinishCalculating)
     {
         _debug.Log("No veo el destino, calculo el camino.");
 
-        AI_Manager I = AI_Manager.instance;
+        AI_Manager manager = AI_Manager.instance;
 
-        Tuple<Node, Node> keyNodes = Tuple.Create(I.GetNearestNode(transform.position), I.GetNearestNode(newDestination));
+        Tuple<Node, Node> keyNodes = Tuple.Create(manager.GetNearestNode(transform.position), manager.GetNearestNode(newDestination));
 
-        if (keyNodes.Item1 != null && keyNodes.Item2 != null)
-            StartCoroutine(keyNodes.CalculateLazyThetaStar(I.WallMask, CanPlayPath, Destination, 200));
-        else
+        if (keyNodes.Item1 == null || keyNodes.Item2 == null)
         {
-            string node1 =  keyNodes.Item1 != null ? " NO es null " : "ES null ";
-            string node2 =  keyNodes.Item2 != null ? " NO es null " : "ES null ";
+            if (_debug.canDebug)
+            {
+                string node1 = keyNodes.Item1 != null ? " NO es null " : "ES null ";
+                string node2 = keyNodes.Item2 != null ? " NO es null " : "ES null ";
+                _debug.Log("El nodo INICIAL" + node1 + " y El nodo FINAL" + node2);
+            }
 
-            _debug.Log("El nodo INICIAL" + node1+ " y El nodo FINAL" + node2);
+            onFinishCalculating?.Invoke(false);
+            return;
         }
-            
+
+        Action<bool, List<Vector3>> onPathCalculated = (pathMade, newPath) =>
+        {
+            _pathCalculation = null;
+            onFinishCalculating?.Invoke(pathMade);
+            CanPlayPath(pathMade, newPath);
+        };
+
+        _pathCalculation = StartCoroutine(keyNodes.CalculateLazyThetaStar(manager.WallMask, onPathCalculated, Destination, PathStepsPerFrame));
     }
 
-    void CalculatePath(Vector3 newDestination,Action<bool,List<Vector3>> OnFinishCalculating)
+    private void StopPathCalculation()
     {
-        _debug.Log("No veo el destino, calculo el camino.");
+        if (_pathCalculation == null)
+            return;
 
-        AI_Manager I = AI_Manager.instance;
-        OnFinishCalculating += CanPlayPath;
-        Tuple<Node, Node> keyNodes = Tuple.Create(I.GetNearestNode(transform.position), I.GetNearestNode(newDestination));
-
-        OnFinishCalculating += CanPlayPath;
-        if (keyNodes.Item1 != null && keyNodes.Item2 != null)
-            StartCoroutine(keyNodes.CalculateLazyThetaStar(I.WallMask, OnFinishCalculating, Destination, 200));
-        else
-        {
-            string node1 = keyNodes.Item1 != null ? " NO es null " : "ES null ";
-            string node2 = keyNodes.Item2 != null ? " NO es null " : "ES null ";
-
-            _debug.Log("El nodo INICIAL" + node1 + " y El nodo FINAL" + node2);
-        }
-
+        StopCoroutine(_pathCalculation);
+        _pathCalculation = null;
     }
+
     #endregion
 
-
     #region PathPlay
-    void CanPlayPath(bool pathmade,List<Vector3> newPath)
+
+    private void CanPlayPath(bool pathmade, List<Vector3> newPath)
     {
         if (!pathmade)
         {
             _debug.Log("No se pudo armar el camino");
             return;
         }
-        _path = newPath;
+
+        _path.Clear();
+        _path.AddRange(newPath);
+        _pathIndex = 0;
+
         _debug.Log("Arme el camino, lo reproduzo ");
         _fixedUpdate = PlayPath;
     }
 
-    void PlayPath()
+    private void PlayPath()
     {
-        // Si llegamos al waypoint mas cercano, quitarlo para pasar al siguiente
-        if (Vector3.Distance(_path[0], transform.position) < DestinationArriveDistance)      
-            _path.RemoveAt(0);
-        
+        // Si llegamos al waypoint mas cercano, pasar al siguiente
+        if (_pathIndex < _path.Count && Vector3.Distance(_path[_pathIndex], transform.position) < DestinationArriveDistance)
+            _pathIndex++;
 
         // Mientras queden waypoints seguir avanzando
-        if (_path.Any())
+        if (_pathIndex < _path.Count)
         {
-            _debug.Log("Se mueve hacia el siguiente nodo, me faltan " + _path.Count);
-            var dir = _path[0] - transform.position;
+            if (_debug.canDebug)
+                _debug.Log("Se mueve hacia el siguiente nodo, me faltan " + (_path.Count - _pathIndex));
+
+            var dir = _path[_pathIndex] - transform.position;
             dir += ObstacleAvoidance();
             ManualMovement.AccelerateTowards(dir);
-        }
-        else // Si no quedan, finalizar el recorrido
-        {
-            _debug.Log("no hay mas nodos, corto pathfinding");
-            OnAnyDestinationReached?.Invoke();
-            OnCurrentDestinationReached?.Invoke();
-            ClearPath();
             return;
         }
 
+        // Si no quedan, finalizar el recorrido
+        _debug.Log("no hay mas nodos, corto pathfinding");
+
+        Action onReached = OnCurrentDestinationReached;
+
+        // The path is cleared before the callbacks, so a callback can set a new destination.
+        ClearPath();
+        OnAnyDestinationReached?.Invoke();
+        onReached?.Invoke();
     }
 
-    void ClearPath()
+    private void ClearPath()
     {
         _fixedUpdate = null;
         ManualMovement.ClearForces();
         ManualMovement.AccelerateTowards(Vector3.zero);
         _path.Clear();
+        _pathIndex = 0;
     }
+
     #endregion
 
-    public void CancelMovement()
-    {     
-        ClearPath();
-        OnMovementCanceled?.Invoke();
-    }
-
-
-
-    void DrawPath()
+    private Vector3 ObstacleAvoidance()
     {
-        if (_path.Any())
-            Gizmos.DrawLine(transform.position, _path[0]);
-
-        for (int i = 0; i < _path.Count - 1; i++)
-        {
-            Gizmos.DrawLine(_path[i], _path[i + 1]);
-        }
-    }
-
-    void DrawDestination()
-    {
-        if (Destination != Vector3.zero)
-        {
-            Gizmos.DrawWireSphere(Destination,3f);
-        }
-    }
-
-    Vector3 ObstacleAvoidance()
-    {
-
         float dist = ManualMovement.CurrentSpeed;
 
         if (Physics.SphereCast(transform.position, 1.5f, ManualMovement.Velocity, out RaycastHit hit, dist, obstacleMask))
         {
-            //_debug.Log("ESTOY HACIENDO OBSTACLE AVOIDANCE!");
             Vector3 obstacle = hit.transform.position;
             Vector3 dirToObject = obstacle - transform.position;
             float angleInBetween = Vector3.SignedAngle(transform.forward, dirToObject, Vector3.up);
 
-            Vector3 desired = angleInBetween >= 0 ? -transform.right : transform.right;
-
-            return desired;
+            return angleInBetween >= 0 ? -transform.right : transform.right;
         }
 
         return Vector3.zero;
     }
 
-    private void FixedUpdate() => _fixedUpdate?.Invoke();
+    #region Gizmos
 
-    public void Update() => _update?.Invoke();
+    private void DrawPath()
+    {
+        if (_pathIndex < _path.Count)
+            Gizmos.DrawLine(transform.position, _path[_pathIndex]);
+
+        for (int i = _pathIndex; i < _path.Count - 1; i++)
+            Gizmos.DrawLine(_path[i], _path[i + 1]);
+    }
+
+    private void DrawDestination()
+    {
+        if (Destination != Vector3.zero)
+            Gizmos.DrawWireSphere(Destination, 3f);
+    }
+
+    #endregion
 }

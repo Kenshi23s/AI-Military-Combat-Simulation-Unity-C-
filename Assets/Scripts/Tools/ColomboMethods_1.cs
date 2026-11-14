@@ -347,13 +347,7 @@ namespace FacundoColomboMethods
             return list;
         }
 
-        /// <summary>
-        /// chequea si tengo un punto en la vista o esta siendo obstruido por algo
-        /// </summary>
-        /// <param name="start"></param>
-        /// <param name="end"></param>
-        /// <param name="maskWall"></param>
-        /// <returns></returns>
+        /// <summary>Returns true when the segment from start to end hits nothing in maskWall.</summary>
         public static bool InLineOffSight(this Vector3 start, Vector3 end, LayerMask maskWall)
         {
             Vector3 dir = end - start;
@@ -361,13 +355,18 @@ namespace FacundoColomboMethods
             return !Physics.Raycast(start, dir, dir.magnitude, maskWall);
         }
 
+        /// <summary>
+        /// Returns true when end is within maxDistance of start and the segment between them hits nothing in maskWall.
+        /// </summary>
+        /// <remarks>The raycast covers the segment from start to end.</remarks>
         public static bool InLineOffSight(this Vector3 start, Vector3 end, LayerMask maskWall, float maxDistance)
         {
             Vector3 dir = end - start;
-            if (dir.sqrMagnitude > maxDistance * maxDistance)
+            float sqrDistance = dir.sqrMagnitude;
+            if (sqrDistance > maxDistance * maxDistance)
                 return false;
 
-            return !Physics.Raycast(start, dir, maxDistance, maskWall);
+            return !Physics.Raycast(start, dir, Mathf.Sqrt(sqrDistance), maskWall);
         }
 
         public static Vector3 CheckForwardRayColision(Vector3 pos, Vector3 dir, float range = 15)
