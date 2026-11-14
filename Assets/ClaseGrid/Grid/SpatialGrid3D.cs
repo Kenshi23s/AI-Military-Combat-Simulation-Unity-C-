@@ -1,43 +1,54 @@
-﻿using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
-using System;
 
+/// <summary>
+/// 3D grid of cells that stores each GridEntity in the cell of its position.
+/// Query returns the entities inside a box by visiting only the cells that the box overlaps.
+/// </summary>
+/// <remarks>
+/// <para>AddEntity, RemoveEntity and UpdateEntity run in O(1).</para>
+/// <para>Query runs in O(c + e), where c is the number of overlapped cells and e is the number of entities in them.</para>
+/// </remarks>
 public class SpatialGrid3D : MonoBehaviour
 {
     #region Variables
 
     [SerializeField] bool takePositionFromTransform = false;
-    //puntos de inicio de la grilla
+
+    /// <summary>World position of the grid's minimum corner.</summary>
     public float x, y, z;
-    // las dimensiones de las celdas
+
+    /// <summary>Size of each cell on each axis.</summary>
     [Min(0)]
     public float cellWidth, cellHeight, cellDepth;
-    // la cantidad de celdas
+
+    /// <summary>Number of cells on each axis.</summary>
     [Min(0)]
     public int width, height, depth;
 
-    //ultimas posiciones conocidas de los elementos, guardadas para comparación.
-    private Dictionary<GridEntity, Tuple<int, int, int>> lastPositions;
-    //los "contenedores"
-    private HashSet<GridEntity>[,,] buckets;
+    /// <summary>Cell coordinates of an entity outside the grid.</summary>
+    public static readonly Vector3Int Outside = new Vector3Int(-1, -1, -1);
 
-    //el valor de posicion que tienen los elementos cuando no estan en la zona de la grilla.
-    /*
-     Const es implicitamente statica
-     const tengo que ponerle el valor apenas la declaro, readonly puedo hacerlo en el constructor.
-     Const solo sirve para tipos de dato primitivos.
-     */
-    readonly public Tuple<int, int, int> Outside = Tuple.Create(-1, -1, -1);
+    /// <summary>Empty collection returned by Query when the box is outside the grid.</summary>
+    public static readonly GridEntity[] Empty = new GridEntity[0];
 
-    //Una colección vacía a devolver en las queries si no hay nada que devolver
-    readonly public GridEntity[] Empty = new GridEntity[0];
+    // Every entity registered with AddEntity, inside or outside the grid.
+    readonly HashSet<GridEntity> _entities = new HashSet<GridEntity>();
+
+    // Last known cell of each entity inside the grid.
+    Dictionary<GridEntity, Vector3Int> lastPositions;
+
+    // The entities in each cell.
+    HashSet<GridEntity>[,,] buckets;
+
+    Vector3 _gridCenter;
+
     #endregion
 
-    #region FUNCIONES
+    #region Unity calls
 
-    private void OnValidate() 
+    private void OnValidate()
     {
 #if UNITY_EDITOR
         runInEditMode = takePositionFromTransform;
@@ -45,6 +56,185 @@ public class SpatialGrid3D : MonoBehaviour
 
         CalculateGridCenter();
     }
+
+    private void Awake()
+    {
+        CalculateGridCenter();
+
+        lastPositions = new Dictionary<GridEntity, Vector3Int>();
+        buckets = new HashSet<GridEntity>[width, height, depth];
+
+        for (int i = 0; i < width; i++)
+            for (int j = 0; j < height; j++)
+                for (int k = 0; k < depth; k++)
+                    buckets[i, j, k] = new HashSet<GridEntity>();
+
+        foreach (var entity in FindObjectsOfType<GridEntity>(false))
+            AddEntity(entity);
+    }
+
+    public void Update()
+    {
+#if UNITY_EDITOR
+        if (!Application.IsPlaying(gameObject) && takePositionFromTransform && transform.hasChanged)
+            SetGridPosition();
+#endif
+    }
+
+    void OnDestroy()
+    {
+        foreach (var entity in _entities)
+        {
+            if (entity == null)
+                continue;
+
+            entity.SetSpatialGrid(null);
+            entity.OnGrid = false;
+            entity.OnMove -= UpdateEntity;
+        }
+
+        _entities.Clear();
+    }
+
+    #endregion
+
+    #region Entities
+
+    /// <summary>
+    /// Registers the entity in the grid and places it in the cell of its position.
+    /// The grid updates the entity's cell on every OnMove event.
+    /// </summary>
+    public void AddEntity(GridEntity entity)
+    {
+        entity.SetSpatialGrid(this);
+
+        // Unsubscribing first keeps a single subscription when AddEntity runs twice for the same entity.
+        entity.OnMove -= UpdateEntity;
+        entity.OnMove += UpdateEntity;
+        _entities.Add(entity);
+
+        UpdateEntity(entity);
+    }
+
+    /// <summary>
+    /// Removes the entity from its cell and unregisters it from the grid.
+    /// Sets OnGrid to false and the entity's SpatialGrid to null.
+    /// </summary>
+    public void RemoveEntity(GridEntity entity)
+    {
+        if (lastPositions != null && lastPositions.TryGetValue(entity, out Vector3Int lastPos))
+        {
+            buckets[lastPos.x, lastPos.y, lastPos.z].Remove(entity);
+            lastPositions.Remove(entity);
+        }
+
+        _entities.Remove(entity);
+        entity.OnGrid = false;
+        entity.SetSpatialGrid(null);
+        entity.OnMove -= UpdateEntity;
+    }
+
+    /// <summary>
+    /// Moves the entity to the cell of its current position.
+    /// Sets OnGrid to true when the position is inside the grid.
+    /// </summary>
+    public void UpdateEntity(GridEntity entity)
+    {
+        Vector3Int lastPos = lastPositions.TryGetValue(entity, out Vector3Int known) ? known : Outside;
+        Vector3Int currentPos = GetPositionInGrid(entity.transform.position);
+
+        if (lastPos == currentPos)
+            return;
+
+        if (IsInsideGrid(lastPos))
+            buckets[lastPos.x, lastPos.y, lastPos.z].Remove(entity);
+
+        if (IsInsideGrid(currentPos))
+        {
+            buckets[currentPos.x, currentPos.y, currentPos.z].Add(entity);
+            lastPositions[entity] = currentPos;
+            entity.OnGrid = true;
+        }
+        else
+        {
+            lastPositions.Remove(entity);
+            entity.OnGrid = false;
+        }
+    }
+
+    #endregion
+
+    #region Queries
+
+    /// <summary>
+    /// Returns the entities inside the box between aabbFrom and aabbTo that pass filterByPosition.
+    /// </summary>
+    /// <param name="aabbFrom">One corner of the box.</param>
+    /// <param name="aabbTo">The opposite corner of the box.</param>
+    /// <param name="filterByPosition">Returns true for the entity positions to keep.</param>
+    /// <returns>A new list with the matching entities. Empty when the box is outside the grid.</returns>
+    public IEnumerable<GridEntity> Query(Vector3 aabbFrom, Vector3 aabbTo, Func<Vector3, bool> filterByPosition)
+    {
+        Vector3 from = Vector3.Min(aabbFrom, aabbTo);
+        Vector3 to = Vector3.Max(aabbFrom, aabbTo);
+
+        Vector3Int fromCell = GetPositionInGrid(from);
+        Vector3Int toCell = GetPositionInGrid(to);
+
+        // The box is outside the grid on at least one axis.
+        if (toCell.x < 0 || toCell.y < 0 || toCell.z < 0 ||
+            fromCell.x >= width || fromCell.y >= height || fromCell.z >= depth)
+            return Empty;
+
+        fromCell = Vector3Int.Max(fromCell, Vector3Int.zero);
+        toCell = Vector3Int.Min(toCell, new Vector3Int(width - 1, height - 1, depth - 1));
+
+        var results = new List<GridEntity>();
+
+        for (int i = fromCell.x; i <= toCell.x; i++)
+            for (int j = fromCell.y; j <= toCell.y; j++)
+                for (int k = fromCell.z; k <= toCell.z; k++)
+                {
+                    foreach (GridEntity entity in buckets[i, j, k])
+                    {
+                        Vector3 pos = entity.transform.position;
+
+                        bool insideBox =
+                            from.x <= pos.x && pos.x <= to.x &&
+                            from.y <= pos.y && pos.y <= to.y &&
+                            from.z <= pos.z && pos.z <= to.z;
+
+                        if (insideBox && filterByPosition(pos))
+                            results.Add(entity);
+                    }
+                }
+
+        return results;
+    }
+
+    /// <summary>Returns the cell coordinates of a world position.</summary>
+    public Vector3Int GetPositionInGrid(Vector3 pos)
+    {
+        return new Vector3Int(
+            Mathf.FloorToInt((pos.x - x) / cellWidth),
+            Mathf.FloorToInt((pos.y - y) / cellHeight),
+            Mathf.FloorToInt((pos.z - z) / cellDepth));
+    }
+
+    /// <summary>Returns true when the cell coordinates are inside the grid.</summary>
+    public bool IsInsideGrid(Vector3Int position)
+    {
+        return 0 <= position.x && position.x < width &&
+               0 <= position.y && position.y < height &&
+               0 <= position.z && position.z < depth;
+    }
+
+    /// <summary>Returns the world position of the grid's center.</summary>
+    public Vector3 GetMidleOfGrid() => _gridCenter;
+
+    #endregion
+
+    #region Grid position
 
     void SetGridPosition()
     {
@@ -55,279 +245,107 @@ public class SpatialGrid3D : MonoBehaviour
         CalculateGridCenter();
     }
 
-    void CalculateGridCenter() 
+    void CalculateGridCenter()
     {
         Vector3 dimensions = new Vector3(width * cellWidth, height * cellHeight, depth * cellDepth);
-        Vector3 center = new Vector3(x, y, z) + dimensions / 2;
-        _gridCenter = center;
+        _gridCenter = new Vector3(x, y, z) + dimensions / 2;
     }
-
-    private void Awake()
-    {
-        CalculateGridCenter();
-
-        lastPositions = new Dictionary<GridEntity, Tuple<int, int, int>>();
-        buckets = new HashSet<GridEntity>[width, height, depth];
-        
-        //creamos todos los hashsets
-        for (int i = 0; i < width; i++)
-            for (int j = 0; j < height; j++)
-                for (int k = 0; k < depth; k++)
-                {
-                    buckets[i, j, k] = new HashSet<GridEntity>();
-                }
-
-        //P/alumnos: por que no usamos OfType<>() despues del RecursiveWalker() aca?
-        //var ents = RecursiveWalker(transform)
-        //    .Select(x => x.GetComponent<GridEntity>())
-        //    .Where(x => x != null);
-
-        var ents = FindObjectsOfType<GridEntity>(false);
-
-        foreach (var e in ents)
-        {
-            AddEntity(e);
-        }
-    }
-
-    public void AddEntity(GridEntity entity)
-    {
-        entity.SetSpatialGrid(this);
-        entity.OnMove += UpdateEntity;
-
-        UpdateEntity(entity);
-    }
-
-    public void RemoveEntity(GridEntity entity)
-    {
-        
-        entity.SetSpatialGrid(null);
-        entity.OnMove -= UpdateEntity;   
-    }
-
-    public void Update() 
-    {
-#if UNITY_EDITOR
-        if(!Application.IsPlaying(gameObject) && takePositionFromTransform && transform.hasChanged) 
-        {
-            SetGridPosition();
-        }
-#endif
-    }
-
-    public void UpdateEntity(GridEntity entity)
-    {
-        var lastPos = lastPositions.ContainsKey(entity) ? lastPositions[entity] : Outside;
-        var currentPos = GetPositionInGrid(entity.gameObject.transform.position);
-
-        //Misma posición, no necesito hacer nada
-        if (lastPos.Equals(currentPos))
-            return;
-
-        //Lo "sacamos" de la posición anterior
-        if (IsInsideGrid(lastPos))
-            buckets[lastPos.Item1, lastPos.Item2, lastPos.Item3].Remove(entity);
-
-        //Lo "metemos" a la celda nueva, o lo sacamos si salio de la grilla
-        if (IsInsideGrid(currentPos))
-        {
-            buckets[currentPos.Item1, currentPos.Item2, currentPos.Item3].Add(entity);
-            lastPositions[entity] = currentPos;
-          
-            entity.OnGrid = true;
-        }
-        else
-        {
-          
-            lastPositions.Remove(entity);
-            entity.OnGrid = false;
-        }
-    }
-
-    public IEnumerable<GridEntity> Query(Vector3 aabbFrom, Vector3 aabbTo, Func<Vector3, bool> filterByPosition)
-    {
-        var from = new Vector3(Mathf.Min(aabbFrom.x, aabbTo.x), Mathf.Min(aabbFrom.y, aabbTo.y), Mathf.Min(aabbFrom.z, aabbTo.z));
-        var to = new Vector3(Mathf.Max(aabbFrom.x, aabbTo.x), Mathf.Max(aabbFrom.y, aabbTo.y), Mathf.Max(aabbFrom.z, aabbTo.z));
-
-        var fromCoord = GetPositionInGrid(from);
-        var toCoord = GetPositionInGrid(to);
-
-        //¡Ojo que clampea a 0,0 el Outside! TODO: Checkear cuando descartar el query si estan del mismo lado
-        fromCoord = Tuple.Create(Utility.Clampi(fromCoord.Item1, 0, width), Utility.Clampi(fromCoord.Item2, 0, height), Utility.Clampi(fromCoord.Item3, 0, depth));
-        toCoord = Tuple.Create(Utility.Clampi(toCoord.Item1, 0, width), Utility.Clampi(toCoord.Item2, 0, height), Utility.Clampi(toCoord.Item3, 0, depth));
-
-        if (!IsInsideGrid(fromCoord) && !IsInsideGrid(toCoord))
-            return Empty;
-        
-        // Creamos tuplas de cada celda
-        var cols = Generate(fromCoord.Item1, x => x + 1)
-            .TakeWhile(x => x < width && x <= toCoord.Item1);
-
-        var rows = Generate(fromCoord.Item2, y => y + 1)
-            .TakeWhile(y => y < height && y <= toCoord.Item2);
-
-        var aisles = Generate(fromCoord.Item3, z => z + 1)
-            .TakeWhile(z => z < depth && z <= toCoord.Item3);
-
-        var cells = 
-        cols.SelectMany(
-            col => rows.SelectMany(
-                row => aisles.Select(aisle => Tuple.Create(col, row, aisle))
-            )
-        );
-
-        // Iteramos las que queden dentro del criterio
-        return cells
-            .SelectMany(cell => buckets[cell.Item1, cell.Item2, cell.Item3])
-            .Where(x => x != null)
-            .Where(e =>
-                from.x <= e.transform.position.x && e.transform.position.x <= to.x &&
-                from.y <= e.transform.position.y && e.transform.position.y <= to.y &&
-                from.z <= e.transform.position.z && e.transform.position.z <= to.z
-            ).Where(e => filterByPosition(e.transform.position));
-    }
-
-    public Tuple<int, int, int> GetPositionInGrid(Vector3 pos)
-    {
-        //quita la diferencia, divide segun las celdas y floorea
-        return Tuple.Create(Mathf.FloorToInt((pos.x - x) / cellWidth),
-                            Mathf.FloorToInt((pos.y - y) / cellHeight),
-                            Mathf.FloorToInt((pos.z - z) / cellDepth));
-    }
-
-    public bool IsInsideGrid(Tuple<int, int, int> position)
-    {
-        //si es menor a 0 o mayor a width o height, no esta dentro de la grilla
-        return 0 <= position.Item1 && position.Item1 < width &&
-            0 <= position.Item2 && position.Item2 < height && 
-            0 <= position.Item3 && position.Item3 < depth;
-    }
-
-    void OnDestroy()
-    {
-        //var ents = RecursiveWalker(transform).Select(x => x.GetComponent<GridEntity>()).Where(e => e != null);
-
-        var ents = FindObjectsOfType<GridEntity>(false);
-
-        foreach (var e in ents)
-        {
-            e.SetSpatialGrid(null);
-            e.OnMove -= UpdateEntity;
-        }
-    }
-
-    #region GENERATORS
-    private static IEnumerable<Transform> RecursiveWalker(Transform parent)
-    {
-        foreach (Transform child in parent)
-        {
-            foreach (Transform grandchild in RecursiveWalker(child))
-                yield return grandchild;
-            yield return child;
-        }
-    }
-
-    IEnumerable<T> Generate<T>(T seed, Func<T, T> mutate)
-    {
-        T accum = seed;
-        while (true)
-        {
-            yield return accum;
-            accum = mutate(accum);
-        }
-    }
-    #endregion
 
     #endregion
 
-    Vector3 _gridCenter;
-    public Vector3 GetMidleOfGrid()
-    {
-        return _gridCenter;
-    }
-    #region GRAPHIC REPRESENTATION
+    #region Graphic representation
+
+    /// <summary>Hides every grid gizmo.</summary>
     public bool AreGizmosShutDown;
+
+    /// <summary>Draws connections only between entities in the same cell.</summary>
     public bool activatedGrid;
+
+    /// <summary>Logs the connection count of each entity on the next gizmo draw.</summary>
     public bool showLogs = true;
+
     private void OnDrawGizmos()
     {
-
-
         if (AreGizmosShutDown) return;
 
-        // Dibujamos el centro de la grilla
         Gizmos.color = Color.red;
         Gizmos.DrawSphere(_gridCenter, 50f);
-        //
 
-        Gizmos.color = Color.white;
-        var rows = Generate(y, curr => curr + cellHeight).Take(height + 1)
-                .SelectMany(rowY => Generate(z, curr => curr + cellDepth).Take(depth + 1)
-                                    .Select(rowZ => Tuple.Create(   new Vector3(x, rowY, rowZ),
-                                                                    new Vector3(x + cellWidth * width, rowY, rowZ))));
-
-        var cols = Generate(x, curr => curr + cellWidth).Take(width + 1)
-                .SelectMany(colX => Generate(z, curr => curr + cellDepth).Take(depth + 1)
-                                    .Select(colZ => Tuple.Create(   new Vector3(colX, y, colZ),
-                                                                    new Vector3(colX, y + cellHeight * height, colZ))));
-
-        var aisles = Generate(x, curr => curr + cellWidth).Take(width + 1)
-                .SelectMany(aisleX => Generate(y, curr => curr + cellHeight).Take(height + 1)
-                                    .Select(aisleY => Tuple.Create( new Vector3(aisleX, aisleY, z),
-                                                                    new Vector3(aisleX, aisleY, z + cellDepth * depth))));
-                                                                    
-        var allLines = rows.Concat(cols).Concat(aisles);
         Gizmos.color = new Color(1, 1, 1, 0.1f);
-
-        foreach (var elem in allLines)
-        {
-            Gizmos.DrawLine(elem.Item1, elem.Item2);
-        }
+        DrawGridLines();
 
         if (buckets == null) return;
 
-        var originalCol = GUI.color;
-        GUI.color = Color.red;
-        if (!activatedGrid)
-        {
-            IEnumerable<GridEntity> allElems = Enumerable.Empty<GridEntity>();
-            foreach(var elem in buckets)
-                allElems = allElems.Concat(elem);
-
-            int connections = 0;
-            foreach (var ent in allElems)
-            {
-                foreach(var neighbour in allElems.Where(x => x != ent))
-                {
-                    Gizmos.DrawLine(ent.transform.position, neighbour.transform.position);
-                    connections++;
-                }
-                if(showLogs)
-                    Debug.Log("tengo " + connections + " conexiones por individuo");
-                connections = 0;
-            }
-        }
+        if (activatedGrid)
+            DrawConnectionsInsideCells();
         else
-        {
-            int connections = 0;
-            foreach (var elem in buckets)
-            {
-                foreach(var ent in elem)
-                {
-                    foreach (var n in elem.Where(x => x != ent))
-                    {
-                        Gizmos.DrawLine(ent.transform.position, n.transform.position);
-                        connections++;
-                    }
-                    if(showLogs)
-                        Debug.Log("tengo " + connections + " conexiones por individuo");
-                    connections = 0;
-                }
-            }
-        }
-        
-        GUI.color = originalCol;
+            DrawAllConnections();
+
         showLogs = false;
     }
+
+    void DrawGridLines()
+    {
+        float sizeX = cellWidth * width;
+        float sizeY = cellHeight * height;
+        float sizeZ = cellDepth * depth;
+
+        // Lines along the X axis.
+        for (int j = 0; j <= height; j++)
+            for (int k = 0; k <= depth; k++)
+            {
+                var start = new Vector3(x, y + j * cellHeight, z + k * cellDepth);
+                Gizmos.DrawLine(start, start + new Vector3(sizeX, 0, 0));
+            }
+
+        // Lines along the Y axis.
+        for (int i = 0; i <= width; i++)
+            for (int k = 0; k <= depth; k++)
+            {
+                var start = new Vector3(x + i * cellWidth, y, z + k * cellDepth);
+                Gizmos.DrawLine(start, start + new Vector3(0, sizeY, 0));
+            }
+
+        // Lines along the Z axis.
+        for (int i = 0; i <= width; i++)
+            for (int j = 0; j <= height; j++)
+            {
+                var start = new Vector3(x + i * cellWidth, y + j * cellHeight, z);
+                Gizmos.DrawLine(start, start + new Vector3(0, 0, sizeZ));
+            }
+    }
+
+    // Draws a line between every pair of entities in the grid: O(n²).
+    void DrawAllConnections()
+    {
+        var all = new List<GridEntity>();
+        foreach (var bucket in buckets)
+            all.AddRange(bucket);
+
+        DrawConnections(all);
+    }
+
+    // Draws a line between every pair of entities that share a cell.
+    void DrawConnectionsInsideCells()
+    {
+        foreach (var bucket in buckets)
+            DrawConnections(bucket);
+    }
+
+    void DrawConnections(IReadOnlyCollection<GridEntity> group)
+    {
+        foreach (var entity in group)
+        {
+            foreach (var other in group)
+            {
+                if (other != entity)
+                    Gizmos.DrawLine(entity.transform.position, other.transform.position);
+            }
+
+            if (showLogs)
+                Debug.Log("tengo " + (group.Count - 1) + " conexiones por individuo");
+        }
+    }
+
     #endregion
 }
