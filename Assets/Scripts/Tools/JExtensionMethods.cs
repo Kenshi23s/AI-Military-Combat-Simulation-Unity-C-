@@ -2,8 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>Rigidbody rotation and vector projection helpers.</summary>
 public static class JExtensionMethods
 {
+    /// <summary>Moves and rotates rb to targetRotation around point.</summary>
     public static void RotateToAroundPoint(this Rigidbody rb, Quaternion targetRotation, Vector3 point)
     {
         Vector3 offsetToPoint = point - rb.position;
@@ -12,6 +14,7 @@ public static class JExtensionMethods
         rb.MoveRotation(targetRotation);
     }
 
+    /// <summary>Moves and rotates rb by rotation around point.</summary>
     public static void RotateAroundPoint(this Rigidbody rb, Quaternion rotation, Vector3 point)
     {
         Quaternion targetRotation = rb.rotation * rotation;
@@ -21,9 +24,9 @@ public static class JExtensionMethods
         rb.MoveRotation(targetRotation);
     }
 
-    // ¿Por qué no usar Vector3.ProjectOnPlane?
-    // Ese método hace lo mismo pero no asume que el vector normal proporcionado es de longitud unitaria;
-    // Divide el resultado por la longitud al cuadrado de la normal, que siempre es 1, por lo que no es necesario.
+    /// <summary>Returns direction projected on the plane of planeNormal, normalized.</summary>
+    /// <param name="planeNormal">Unit normal of the plane.</param>
+    /// <remarks>Vector3.ProjectOnPlane divides by the squared length of the normal. A unit normal skips that division.</remarks>
     public static Vector3 ProjectDirectionOnPlane(this Vector3 direction, Vector3 planeNormal)
     {
         return (direction - planeNormal * Vector3.Dot(direction, planeNormal)).normalized;

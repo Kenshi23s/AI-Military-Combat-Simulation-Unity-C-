@@ -20,26 +20,9 @@ public enum PlaneStates
 [SelectionBase]
 public class Plane : Vehicle
 {
-
-    private EventFSM<PlaneStates> _planeFSM;
-
-    /// <summary>Current state of the FSM.</summary>
-    public PlaneStates actualState => _planeFSM.CurrentKey;
-
-    // true in PURSUIT_TARGET and FLEE_FROM_PURSUITER.
-    public override bool InCombat => actualState == PlaneStates.PURSUIT_TARGET || actualState == PlaneStates.FLEE_FROM_PURSUITER;
-
     /// <summary>The enemy plane this plane pursues.</summary>
     [field : Header("Plane Variables"),SerializeField]
     public Plane targetPlane { get; private set; }
-
-    /// <summary>The enemy plane that pursues this plane.</summary>
-    [SerializeField]
-    public Plane beingChasedBy { get; private set; }
-
-    //para que el avion que es perseguido se mueva de manera "dinamica" en la dogfight
-    //estaria bueno cambiarlo cada x seg con una corrutina cuando se esta en ese estado
-    private Vector3 _evadingDir;
 
     [SerializeField] private float _cd_OnRandomDir;
     [SerializeField] private float RandomAngleToStart = 90;
@@ -47,38 +30,46 @@ public class Plane : Vehicle
     [SerializeField, Min(0)] private float _collisionCheckDistance = 30f;
     [SerializeField] private int _ExplosionDamageOnDeath = 50;
 
-    #region Misile
-    [SerializeField]
+        [SerializeField]
     private Transform[] misilePos;
     [SerializeField] private Misile.MisileStats misileStats;
     [SerializeField]private float misileCD;
+    [SerializeField] private float minimumDistanceForStrike;
 
-    #endregion
+        [Header("Shooting Parameters")]
+    [SerializeField] private float bulletsPerBurst;
+    [SerializeField] private float burstCD = 3;
+    [SerializeField] private float BulletCD = 0.3f;
+    [SerializeField] private Transform shootPos;
 
-    #region AirStrike
-    // Seconds before the air strike pivot is destroyed.
-    private const float AirStrikePivotLifetime = 120f;
+    [Header("VFX")]
+    [SerializeField] private ParticleHolder ExplosionParticle;
+
+    private EventFSM<PlaneStates> _planeFSM;
+
+    //para que el avion que es perseguido se mueva de manera "dinamica" en la dogfight
+    //estaria bueno cambiarlo cada x seg con una corrutina cuando se esta en ese estado
+    private Vector3 _evadingDir;
 
     // Reused by FlyAround to collect the allied planes.
     private readonly List<Plane> _alliesBuffer = new List<Plane>();
 
     private Vector3 airStrikeCordinates;
-    [SerializeField] private float minimumDistanceForStrike;
-    #endregion
-
-    #region ShootingBullets
-    [Header("Shooting Parameters")]
-    [SerializeField] private float bulletsPerBurst;
-    [SerializeField] private float burstCD = 3;
-    [SerializeField] private float BulletCD = 0.3f;
-    [SerializeField] private Transform shootPos;
-    #endregion
-
-
-    [Header("VFX")]
-    [SerializeField] private ParticleHolder ExplosionParticle;
     private int keyExplosionParticle;
+
+    // Seconds before the air strike pivot is destroyed.
+    private const float AirStrikePivotLifetime = 120f;
     private const float explosionRadius = 20f;
+
+    /// <summary>Current state of the FSM.</summary>
+    public PlaneStates actualState => _planeFSM.CurrentKey;
+
+    // true in PURSUIT_TARGET and FLEE_FROM_PURSUITER.
+    public override bool InCombat => actualState == PlaneStates.PURSUIT_TARGET || actualState == PlaneStates.FLEE_FROM_PURSUITER;
+
+    /// <summary>The enemy plane that pursues this plane.</summary>
+    [SerializeField]
+    public Plane beingChasedBy { get; private set; }
 
     public override void VehicleAwake()
     {
@@ -107,7 +98,7 @@ public class Plane : Vehicle
     }
 
     private void Update() => _planeFSM.Update();
-  
+
     private void FixedUpdate() => _planeFSM.FixedUpdate();
 
     private void OnDestroy()
@@ -144,6 +135,7 @@ public class Plane : Vehicle
             ShootMisile(targetPlane.transform);          
         }
     }
+
     #endregion
 
     #region Useful Methods

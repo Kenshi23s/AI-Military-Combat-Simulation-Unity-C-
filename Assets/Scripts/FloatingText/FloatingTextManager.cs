@@ -1,29 +1,24 @@
 using UnityEngine;
 using static FloatingText;
+/// <summary>Shows pooled FloatingText damage numbers.</summary>
 [RequireComponent(typeof(DebugableObject))]
 public class FloatingTextManager : MonoSingleton<FloatingTextManager>
 {
-
-    private DebugableObject _debug;
-    private TextPool pool = new TextPool();
-
     [SerializeField]
     private FloatingTextParam _parameters;
     [SerializeField]
     private FloatingText sampleFloatingText;
 
- 
+    private DebugableObject _debug;
+    private TextPool pool = new TextPool();
+
     protected override void SingletonAwake()
     {
         _debug = GetComponent<DebugableObject>();   
         pool.Initialize(transform, sampleFloatingText, _debug);
     }
-    //podriamos tener en este metodo variaciones por ej
-    // si es critico o baja que salga de otro color el texto, con otra fuente, o otra proporcion
-    //revisar para 6to cuatrimestre o cuando no haya tareas heavy
 
-
-    //esto deberia subscribirse a el gun manager.actualgunhit<HitData>, por ahora lo dejo asi
+    /// <summary>Shows text at pos. A critical hit shows it in yellow.</summary>
     public void PopUpText(string text,Vector3 pos, bool isCrit = false)
     {
      

@@ -6,13 +6,12 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Flag of the parent CapturePoint: owner color, capture progress and unit count of each team.
+/// </summary>
 public class Flag_UI : MonoBehaviour
 {
     [SerializeField] private Image _flagOwner;
-   
-
-    private Material _mat;
-    private CapturePoint _myCapturePoint;
 
     [Header("OnTake")]
     [SerializeField] private GameObject OnTakeGO;
@@ -21,6 +20,9 @@ public class Flag_UI : MonoBehaviour
     [Header("OnDispute")]
     [SerializeField] private GameObject OnDisputeGO;
     [SerializeField, SerializedDictionary("Team", "TextMesh")] private SerializedDictionary<MilitaryTeam, TextMeshProUGUI> TeamTexts;
+
+    private Material _mat;
+    private CapturePoint _myCapturePoint;
 
     private void Awake()
     {
@@ -113,7 +115,6 @@ public class Flag_UI : MonoBehaviour
         _myCapturePoint.OnTeamsInPointUpdate.RemoveListener(SetTexts);
     }
 
-
     private void SetLetterColor(MilitaryTeam team) 
     {
         Color color;
@@ -132,7 +133,7 @@ public class Flag_UI : MonoBehaviour
 
         _mat.SetColor("_LetterColor", color);
     } 
-  
+
     private void OnValidate()
     {
       

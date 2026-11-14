@@ -12,6 +12,27 @@ using UnityEngine;
 [RequireComponent(typeof(LineRenderer))]
 public class Sniper : Soldier
 {
+    [SerializeField] private int FramesBetweenEnemySearch = 4;
+    [SerializeField] private float _aimSpeed;
+
+    [SerializeField, Header("Shoot State")] private float _addPerTimesFocused;
+    [SerializeField] private float _requiredFocusTime, maxShootsInRow = 1;
+
+    private EventFSM<SNIPER_STATES> _fsm;
+
+    private LineRenderer _laser;
+
+    // Running search of the LOOK_FOR_TARGETS state.
+    private Coroutine _lookForEnemies;
+    private float _currentAimLerp, _currentFocusTime;
+    private int timesFocused = 1;
+
+    /// <summary>Raised when LookForEnemiesCoroutine finds a target.</summary>
+    public event Action OnEnemyFound = delegate { };
+
+    /// <summary>The enemy the sniper aims at.</summary>
+    public Soldier target { get; private set; }
+
     /// <summary>States of the FSM.</summary>
     public enum SNIPER_STATES
     {
@@ -20,27 +41,6 @@ public class Sniper : Soldier
         FOCUS_N_SHOOT,
         DIE
     }
-
-    /// <summary>Raised when LookForEnemiesCoroutine finds a target.</summary>
-    public event Action OnEnemyFound = delegate { };
-
-    private EventFSM<SNIPER_STATES> _fsm;
-
-    private LineRenderer _laser;
-
-    // Running search of the LOOK_FOR_TARGETS state.
-    private Coroutine _lookForEnemies;
-
-    /// <summary>The enemy the sniper aims at.</summary>
-    public Soldier target { get; private set; }
-
-    [SerializeField] private int FramesBetweenEnemySearch = 4;
-    [SerializeField] private float _aimSpeed;
-    private float _currentAimLerp, _currentFocusTime;
-
-    [SerializeField, Header("Shoot State")] private float _addPerTimesFocused;
-    [SerializeField] private float _requiredFocusTime, maxShootsInRow = 1;
-    private int timesFocused = 1;
 
     protected override void Awake()
     {
@@ -57,7 +57,6 @@ public class Sniper : Soldier
         var sprite = tm.GetSprite(typeof(Sniper)); tm.AddToTeam(Team, this, sprite);
 
     }
-
 
     #region FSM SET AND STATES
     private void CreateFSM()
@@ -201,7 +200,6 @@ public class Sniper : Soldier
         return state;
     }
 
-
     private State<SNIPER_STATES> ShootAtEnemy()
     {
         var state = new State<SNIPER_STATES>("Focus N Shoot");
@@ -312,8 +310,6 @@ public class Sniper : Soldier
     {
         Team = newTeam;
     }
-
-   
 
     private void Update()
     {

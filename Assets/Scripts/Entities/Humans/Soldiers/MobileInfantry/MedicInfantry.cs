@@ -12,6 +12,28 @@ using System.Linq;
 [RequireComponent(typeof(NewAIMovement))]
 public class MedicInfantry : MobileInfantry
 {
+    /// <summary>The ally the medic heals.</summary>
+    public MobileInfantry HealTarget;
+
+    // La velocidad de curacion en health points por segundo
+    [SerializeField] private float _healSpeed = 40f;
+
+    [SerializeField] private float _maxHealDistance = 2.5f, _idealHealDistance = 1.5f;
+
+    [SerializeField] private ParticleSystem _healParticles;
+
+    private EventFSM<MEDIC_INFANTRY_STATES> _fsm;
+
+    private State<MEDIC_INFANTRY_STATES> _awaitingOrders, _leaderMoveTo, _followLeader, _runToHeal, _heal, _die;
+
+    private float _queryHealTargetsTime = 1f;
+
+    // El porcentaje de vida requerido para considerar que una tropa ya no necesita curacion.
+    private float _minHealthNeeded = 0.9f;
+
+    // Running coroutines. Each state stops the ones it started.
+    private Coroutine _findPoint, _followLeaderRoutine;
+
     /// <summary>States of the FSM.</summary>
     public enum MEDIC_INFANTRY_STATES
     {
@@ -22,28 +44,6 @@ public class MedicInfantry : MobileInfantry
         HEAL,
         DIE
     }
-
-    private EventFSM<MEDIC_INFANTRY_STATES> _fsm;
-
-    /// <summary>The ally the medic heals.</summary>
-    public MobileInfantry HealTarget;
-
-    private State<MEDIC_INFANTRY_STATES> _awaitingOrders, _leaderMoveTo, _followLeader, _runToHeal, _heal, _die;
-
-    private float _queryHealTargetsTime = 1f;
-
-    // El porcentaje de vida requerido para considerar que una tropa ya no necesita curacion.
-    private float _minHealthNeeded = 0.9f;
-
-    // La velocidad de curacion en health points por segundo
-    [SerializeField] private float _healSpeed = 40f;
-
-    [SerializeField] private float _maxHealDistance = 2.5f, _idealHealDistance = 1.5f;
-
-    [SerializeField] private ParticleSystem _healParticles;
-
-    // Running coroutines. Each state stops the ones it started.
-    private Coroutine _findPoint, _followLeaderRoutine;
 
     protected override void Awake()
     {

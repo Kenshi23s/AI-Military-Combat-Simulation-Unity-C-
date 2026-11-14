@@ -2,8 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>Draws wire cylinders as gizmos.</summary>
 public static class DrawCylinder
 {
+    /// <summary>Draws a wire cylinder gizmo of height and radius at position.</summary>
+    /// <param name="drawFromBase">true places position at the base. false places it at the center.</param>
     public static void ForGizmo(Vector3 position, Quaternion orientation, float height, float radius, bool drawFromBase = true)
     {
         Vector3 localUp = orientation * Vector3.up;

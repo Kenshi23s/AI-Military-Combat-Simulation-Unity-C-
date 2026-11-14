@@ -1,34 +1,29 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>Distance, field of view and line of sight checks between two points.</summary>
 public static class ViewHelper
 {
-    public static bool IsNear(Vector3 origin, Vector3 target, float viewRadius) //Revisa si hay una distancia especifica entre el punto A y el punto B
+    /// <summary>Returns true when target is within viewRadius of origin.</summary>
+    public static bool IsNear(Vector3 origin, Vector3 target, float viewRadius)
     {
-        float sqrViewRadius = viewRadius * viewRadius; // Toma el viewRadius al cuadrado para optimizar un poco el codigo.
-        Vector3 dir = target - origin; //Toma el vector entre los dos objetos
-
-        // Si esta dentro del rango devuelve true.
-        // Este metodo esta apenas mas optimizado que hacer Vector3.Distance(origin, target) <= viewRadius
-        return dir.sqrMagnitude <= sqrViewRadius;
+        return (target - origin).sqrMagnitude <= viewRadius * viewRadius;
     }
 
-    //Revisa si hay linea de vision directa entre el objeto A y el B
-    public static bool IsInLineOfSight(Vector3 origin, Vector3 target, LayerMask obstacleLayer) 
+    /// <summary>Returns true when the segment from origin to target hits nothing in obstacleLayer.</summary>
+    public static bool IsInLineOfSight(Vector3 origin, Vector3 target, LayerMask obstacleLayer)
     {
-        Vector3 dir = target - origin; //Toma el vector entre el punto A y el B
-
-        //Tira un raycast desde el objeto A hacia el B
+        Vector3 dir = target - origin;
         return !Physics.Raycast(origin, dir, dir.magnitude, obstacleLayer);
     }
 
-    //Revisa si hay linea de vision directa entre el objeto A y el B. Pero chequea si se golpeo el target collider
-    public static bool IsColliderInLineOfSight(Vector3 origin, Vector3 dir, LayerMask obstacleLayer, Collider targetCollider, out Vector3 hitPos) 
+    /// <summary>
+    /// Returns true when a ray from origin along dir reaches targetCollider before any obstacle in obstacleLayer.
+    /// </summary>
+    /// <param name="hitPos">The point on targetCollider, or the point on the obstacle.</param>
+    public static bool IsColliderInLineOfSight(Vector3 origin, Vector3 dir, LayerMask obstacleLayer, Collider targetCollider, out Vector3 hitPos)
     {
-
         targetCollider.Raycast(new Ray(origin, dir), out RaycastHit hitInfo, float.MaxValue);
-        // Si no hay ningun obstaculo en el medio
+
         if (!Physics.Raycast(origin, dir, out RaycastHit obstacleHitInfo, hitInfo.distance, obstacleLayer))
         {
             hitPos = hitInfo.point;
@@ -39,23 +34,29 @@ public static class ViewHelper
         return false;
     }
 
+    /// <summary>Returns true when the angle between forward and dir is at most half of viewAngle.</summary>
     public static bool IsInFOV(Vector3 forward, Vector3 dir, float viewAngle)
     {
         return Vector3.Angle(forward, dir) <= viewAngle / 2;
     }
 
+    /// <summary>Returns true when the angle between forward and dir is at most half of viewAngle.</summary>
+    /// <param name="alignment">Dot product of the normalized forward and dir.</param>
     public static bool IsInFOV(Vector3 forward, Vector3 dir, float viewAngle, out float alignment)
     {
         float minViewDotProduct = Mathf.Cos(viewAngle / 2 * Mathf.Deg2Rad);
         alignment = Vector3.Dot(forward.normalized, dir.normalized);
-        return alignment <= minViewDotProduct;
+        return alignment >= minViewDotProduct;
     }
 
+    /// <summary>Returns true when target is inside the view cone of viewAngle from origin along forward.</summary>
     public static bool IsInFOV(Vector3 origin, Vector3 forward, Vector3 target, float viewAngle)
     {
         return Vector3.Angle(forward, target - origin) <= viewAngle / 2;
     }
 
+    /// <summary>Returns true when target is inside the view cone of viewAngle from origin along forward.</summary>
+    /// <param name="alignment">Dot product of the normalized forward and the direction to target.</param>
     public static bool IsInFOV(Vector3 origin, Vector3 forward, Vector3 target, float viewAngle, out float alignment)
     {
         float minViewDotProduct = Mathf.Cos(viewAngle / 2 * Mathf.Deg2Rad);
@@ -63,39 +64,29 @@ public static class ViewHelper
         return alignment >= minViewDotProduct;
     }
 
-    public static bool IsInSight(Vector3 origin, Vector3 forward, Vector3 target, float viewRadius, float viewAngle, LayerMask obstacleLayer) //Revisa si el objeto B está en el angulo de visión del objeto A
+    /// <summary>Returns true when target is within viewRadius, inside viewAngle and in line of sight from origin.</summary>
+    /// <remarks>The check uses a single point of the target.</remarks>
+    public static bool IsInSight(Vector3 origin, Vector3 forward, Vector3 target, float viewRadius, float viewAngle, LayerMask obstacleLayer)
     {
-        // Preguntar si el objeto B está dentro del rango de vision del objeto A
-        if (!IsNear(origin, target, viewRadius)) return false; 
+        if (!IsNear(origin, target, viewRadius)) return false;
 
-        Vector3 dir = target - origin; //Toma el vector entre los dos objetos
+        if (IsInFOV(forward, target - origin, viewAngle)) return IsInLineOfSight(origin, target, obstacleLayer);
 
-        // Revisar si esta dentro del angulo de vision
-        // Si tiene una linea de vision directa, el objeto esta en vista, si no, no.
-        // NOTA: Que no tenga una linea de vision directa no significa necesariamente que un objecto entero no este en vista, 
-        // solo que el punto en el espacio no lo esta.
-        if (IsInFOV(forward, dir, viewAngle)) return IsInLineOfSight(origin, target, obstacleLayer);
-
-        return false; // Si está fuera de su angulo de vision devuelve false
+        return false;
     }
 
+    /// <summary>Draws the radius and the two edges of a field of view as gizmos.</summary>
     public static void DrawFieldOfView(Vector3 origin, Vector3 forward, float viewRadius, float viewAngle)
     {
         Gizmos.color = Color.blue;
-        //Dibujamos el radio de vision con una esfera
-        Gizmos.DrawWireSphere(origin, viewRadius); 
+        Gizmos.DrawWireSphere(origin, viewRadius);
 
         float halfViewAngle = viewAngle / 2;
 
-        // Conseguimos la rotacion necesaria.
         Quaternion leftRayRotation = Quaternion.AngleAxis(-halfViewAngle, Vector3.up);
         Quaternion rightRayRotation = Quaternion.AngleAxis(halfViewAngle, Vector3.up);
 
-        Vector3 leftRayDirection = leftRayRotation * forward; 
-        Vector3 rightRayDirection = rightRayRotation * forward;
-
-        //Dibujar las lineas del angulo de vision
-        Gizmos.DrawRay(origin, leftRayDirection * viewRadius);
-        Gizmos.DrawRay(origin, rightRayDirection * viewRadius);
+        Gizmos.DrawRay(origin, leftRayRotation * forward * viewRadius);
+        Gizmos.DrawRay(origin, rightRayRotation * forward * viewRadius);
     }
 }

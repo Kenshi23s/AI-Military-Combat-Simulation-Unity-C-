@@ -1,107 +1,30 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class PlanesManager : MonoSingleton<PlanesManager> 
+/// <summary>Shared settings of the planes: flight height, combat zone, missile prefab and ground layers.</summary>
+public class PlanesManager : MonoSingleton<PlanesManager>
 {
+    /// <summary>Minimum height of the optimal flight.</summary>
     public float maxHeight;
     public float DistanceX;
     public float maxDistanceZ;
     public float Scale;
 
-    [field:SerializeField]public Misile MisilePrefab { get; private set; }
- 
+    /// <summary>Prefab of the missiles.</summary>
+    [field: SerializeField] public Misile MisilePrefab { get; private set; }
 
+    /// <summary>Layers of the ground for the planes and the missiles.</summary>
     public LayerMask groundMask;
 
+    /// <summary>Returns true when Position is above maxHeight.</summary>
     public bool inOptimalHeight(Vector3 Position)
     {
         return Position.y > maxHeight;
-       
     }
-   
+
     protected override void SingletonAwake()
     {
-        
     }
 
- 
+    /// <summary>Returns true for every plane.</summary>
     public bool InCombatZone(Plane plane) { return true; }
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red;
-        //HeightLimit();
-        //CombatZoneLimitsX();
-        //CombatZoneLimitsZ();
-    }
-
-    private void HeightLimit()
-    {
-        for (int i = 0; i < 50; i++)
-        {
-            for (int j = 0; j < 50; j++)
-            {
-
-                Vector3 gridScaled = new Vector3(i * Scale, maxHeight, j * Scale);
-                Gizmos.DrawLine(new Vector3(i, maxHeight, j) + gridScaled, new Vector3(i + Scale + 10, maxHeight, j) + gridScaled);
-                Gizmos.DrawLine(new Vector3(i, maxHeight, j) + gridScaled, new Vector3(i, maxHeight, j + Scale + 10) + gridScaled);
-
-            }
-        }
-    }
-
-
-
-
-    private void CombatZoneLimitsX()
-    {
-        Vector3 pos = transform.position;
-        for (int i = 0; i < DistanceX; i++)
-        {
-            for (int j = 0; j < maxHeight; j++)
-            {
-               
-                Gizmos.DrawLine(new Vector3(i,j,maxDistanceZ), new Vector3(i+1,j, maxDistanceZ));
-                Gizmos.DrawLine( new Vector3(i, j, maxDistanceZ),  new Vector3(i , j+1 , maxDistanceZ));
-            }
-        }
-
-        for (int i = 0; i < DistanceX; i++)
-        {
-            for (int j = 0; j < maxHeight; j++)
-            {
-
-                Gizmos.DrawLine(new Vector3(-i, j,-maxDistanceZ ), new Vector3(-i - 1, j, -maxDistanceZ));
-                Gizmos.DrawLine( new Vector3(-i, j, -maxDistanceZ), new Vector3(-i, j + 1, -maxDistanceZ));
-            }
-        }
-
-    }
-    private void CombatZoneLimitsZ()
-    {
-        Vector3 pos = transform.position;
-        for (int z = 0; z < maxDistanceZ; z++)
-        {
-            for (int y = 0; y < maxHeight; y++)
-            {
-
-                Gizmos.DrawLine(new Vector3(DistanceX, y, z), new Vector3(DistanceX, y, z + 1));
-                Gizmos.DrawLine(new Vector3(DistanceX, y, z), new Vector3(DistanceX, y + 1, z));
-            }
-        }
-
-        for (int z = 0; z < maxDistanceZ; z++)
-        {
-            for (int i = 0; i < maxHeight; i++)
-            {
-
-                Gizmos.DrawLine(new Vector3(-DistanceX, i, -z), new Vector3(-DistanceX - 1, i,-z));
-                Gizmos.DrawLine(new Vector3(-DistanceX, i,-z), new Vector3(-DistanceX, i + 1, -z));
-            }
-        }
-
-    }
-
-
 }

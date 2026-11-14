@@ -4,39 +4,21 @@ using FacundoColomboMethods;
 using System.Linq;
 using System;
 
+/// <summary>
+/// Pooled guided missile that accelerates toward target and explodes with area damage.
+/// The explosion skips the owner and the units of Team.
+/// </summary>
 [RequireComponent(typeof(NewPhysicsMovement))]
 [RequireComponent(typeof(GridEntity))]
 public class Misile : Entity, IMilitary
-{  
-    private NewPhysicsMovement _movement;
-    [Serializable]
-    public struct MisileStats
-    {
-        [NonSerialized]
-        public GameObject owner;
-        public MilitaryTeam Team;
-        public float acceleration;
-        public float maxSpeed;
-        public float timeBeforeExplosion;
-        public int damage;
-        public float explosionRadius;
-        public Vector3 initialVelocity;
-    }
-
-    public Transform target { get; private set; }
-
-    public MilitaryTeam Team { get; protected set; }
-
-    public bool InCombat => false;
-
-    public int TotalDamageDealt { get; private set; }
-
+{
     [SerializeField] private ParticleHold explosionParticle;
     [SerializeField] private ParticleHold explosionParticleonGround;
 
     [NonSerialized] public MisileStats myStats;
 
     protected GridEntity _gridEntity;
+    private NewPhysicsMovement _movement;
 
     private Action<Misile> returnToPool;
 
@@ -48,10 +30,40 @@ public class Misile : Entity, IMilitary
     // Countdown of the current launch.
     private Coroutine _countdown;
 
+    /// <summary>The Transform the missile flies toward.</summary>
+    public Transform target { get; private set; }
+
+    /// <summary>Team of the plane that launched the missile.</summary>
+    public MilitaryTeam Team { get; protected set; }
+
+    /// <summary>Always false.</summary>
+    public bool InCombat => false;
+
+    /// <summary>Damage the missile has dealt.</summary>
+    public int TotalDamageDealt { get; private set; }
+
+    /// <summary>Raised when the missile is destroyed by damage.</summary>
     public event Action OnDeathInCombat;
 
+    /// <summary>Raised with each IDamageable the explosion damages.</summary>
     public event Action<IDamageable> onHit;
 
+    /// <summary>Launch settings of a missile.</summary>
+    [Serializable]
+    public struct MisileStats
+    {
+        public MilitaryTeam Team;
+        public float acceleration;
+        public float maxSpeed;
+        public float timeBeforeExplosion;
+        public int damage;
+        public float explosionRadius;
+        public Vector3 initialVelocity;
+        [NonSerialized]
+        public GameObject owner;
+    }
+
+    /// <summary>Sets the action that returns the missile to its pool.</summary>
     public void PoolObjectInitialize(Action<Misile> HowToReturn) => returnToPool = HowToReturn;
 
     #region UnityCalls
@@ -70,7 +82,6 @@ public class Misile : Entity, IMilitary
 
         GetComponent<Collider>().isTrigger = true;
     }
-
 
     private void Start()
     {
@@ -108,6 +119,7 @@ public class Misile : Entity, IMilitary
         Gizmos.DrawWireSphere(target.position, myStats.explosionRadius);
         Gizmos.DrawLine(transform.position, target.position);
     }
+
     #endregion
 
     /// <summary>

@@ -7,24 +7,29 @@ using Random = UnityEngine.Random;
 
 namespace FacundoColomboMethods
 {
+    /// <summary>Cast shape for GetWhichAreOnSight.</summary>
     public enum RaycastType
     {
         Sphere,
         Default
     }
 
+    /// <summary>Line of sight requirement.</summary>
     public enum MustBeOnSight
     {
         Yes,
         No
     }
 
+    /// <summary>General helpers for vectors, raycasts, names, collections and gizmos.</summary>
     public static class ColomboMethods
     {
-
+        /// <summary>Frame rate of the last frame.</summary>
         public static int GetActualFrameRate => (int)(1f/Time.deltaTime);
 
 
+        /// <summary>Draws a wire cylinder gizmo of height and radius at position.</summary>
+        /// <param name="drawFromBase">true places position at the base. false places it at the center.</param>
         public static void DrawCylinder(this Vector3 position, Quaternion orientation, float height, float radius, bool drawFromBase = true)
         {
             Vector3 localUp = orientation * Vector3.up;
@@ -51,6 +56,7 @@ namespace FacundoColomboMethods
             DrawCircle(topPosition, circleOrientation, radius, 32);
         }
 
+        /// <summary>Draws a wire circle gizmo of radius with segments lines at position.</summary>
         public static void DrawCircle(this Vector3 position, Quaternion rotation, float radius, int segments)
         {
             // If either radius or number of segments are less or equal to 0, skip drawing
@@ -102,6 +108,7 @@ namespace FacundoColomboMethods
             }
         }
 
+        /// <summary>Returns a Vector3 with value on the three axes.</summary>
         public static Vector3 ToVector(this float value)
         {
             return new Vector3(value, value, value);
@@ -115,11 +122,13 @@ namespace FacundoColomboMethods
             return list[Random.Range(0, list.Count)];
         }
 
+        /// <summary>Returns color with newAlpha as its alpha.</summary>
         public static Color SetAlpha(this Color color,float newAlpha)
         {
              return new Color(color.r, color.g, color.b, newAlpha);
         }
 
+        /// <summary>Returns the hit point of a raycast from myPos along dir, or myPos when the ray hits nothing.</summary>
         public static Vector3 TryGetMeshCollision(this Vector3 myPos,Vector3 dir,LayerMask layer)
         {
             if (Physics.Raycast(myPos,dir,out RaycastHit hit,Mathf.Infinity,layer))            
@@ -128,6 +137,7 @@ namespace FacundoColomboMethods
                 return myPos;
         }
 
+        /// <summary>Returns the angle and the normal of the floor below myPos. Returns 0 and Vector3.zero without floor.</summary>
         public static Tuple<float,Vector3> GetNormalAngleOfFloor(this Vector3 myPos,LayerMask layer)
         {
             if (Physics.Raycast(myPos, Vector3.down, out RaycastHit hit, Mathf.Infinity, layer))
@@ -137,17 +147,20 @@ namespace FacundoColomboMethods
             return Tuple.Create<float, Vector3>(0,Vector3.zero);
         }
 
+        /// <summary>Returns V expressed in the local axes of tr.</summary>
         public static Vector3 GetOrientedVector(this Transform tr, Vector3 V)
         {
             return V.x * tr.right + V.y * tr.up + tr.forward * V.z;
         }
 
+        /// <summary>Returns V expressed in the local axes of tr.</summary>
         public static Vector3 GetOrientedVector(this Vector3 V,Transform tr)
         {
             return V.x * tr.right + V.y * tr.up + tr.forward * V.z;
         }
 
 
+        /// <summary>Returns a random name of alternating consonants and vowels with at least len letters.</summary>
         public static string GenerateName(int len)
         {
             System.Random r = new System.Random();
@@ -170,6 +183,7 @@ namespace FacundoColomboMethods
 
         }
 
+        /// <summary>Returns quantity names from GenerateName with wordLenght letters.</summary>
         public static IEnumerable<string> GenerateNames(this int quantity,int wordLenght)
         {
             var names = new List<string>();
@@ -183,8 +197,10 @@ namespace FacundoColomboMethods
 
         }
 
+        /// <summary>Returns the layer index of a mask with a single layer.</summary>
         public static int LayerMaskToLayerNumber(this LayerMask x) => Mathf.RoundToInt(Mathf.Log(x, 2));
 
+        /// <summary>Adds item when col does not contain it.</summary>
         public static void CheckAndAdd<T>(this List<T> col,T item)
         {
             if (!col.Contains(item))
@@ -193,13 +209,16 @@ namespace FacundoColomboMethods
             }
         }
 
+        /// <summary>Removes item from col.</summary>
         public static void CheckAndRemove<T>(this List<T> col, T item)
         {
             if (col.Contains(item)) col.Remove(item);
         }
 
+        /// <summary>Returns true when value is greater than moreThan and less than lessThan.</summary>
         public static bool InBetween(this float value, float lessThan, float moreThan) => value < lessThan && value > moreThan;
 
+        /// <summary>Returns 1 at target and 0 at radius or farther, linear in between.</summary>
         public static float InverseDistanceScalar(this Vector3 pos,Vector3 target,float radius)
         {
             // la distancia / el radio
@@ -210,6 +229,7 @@ namespace FacundoColomboMethods
             return Mathf.Max(1 - (Vector3.Distance(pos, target) / radius),0f);           
         }
 
+        /// <summary>Returns the T components of the colliders within radius of pos.</summary>
         public static IEnumerable<T> GetItemsOFTypeAround<T>(this Vector3 pos, float radius)
         {
             return Physics.OverlapSphere(pos, radius)
@@ -218,14 +238,8 @@ namespace FacundoColomboMethods
 
         }
 
-        //metodos utiles que puede ayudar a la hora de desarrollar el juego
-        /// <summary>
-        /// Soporta hasta 180 grados
-        /// </summary>
-        /// <param name="myDir"></param>
-        /// <param name="angle"></param>
-        /// <returns></returns>
-        /// 
+        /// <summary>Returns myDir rotated toward a random direction by up to angle degrees.</summary>
+        /// <param name="angle">Spread in degrees, from 0 to 180.</param>
         public static Vector3 RandomDirFrom(this Vector3 myDir,float angle)
         {
             // el angulo maximo entre 2 vectores es 180, si se pasa vuelvea a empezar de 0
@@ -236,6 +250,7 @@ namespace FacundoColomboMethods
             return Vector3.Slerp(myDir.normalized, random, angle / 180f); ;
         }
 
+        /// <summary>Returns a shallow copy of listToClone.</summary>
         public static List<T> CloneList<T>(List<T> listToClone)
         {
             List<T> aux = new List<T>();
@@ -245,13 +260,8 @@ namespace FacundoColomboMethods
             }
             return aux;
         }
-        /// <summary>
-        /// devuelve los componentes que tengas de hijos
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="Father"></param>
-        /// <returns></returns>
-        /// 
+        /// <summary>Returns the T component of each direct child of Father, by child index.</summary>
+        /// <returns>An array of Father.childCount with default for the children without T.</returns>
         public static T[] GetChildrenComponents<T>(this Transform Father)
         {
             T[] Components = new T[Father.childCount];
@@ -265,13 +275,7 @@ namespace FacundoColomboMethods
             }
             return Components;
         }
-        /// <summary>
-        /// obtiene todos los componentes de tipo T que haya cerca
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="tr"></param>
-        /// <param name="radius"></param>
-        /// <returns></returns>
+        /// <summary>Returns the T components of the colliders within radius of tr.</summary>
         public static List<T> GetNearby<T>(this Transform tr, float radius)
         {
             List<T> list = new List<T>();
@@ -289,14 +293,7 @@ namespace FacundoColomboMethods
 
             return list;
         }
-        /// <summary>
-        ///  chequea si tenes algun objeto del tipo T a la vista y en cierto radio
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="pos"></param>
-        /// <param name="radius"></param>
-        /// <param name="Wall"></param>
-        /// <returns></returns>
+        /// <summary>Returns true when a T within radius of pos is in line of sight through Wall.</summary>
         public static bool CheckNearbyInSigth<T>(this Transform pos, float radius, LayerMask Wall) where T : MonoBehaviour
         {
             
@@ -317,14 +314,7 @@ namespace FacundoColomboMethods
             return false;
         }
 
-        /// <summary>
-        /// Obtiene todos los componentes cercanos de tipo "T" que haya a la vista,
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="pos"></param>
-        /// <param name="radius"></param>
-        /// <param name="Wall"></param>
-        /// <returns></returns>
+        /// <summary>Returns the T components within radius of pos that are in line of sight through Wall.</summary>
         public static List<T> GetALLNearbyInSigth<T>(this Transform pos, float radius,LayerMask Wall) where T: MonoBehaviour
         {
             List<T> list = new List<T>();
@@ -368,6 +358,7 @@ namespace FacundoColomboMethods
             return !Physics.Raycast(start, dir, Mathf.Sqrt(sqrDistance), maskWall);
         }
 
+        /// <summary>Returns the hit point of a raycast from pos along dir, or pos moved range units on Z.</summary>
         public static Vector3 CheckForwardRayColision(Vector3 pos, Vector3 dir, float range = 15)
         {
             //aca se guardan los datos de con lo que impacte el rayo
@@ -383,16 +374,9 @@ namespace FacundoColomboMethods
             return new Vector3(pos.x, pos.y, pos.z + range);
 
         }
-        #region se pueden hacer con linq mas facil D: :D
+        #region Line of sight
 
-        /// <summary>
-        /// obtiene el componente "T" mas cercano a la vista
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="objPosition"></param>
-        /// <param name="myPos"></param>
-        /// <param name="walls"></param>
-        /// <returns></returns>
+        /// <summary>Returns the nearest item of objPosition with line of sight from myPos, or null.</summary>
         public static T GetNearestOnSight<T>(this Vector3 myPos, List<T> objPosition,LayerMask walls) where T : MonoBehaviour
         {
             List<T> listOnSight = GetWhichAreOnSight(objPosition, myPos,walls);
@@ -428,16 +412,8 @@ namespace FacundoColomboMethods
             }                          
         }
 
-        /// <summary>
-        /// devuelve todos los objetos de tipo "T" que esten a la vista
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="itemsPassed"></param>
-        /// <param name="pos"></param>
-        /// <param name="type"></param>
-        /// <param name="wallMask"></param>
-        /// <param name="radius"></param>
-        /// <returns></returns>
+        /// <summary>Returns the items with line of sight from pos.</summary>
+        /// <param name="type">Sphere casts a sphere of radius against wallMask. Default casts a ray against every layer.</param>
         public static List<T> GetWhichAreOnSight<T>(this List<T> itemsPassed, Vector3 pos,  LayerMask wallMask = default, RaycastType type = RaycastType.Default, float radius=10f) where T : MonoBehaviour
         {
             switch (type)
@@ -451,16 +427,7 @@ namespace FacundoColomboMethods
             }
           
         }
-        /// <summary>
-        /// devuelve el objeto T si
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="item"></param>
-        /// <param name="pos"></param>
-        /// <param name="layer"></param>
-        /// <param name="type"></param>
-        /// <param name="sphereRadius"></param>
-        /// <returns></returns>
+        /// <summary>Returns item when it has line of sight from pos, or default.</summary>
         public static T Get_IsOnSight<T>(T item, Vector3 pos, LayerMask layer, RaycastType type = RaycastType.Default, float sphereRadius = 0) where T : MonoBehaviour
         {
 

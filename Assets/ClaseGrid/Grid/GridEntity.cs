@@ -9,14 +9,18 @@ using UnityEngine;
 [RequireComponent(typeof(Entity))]
 public class GridEntity : MonoBehaviour
 {
+    /// <summary>true while the entity is inside a cell of SpatialGrid.</summary>
+    public bool OnGrid;
     // Grid shared by every GridEntity, found once with FindObjectOfType.
     private static SpatialGrid3D _sceneGrid;
 
+    private Vector3 _previousPos;
+
+    // true after Start. The first registration waits for Start so the grid has run its Awake.
+    private bool _started;
+
     /// <summary>Raised in LateUpdate when the transform position changed.</summary>
     public event Action<GridEntity> OnMove = delegate { };
-
-    /// <summary>true while the entity is inside a cell of SpatialGrid.</summary>
-    public bool OnGrid;
 
     /// <summary>The Entity on the same GameObject.</summary>
     public Entity Owner { get; private set; }
@@ -24,15 +28,10 @@ public class GridEntity : MonoBehaviour
     /// <summary>The grid that holds this entity.</summary>
     public SpatialGrid3D SpatialGrid { get; private set; }
 
-    private Vector3 _previousPos;
-
     private void Awake()
     {
         Owner = GetComponent<Entity>();
     }
-
-    // true after Start. The first registration waits for Start so the grid has run its Awake.
-    private bool _started;
 
     private void Start()
     {

@@ -12,23 +12,23 @@ using System.Collections.Generic;
 /// <typeparam name="T">Type of the stored elements.</typeparam>
 public class PriorityQueue<T>
 {
+    // Implicit heap: the children of index i live at 2i+1 and 2i+2, its parent at (i-1)/2.
+    private readonly List<Entry> _heap = new List<Entry>();
+
+    /// <summary>Number of entries in the heap.</summary>
+    public int Count => _heap.Count;
     private struct Entry
     {
         public readonly T Item;
         public readonly float Priority;
 
+        /// <summary>Creates an entry for item with priority.</summary>
         public Entry(T item, float priority)
         {
             Item = item;
             Priority = priority;
         }
     }
-
-    // Implicit heap: the children of index i live at 2i+1 and 2i+2, its parent at (i-1)/2.
-    private readonly List<Entry> _heap = new List<Entry>();
-
-    /// <summary>Number of entries in the heap.</summary>
-    public int Count => _heap.Count;
 
     /// <summary>Adds the item with the given priority.</summary>
     /// <param name="item">Element to enqueue.</param>

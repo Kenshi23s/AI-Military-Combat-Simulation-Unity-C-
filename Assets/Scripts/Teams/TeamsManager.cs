@@ -25,14 +25,6 @@ public struct TeamParameters
 /// <remarks>AddToTeam, GetSprite, GetAllyFireteams and the team membership checks run in O(1) per entity.</remarks>
 public class TeamsManager : MonoSingleton<TeamsManager>
 {
-    private const int MaxGroundSpawnAttempts = 200;
-    private const int MaxAirSpawnAttempts = 1000;
-
-    [SerializeField] private bool _canDebug;
-    [SerializeField] private MobileInfantry _assaultPrefab, _medicPrefab;
-    [SerializeField] private Plane _planePrefab;
-    [SerializeField] private Civilian _civilianPrefab;
-
     /// <summary>Layers where an entity blocks a spawn position.</summary>
     public LayerMask NotSpawnable;
 
@@ -42,23 +34,8 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     /// <summary>Minimum distance between a spawn position and a GridEntity.</summary>
     [field: SerializeField] public float SeparationRadiusBetweenUnits { get; private set; }
 
-    #region TeamsDictionary
-
     /// <summary>Entities of each team, in the order they were added.</summary>
     public Dictionary<MilitaryTeam, List<Entity>> _teams = new Dictionary<MilitaryTeam, List<Entity>>();
-
-    // Same entities as _teams, for O(1) membership checks.
-    private readonly Dictionary<MilitaryTeam, HashSet<Entity>> _teamSets = new Dictionary<MilitaryTeam, HashSet<Entity>>();
-
-    // Fireteams of each team with at least one AssaultInfantry in _teams.
-    private readonly Dictionary<MilitaryTeam, List<Fireteam>> _fireteams = new Dictionary<MilitaryTeam, List<Fireteam>>();
-    private readonly HashSet<Fireteam> _registeredFireteams = new HashSet<Fireteam>();
-
-    // Planes of each team in _teams.
-    private readonly Dictionary<MilitaryTeam, List<Plane>> _planes = new Dictionary<MilitaryTeam, List<Plane>>();
-
-    [SerializeField,SerializedDictionary("Team","Parameters")]
-    private SerializedDictionary<MilitaryTeam, TeamParameters> _matchParameters = new SerializedDictionary<MilitaryTeam, TeamParameters>();
 
     /// <summary>Icon of the TeamIndicator for each entity type.</summary>
     [Header("Team Indicator")]
@@ -71,26 +48,42 @@ public class TeamsManager : MonoSingleton<TeamsManager>
         {new SerializableType(typeof(IMilitary)), default }
     };
 
-    // sprites indexed by System.Type. Built on the first GetSprite call.
-    private Dictionary<Type, Sprite> _spritesByType;
+    [SerializeField] private bool _canDebug;
+    [SerializeField] private MobileInfantry _assaultPrefab, _medicPrefab;
+    [SerializeField] private Plane _planePrefab;
+    [SerializeField] private Civilian _civilianPrefab;
 
-    /// <summary>Raised in LateUpdate.</summary>
-    public event Action OnLateUpdate;
+    [SerializeField,SerializedDictionary("Team","Parameters")]
+    private SerializedDictionary<MilitaryTeam, TeamParameters> _matchParameters = new SerializedDictionary<MilitaryTeam, TeamParameters>();
 
     [SerializeField] private TeamIndicator _prefabTeamIndicator;
     [SerializeField] private float _unitsAboveMilitary;
 
-    #region Civilian
-    [Header("Civilian Spawn")]
+        [Header("Civilian Spawn")]
     [SerializeField] private Transform _civilianPos;
     [SerializeField] private int _civiliansQuantity;
     [SerializeField] private float _width_CivilianSpawn, _height_CivilianSpawn;
-    #endregion
 
-    #endregion
+    // Same entities as _teams, for O(1) membership checks.
+    private readonly Dictionary<MilitaryTeam, HashSet<Entity>> _teamSets = new Dictionary<MilitaryTeam, HashSet<Entity>>();
+
+    // Fireteams of each team with at least one AssaultInfantry in _teams.
+    private readonly Dictionary<MilitaryTeam, List<Fireteam>> _fireteams = new Dictionary<MilitaryTeam, List<Fireteam>>();
+    private readonly HashSet<Fireteam> _registeredFireteams = new HashSet<Fireteam>();
+
+    // Planes of each team in _teams.
+    private readonly Dictionary<MilitaryTeam, List<Plane>> _planes = new Dictionary<MilitaryTeam, List<Plane>>();
+
+    // sprites indexed by System.Type. Built on the first GetSprite call.
+    private Dictionary<Type, Sprite> _spritesByType;
 
     /// <summary>Frames between two consecutive spawns.</summary>
     public const int WaitFramesBeforeContinuing = 144;
+    private const int MaxGroundSpawnAttempts = 200;
+    private const int MaxAirSpawnAttempts = 1000;
+
+    /// <summary>Raised in LateUpdate.</summary>
+    public event Action OnLateUpdate;
 
     #region MemberAdd
 

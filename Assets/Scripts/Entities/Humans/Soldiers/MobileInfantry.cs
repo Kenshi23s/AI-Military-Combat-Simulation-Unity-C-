@@ -12,13 +12,13 @@ using System;
 [RequireComponent(typeof(NewAIMovement))]
 public abstract class MobileInfantry : Soldier, ICapturePointEntity, IFlockableEntity
 {
+    [SerializeField] protected float _minDistanceFromDestination;
     // Frames between two path recalculations in FollowLeaderRoutine.
     private const int FramesBetweenLeaderChecks = 120;
 
     /// <summary>The Fireteam of this soldier.</summary>
     public Fireteam Fireteam { get; set; }
 
-    #region ICapturePointEntity Properties And Events
     /// <summary>true while the soldier is alive.</summary>
     public bool CanCapture => Health.IsAlive;
 
@@ -33,7 +33,6 @@ public abstract class MobileInfantry : Soldier, ICapturePointEntity, IFlockableE
 
     /// <summary>Raised by PointExit.</summary>
     public event Action OnPointExit = delegate { };
-    #endregion
 
     /// <summary>true while the soldier fights.</summary>
     public bool InCombat { get; protected set; }
@@ -46,8 +45,6 @@ public abstract class MobileInfantry : Soldier, ICapturePointEntity, IFlockableE
 
     /// <summary>true when this soldier is the Leader of its Fireteam.</summary>
     public bool IsLeader => this == Fireteam.Leader;
-
-    [SerializeField] protected float _minDistanceFromDestination;
 
     protected override void Awake()
     {
@@ -118,6 +115,7 @@ public abstract class MobileInfantry : Soldier, ICapturePointEntity, IFlockableE
 
     /// <summary>Returns the velocity of the soldier.</summary>
     public Vector3 GetVelocity() => Movement.ManualMovement.Velocity;
+
     #endregion
 
     #region Coroutines

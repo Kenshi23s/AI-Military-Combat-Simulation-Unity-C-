@@ -1,12 +1,18 @@
 using System;
 using UnityEngine;
+/// <summary>
+/// Shelter with room for _bunkerCapacity civilians.
+/// Raises onBunkerDestroyed and destroys itself when its LifeComponent dies.
+/// </summary>
 [RequireComponent(typeof(LifeComponent))]
 [RequireComponent(typeof(DebugableObject))]
 public class Bunker : MonoBehaviour
 {
-    private Civilian[] _refugees;
     [SerializeField,Range(1,30)]private int _bunkerCapacity;
+    private Civilian[] _refugees;
     private DebugableObject _debug;
+
+    /// <summary>Raised when the bunker is destroyed.</summary>
     public event Action onBunkerDestroyed;
 
     private void Awake()
@@ -25,6 +31,8 @@ public class Bunker : MonoBehaviour
     {
         GameManager.instance.AddBunker(this);
     }
+
+    /// <summary>Places civilian in the first free spot. Returns true when the bunker had room.</summary>
     public bool EnterBunker(Civilian civilian)
     {
         for (int i = 0; i < _refugees.Length; i++)
@@ -38,8 +46,4 @@ public class Bunker : MonoBehaviour
         _debug.Log($"El civil {civilian} no puede entrar al bunker ");
         return false;
     }
-
-
-
-    
-}
+    }

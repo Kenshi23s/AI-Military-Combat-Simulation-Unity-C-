@@ -1,21 +1,38 @@
 using System;
 using System.Collections;
 using UnityEngine;
+/// <summary>
+/// Health of an object: damage, healing, death and knockback events.
+/// Shows a floating damage number on each hit while ShowDamageNumber is true.
+/// </summary>
 [RequireComponent(typeof(DebugableObject))]
 public class LifeComponent : MonoBehaviour, IDamageable, IHealable,ILifeObject
 {
-    private DebugableObject _debug;
+    public int dmgResist = 1;
+
+    [SerializeField] public bool CanTakeDamage = true;
+    [SerializeField] public bool CanBeHealed = true;
+
+    /// <summary>Shows the next damage numbers as critical.</summary>
+    public bool IsCrit;
 
     [SerializeField] private int _life = 100;
     [SerializeField] private int _maxLife = 100;
-    public bool IsAlive => Life > 0;
-    public int Life => _life;
-    public int MaxLife => _maxLife;
 
     [SerializeField, Range(0.1f, 2)]
     private float _dmgMultiplier = 1f;
+    private DebugableObject _debug;
+    private bool _showDamageNumber = true;
+    private Vector3 hitPos = Vector3.zero;
 
-    public int dmgResist = 1;
+    /// <summary>true while Life is greater than 0.</summary>
+    public bool IsAlive => Life > 0;
+
+    /// <summary>Current health points.</summary>
+    public int Life => _life;
+
+    /// <summary>Maximum health points.</summary>
+    public int MaxLife => _maxLife;
 
     public bool ShowDamageNumber
     {
@@ -37,14 +54,8 @@ public class LifeComponent : MonoBehaviour, IDamageable, IHealable,ILifeObject
 
         }
     }
-    private bool _showDamageNumber = true;
 
-    
-    [SerializeField] public bool CanTakeDamage = true;
-    [SerializeField] public bool CanBeHealed = true;
-
-    #region Events
-    public event Action<Vector3> OnKnockBack;
+        public event Action<Vector3> OnKnockBack;
     public event Action<int, int> OnHealthChange;
     public event Action OnHeal;
 
@@ -64,9 +75,6 @@ public class LifeComponent : MonoBehaviour, IDamageable, IHealable,ILifeObject
             OnTakeDamage -= (_) => value.Invoke();
         }
     }
-    #endregion
-
-
 
     private void Awake()
     {
@@ -74,17 +82,15 @@ public class LifeComponent : MonoBehaviour, IDamageable, IHealable,ILifeObject
         _debug = GetComponent<DebugableObject>();
         // por si tenes hijos que pueden hacer de 
         //foreach (var item in GetComponentsInChildren<HitableObject>()) item.SetOwner(this);
-        #region SetEvents
-        OnHeal += () => OnHealthChange?.Invoke(Life, MaxLife);
+                OnHeal += () => OnHealthChange?.Invoke(Life, MaxLife);
         OnTakeDamage += (x) => OnHealthChange?.Invoke(Life, MaxLife);
         OnTakeDamage += DisplayDamageNumber;
         OnHealthChange?.Invoke(Life, MaxLife);
-        #endregion
-        enabled = false;
+                enabled = false;
 
     }
 
-    public bool IsCrit;
+    /// <summary>Pops up x as floating text at the last hit position, or at the object position.</summary>
     public void DisplayDamageNumber(int x)
     {
         if (FloatingTextManager.instance==null)
@@ -95,26 +101,34 @@ public class LifeComponent : MonoBehaviour, IDamageable, IHealable,ILifeObject
         FloatingTextManager.instance.PopUpText(x.ToString(), hitPos != Vector3.zero? hitPos : transform.position, IsCrit);
         hitPos = Vector3.zero;
     }
-    private Vector3 hitPos = Vector3.zero;
 
+    /// <summary>Sets the position of the next damage number.</summary>
     public void SetHitPos(Vector3 x) => hitPos = x;
 
+    /// <summary>Sets MaxLife to value. The minimum is 1.</summary>
     public void SetNewMaxLife(int value) => _maxLife = Mathf.Clamp(value, 1, int.MaxValue);
 
-
+    /// <summary>Sets Life to MaxLife.</summary>
     public void Initialize()
     {
-        _life = _maxLife;       
+        _life = _maxLife;
     }
 
     #region DamageSide
 
+    /// <summary>Applies dmgDealt with TakeDamage and shows the damage number at hitPos.</summary>
     public virtual DamageData TakeDamage(int dmgDealt,Vector3 hitPos)
     {
         this.hitPos = hitPos;
         return TakeDamage(dmgDealt);
     }
 
+    /// <summary>
+    /// Subtracts dmgDealt, scaled by the damage multiplier and divided by dmgResist, from Life.
+    /// Raises OnTakeDamage, and OnKilled when Life reaches 0.
+    /// </summary>
+    /// <returns>The damage dealt and whether the hit killed the object.</returns>
+    /// <remarks>OnKilled is cleared after it is raised.</remarks>
     public virtual DamageData TakeDamage(int dmgDealt)
     {
         DamageData data = new DamageData();
@@ -137,11 +151,8 @@ public class LifeComponent : MonoBehaviour, IDamageable, IHealable,ILifeObject
     #endregion
 
     #region HealingSide
-    /// <summary>
-    /// añade vida, no supera la vida maxima
-    /// </summary>
-    /// <param name="HealAmount"></param>
-    /// <returns></returns>
+    /// <summary>Adds HealAmount to Life up to MaxLife and raises OnHeal.</summary>
+    /// <returns>HealAmount, or 0 while CanBeHealed is false.</returns>
     public virtual int Heal(int HealAmount)
     {
         if (!CanBeHealed) return 0;
@@ -154,12 +165,6 @@ public class LifeComponent : MonoBehaviour, IDamageable, IHealable,ILifeObject
 
         return HealAmount;
     }
-    /// <summary>
-    /// Añade x cantidad de vida al objetivo a lo largo de y segundos(no supera la vida maxima)
-    /// </summary>
-    /// <param name="totalHeal"></param>
-    /// <param name="timeAmount"></param>
- 
     #endregion
 
     
@@ -173,11 +178,13 @@ public class LifeComponent : MonoBehaviour, IDamageable, IHealable,ILifeObject
         _life = MaxLife;
     }
 
+    /// <summary>Raises OnKnockBack with force.</summary>
     public void AddKnockBack(Vector3 force)
     {
         OnKnockBack?.Invoke(force);
     }
 
+    /// <summary>Returns the position of the object.</summary>
     public Vector3 Position()
     {
         return transform.position;

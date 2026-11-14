@@ -19,6 +19,8 @@ public abstract class Vehicle : Entity, IMilitary, IFlockableEntity
     protected NewPhysicsMovement _movement;
     protected ShootComponent _shootComponent;
 
+    protected GridEntity _gridEntity;
+
     /// <summary>Team of the vehicle.</summary>
     public MilitaryTeam Team { get; private set; }
 
@@ -27,8 +29,6 @@ public abstract class Vehicle : Entity, IMilitary, IFlockableEntity
 
     /// <summary>Damage dealt by the weapons of the vehicle.</summary>
     public int TotalDamageDealt { get; protected set; }
-
-    protected GridEntity _gridEntity;
 
     /// <summary>Raised when the vehicle dies.</summary>
     public event Action OnDeathInCombat;

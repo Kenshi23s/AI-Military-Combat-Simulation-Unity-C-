@@ -5,6 +5,10 @@ using UnityEditor;
 using InternalEditorUtility = UnityEditorInternal.InternalEditorUtility;
 using static NewPhysicsMovement;
 
+/// <summary>
+/// Inspector of NewPhysicsMovement.
+/// Shows only the fields of the selected MovementType and AlignmentType.
+/// </summary>
 [CustomEditor(typeof(NewPhysicsMovement))]
 public class NewPhysicsMovementEditor : Editor
 {

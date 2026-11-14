@@ -2,58 +2,82 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// Todos los metodos de esta clase se deberian llamar dentro del FixedUpdate
+/// <summary>
+/// Rigidbody movement with acceleration, maximum speed, ground snapping and alignment.
+/// AccelerateTowards sets the input direction that FixedUpdate applies.
+/// </summary>
+/// <remarks>The movement methods are meant to be called from FixedUpdate.</remarks>
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(DebugableObject))]
 [DisallowMultipleComponent]
 public class NewPhysicsMovement : MonoBehaviour
 {
-    public enum MovementType
-    {
-        Grounded,
-        Free
-    }
+    /// <summary>Movement mode.</summary>
+    public MovementType Movement = MovementType.Grounded;
 
-    public enum AlignmentType
-    {
-        Velocity,
-        DesiredMoveDirection,
-        Mix,
-        Target,
-        Custom
-    }
+    // Snap To Ground Settings
+    public bool GroundSnapping = true;
+    public LayerMask GroundMask = -1;
 
-    public Vector3 Velocity { 
+        public AlignmentType Alignment = AlignmentType.Velocity;
+    public Transform AlignmentTarget;
+
+    public bool FreezeXAlignment, FreezeYAlignment, FreezeZAlignment;
+    [SerializeField, Min(0)] 
+    private float _acceleration = 37.5f;
+    [SerializeField, Min(0)]
+    private float _maxSpeed = 8f;
+    [SerializeField] private float _maxGroundAngle = 45f;
+
+    [SerializeField, Min(0f)]
+    private float _groundProbeDistance = 0.5f;
+    [SerializeField, Range(0, 1)]
+    private float _alignmentMix = 0.5f;
+    [SerializeField, Min(0), Tooltip("El tiempo maximo que puede llegar a tardar en alinearse")]
+    private float _alignTime = 0f;
+
+        private int _groundContactCount;
+    private Vector3 _groundContactNormal;
+    private float _minGroundDotProduct;
+    private int _stepsSinceLastGrounded;
+
+    private Quaternion _customAlignment = Quaternion.identity;
+    private bool _hasAlignTime = false;
+
+    private float _radiansAlignSpeed;
+    private DebugableObject _debug;
+
+    private Vector3 _velocity;
+    private Quaternion _rotation;
+    private Vector3 _inputMoveDirection;
+
+    private Vector3 _desiredMoveDir;
+
+    /// <summary>Velocity of the Rigidbody.</summary>
+    public Vector3 Velocity {
         get => Rigidbody.velocity;
         set => Rigidbody.velocity = value;
     }
+
+    /// <summary>Rotation of the Rigidbody.</summary>
     public Quaternion Rotation => Rigidbody.rotation;
+
+    /// <summary>Magnitude of Velocity.</summary>
     public float CurrentSpeed => Rigidbody.velocity.magnitude;
 
-    public MovementType Movement = MovementType.Grounded;
-
-    #region Speed
+    /// <summary>Velocity change per second. The minimum is 0.</summary>
     public float Acceleration
     {
         get => _acceleration;
         set => _acceleration = Mathf.Max(0, value);
     }
-    [SerializeField, Min(0)] 
-    private float _acceleration = 37.5f;
 
+    /// <summary>Maximum speed. The minimum is 0.</summary>
     public float MaxSpeed
     {
         get => _maxSpeed;
         set => _maxSpeed = Mathf.Max(0, value);
     }
-    [SerializeField, Min(0)]
-    private float _maxSpeed = 8f;
-    #endregion
-
-    #region Grounding
-    private int _groundContactCount;
-    private Vector3 _groundContactNormal;
-    [SerializeField] private float _maxGroundAngle = 45f;
     public float MaxGroundAngle 
     {
         get => _maxGroundAngle;
@@ -63,45 +87,25 @@ public class NewPhysicsMovement : MonoBehaviour
             _minGroundDotProduct = Mathf.Cos(_maxGroundAngle * Mathf.Deg2Rad);
         }
     }
-    private float _minGroundDotProduct;
 
     public bool OnGround => _groundContactCount > 0;
-    private int _stepsSinceLastGrounded;
-
-    // Snap To Ground Settings
-    public bool GroundSnapping = true;
-
-    [SerializeField, Min(0f)]
-    private float _groundProbeDistance = 0.5f;
     public float GroundProbeDistance 
     {
         get => _groundProbeDistance;
         set => _groundProbeDistance = Mathf.Max(0, value);
     }
-    public LayerMask GroundMask = -1;
-    #endregion
-
-    #region Alignment
-    public AlignmentType Alignment = AlignmentType.Velocity;
-
-
 
     public float AlignmentMix 
     {
         get => _alignmentMix;
         set => _alignmentMix = Mathf.Clamp01(value);
     }
-    [SerializeField, Range(0, 1)]
-    private float _alignmentMix = 0.5f;
-    public Transform AlignmentTarget;
 
     public Quaternion CustomAlignment
     {
         get => _customAlignment;
         set => _customAlignment = value.normalized;
     }
-
-    private Quaternion _customAlignment = Quaternion.identity;
 
     public float AlignTime
     {
@@ -115,28 +119,29 @@ public class NewPhysicsMovement : MonoBehaviour
                 _radiansAlignSpeed = (180f / _alignTime) * Mathf.Deg2Rad;
         }
     }
-    [SerializeField, Min(0), Tooltip("El tiempo maximo que puede llegar a tardar en alinearse")]
-    private float _alignTime = 0f;
-    private bool _hasAlignTime = false;
 
-    private float _radiansAlignSpeed;
-
-    public bool FreezeXAlignment, FreezeYAlignment, FreezeZAlignment;
-
-    #endregion
-
-    #region Shortcuts
-    public Vector3 Right => Rigidbody.rotation * Vector3.right;
+        public Vector3 Right => Rigidbody.rotation * Vector3.right;
     public Vector3 Up => Rigidbody.rotation * Vector3.up;
     public Vector3 Forward => Rigidbody.rotation * Vector3.forward;
-    #endregion
 
     public Rigidbody Rigidbody { get; private set; }
-    private DebugableObject _debug;
 
-    private Vector3 _velocity;
-    private Quaternion _rotation;
-    private Vector3 _inputMoveDirection;
+    /// <summary>Grounded moves along the ground plane. Free moves in any direction.</summary>
+    public enum MovementType
+    {
+        Grounded,
+        Free
+    }
+
+    /// <summary>Direction the body rotates toward.</summary>
+    public enum AlignmentType
+    {
+        Velocity,
+        DesiredMoveDirection,
+        Mix,
+        Target,
+        Custom
+    }
 
     private void Awake()
     {
@@ -145,9 +150,6 @@ public class NewPhysicsMovement : MonoBehaviour
         _debug = GetComponent<DebugableObject>();
         _debug.AddGizmoAction(DrawSpeedArrow);
     }
-
-
-    private Vector3 _desiredMoveDir;
     private void FixedUpdate()
     {
         UpdateState();
@@ -229,25 +231,23 @@ public class NewPhysicsMovement : MonoBehaviour
             _rotation = desiredRotation;
     }
 
-    public void AccelerateTowards(Vector3 inputDir) 
+    /// <summary>Sets inputDir as the direction FixedUpdate accelerates toward.</summary>
+    public void AccelerateTowards(Vector3 inputDir)
     {
         SendInput(inputDir);
     }
 
+    /// <summary>Moves the velocity toward the desired direction at MaxSpeed, limited by Acceleration.</summary>
     public void FreeAccelerate()
     {
-        float maxSpeedChange = _acceleration * Time.fixedDeltaTime;        
+        float maxSpeedChange = _acceleration * Time.fixedDeltaTime;
         _velocity = Vector3.MoveTowards(_velocity, _desiredMoveDir * MaxSpeed, maxSpeedChange);
     }
 
-    public void SendInput(Vector3 targetDirection) 
+    /// <summary>Sets targetDirection as the direction FixedUpdate accelerates toward.</summary>
+    public void SendInput(Vector3 targetDirection)
     {
         _inputMoveDirection = targetDirection;
-    }
-
-    public void SendInput(Vector3 targetDirection, float targetSpeed) 
-    {
-        throw new System.Exception("El metodo 'SendInput(Vector3, float)' no esta implementado");
     }
 
     private void GroundedAccelerate()
@@ -342,7 +342,7 @@ public class NewPhysicsMovement : MonoBehaviour
         }
     }
 
-
+    /// <summary>Stops the Rigidbody and freezes it in place.</summary>
     public void DeactivateMovement()
     {
         _acceleration = 0;
@@ -396,12 +396,16 @@ public class NewPhysicsMovement : MonoBehaviour
     }
 
     #region HelperMethods
+    /// <summary>Accelerates toward destination.</summary>
     public void AccelerateTowardsTarget(Vector3 destination) => AccelerateTowards(destination - Rigidbody.position);
 
+    /// <summary>Sets Velocity to zero.</summary>
     public void ClearForces() => Rigidbody.velocity = Vector3.zero;
 
+    /// <summary>Turns the gravity of the Rigidbody on or off.</summary>
     public void UseGravity(bool value) => Rigidbody.useGravity = value;
 
+    /// <summary>Adds force to Velocity.</summary>
     public void AddImpulse(Vector3 force) => Rigidbody.velocity += force;
     #endregion
 
@@ -409,5 +413,4 @@ public class NewPhysicsMovement : MonoBehaviour
     {
         DrawArrow.ForGizmo(transform.position, Velocity, Color.green, 2f);
     }
-
 }

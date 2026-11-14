@@ -76,19 +76,6 @@ public static class Pathfinding_Algorithm
     /// </summary>
     private sealed class AStarSearch
     {
-        /// <summary>Node in the frontier with the cost it was enqueued with.</summary>
-        private readonly struct FrontierEntry
-        {
-            public readonly Node Node;
-            public readonly float CostSoFar;
-
-            public FrontierEntry(Node node, float costSoFar)
-            {
-                Node = node;
-                CostSoFar = costSoFar;
-            }
-        }
-
         private readonly Node _goal;
         private readonly Vector3 _goalPosition;
 
@@ -108,6 +95,21 @@ public static class Pathfinding_Algorithm
         /// <summary>true when the search reached the goal.</summary>
         public bool Found { get; private set; }
 
+        /// <summary>Node in the frontier with the cost it was enqueued with.</summary>
+        private readonly struct FrontierEntry
+        {
+            public readonly Node Node;
+            public readonly float CostSoFar;
+
+            /// <summary>Creates an entry for node with costSoFar.</summary>
+            public FrontierEntry(Node node, float costSoFar)
+            {
+                Node = node;
+                CostSoFar = costSoFar;
+            }
+        }
+
+        /// <summary>Creates a search from start to goal with start in the frontier.</summary>
         public AStarSearch(Node start, Node goal)
         {
             _goal = goal;

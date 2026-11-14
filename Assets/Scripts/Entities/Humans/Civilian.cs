@@ -11,6 +11,12 @@ using UnityEngine;
 [RequireComponent(typeof(NewAIMovement))]
 public class Civilian : Entity
 {
+    [SerializeField]private Animator anim;
+    private NewAIMovement civilian_AI;
+    private Bunker nearestBunker;
+
+    private EventFSM<CivilianStates> civilianFSM;
+
     /// <summary>States of the FSM.</summary>
     public enum CivilianStates
     {
@@ -19,11 +25,6 @@ public class Civilian : Entity
         LookForRefugee,
         Die
     }
-    [SerializeField]private Animator anim;
-    private NewAIMovement civilian_AI;
-    private Bunker nearestBunker;
-
-    private EventFSM<CivilianStates> civilianFSM;
 
     protected override void Awake()
     {
@@ -143,7 +144,4 @@ public class Civilian : Entity
         // en el final todos estamos solos
 
     }
-
-
-
 }

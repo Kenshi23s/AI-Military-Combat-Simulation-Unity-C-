@@ -4,17 +4,19 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// Leaderboard of the alive units with the most damage dealt.
+/// Tab shows and hides it. The list refreshes every refreshTime seconds.
+/// </summary>
 public class ScoreManager : MonoBehaviour
 {
-
     [SerializeField] private int leaderboardQuantity;
     [SerializeField] private GameObject _panel,_scoreFatherGO;
     [SerializeField] private UnitScore prefabUnitScore;
     private List<UnitScore> _scoreList = new List<UnitScore>();
+    private Action ActualState = delegate { };
 
     private const float refreshTime = 0.5f;
-    private Action ActualState = delegate { };
-    
 
     // Start is called before the first frame update
     private void Start() => ActualState = CreateScores;
@@ -62,8 +64,6 @@ public class ScoreManager : MonoBehaviour
        
     }
 
-
-
     private void RemoveScores()
     {
         StopCoroutine(UpdateButtons());
@@ -75,5 +75,4 @@ public class ScoreManager : MonoBehaviour
 
         ActualState = CreateScores;
     }
-
 }

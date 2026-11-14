@@ -1,45 +1,54 @@
 using System.Collections.Generic;
 
-namespace IA2 {
-	public class StateConfigurer<T>
+namespace IA2
+{
+    /// <summary>
+    /// Builder for the transitions of a State.
+    /// Done applies the transitions to the state.
+    /// </summary>
+    /// <typeparam name="T">Type of the inputs.</typeparam>
+    public class StateConfigurer<T>
     {
-		private State<T> instance;
-		private Dictionary<T, Transition<T>> transitions = new Dictionary<T, Transition<T>>();
+        private State<T> instance;
+        private Dictionary<T, Transition<T>> transitions = new Dictionary<T, Transition<T>>();
 
-		public StateConfigurer(State<T> state) => instance = state;
+        /// <summary>Creates a configurer for state.</summary>
+        public StateConfigurer(State<T> state) => instance = state;
 
+        /// <summary>Adds the current transitions of the state to the configurer.</summary>
         public StateConfigurer<T> AddOldTransitions()
-		{
-			foreach (var item in instance.GetAllTransitions())		
-				transitions.Add(item.Key,item.Value);
-      
-			return this;
-		}
+        {
+            foreach (var item in instance.GetAllTransitions())
+                transitions.Add(item.Key, item.Value);
 
-        public  StateConfigurer<T> RemoveTransition(T key)
-		{
-			if (transitions.ContainsKey(key))			
-				transitions.Remove(key);
-			
-			return this;
-		}
+            return this;
+        }
 
-        public StateConfigurer<T> SetTransition(T input, State<T> target) 
-		{
-			transitions.Add(input, new Transition<T>(input, target));
-			return this;
-		}
+        /// <summary>Removes the transition for key.</summary>
+        public StateConfigurer<T> RemoveTransition(T key)
+        {
+            transitions.Remove(key);
+            return this;
+        }
 
-		public void Done() => instance.Configure(transitions);
+        /// <summary>Adds a transition from the state to target for input.</summary>
+        public StateConfigurer<T> SetTransition(T input, State<T> target)
+        {
+            transitions.Add(input, new Transition<T>(input, target));
+            return this;
+        }
 
+        /// <summary>Applies the transitions to the state.</summary>
+        public void Done() => instance.Configure(transitions);
     }
 
-	public static class StateConfigurer
+    /// <summary>Entry point for StateConfigurer with type inference.</summary>
+    public static class StateConfigurer
     {
-		public static StateConfigurer<T> Create<T>(State<T> state)
+        /// <summary>Returns a new StateConfigurer for state.</summary>
+        public static StateConfigurer<T> Create<T>(State<T> state)
         {
-			return new StateConfigurer<T>(state);
-		}
-
+            return new StateConfigurer<T>(state);
+        }
     }
 }

@@ -3,8 +3,28 @@ using UnityEngine;
 using System;
 using Random = UnityEngine.Random;
 
+/// <summary>
+/// Pooled text that floats up with a random horizontal drift, faces the camera and fades out.
+/// Returns to its pool when the alpha reaches 0.
+/// </summary>
 public class FloatingText : MonoBehaviour
 {
+    /// <summary>The text component.</summary>
+    public TMP_Text _popUpText;
+    [SerializeField]
+    private FloatingTextParam _textParameters;
+
+    private DebugableObject _debug;
+
+    private Renderer _ren;
+
+    private Vector3 _textForce, _initialPos;   
+
+    private Action<FloatingText> _pool_ReturnMethod;
+
+    private Color _color, _actualColor;
+
+    /// <summary>Movement and fade settings of a FloatingText.</summary>
     [System.Serializable]
     public struct FloatingTextParam
     {
@@ -16,38 +36,23 @@ public class FloatingText : MonoBehaviour
 
         [Range(0.1f, 1f), Tooltip("la velocidad con la que se desvanece el texto")]
         public float fadeSpeed;
-
-        public int sortingOrderRead => _sortingOrder;
         private int _sortingOrder;
 
+        /// <summary>Sorting order for the next text.</summary>
+        public int sortingOrderRead => _sortingOrder;
+
+        /// <summary>Adds 1 to the sorting order.</summary>
         public void IncreaseSortingOrder() => _sortingOrder++;
-       
-
     }
-   
-
-    private DebugableObject _debug;
-    [SerializeField]
-    private FloatingTextParam _textParameters;
-
-    private Renderer _ren;
-
-    public TMP_Text _popUpText;
-
-    private Vector3 _textForce, _initialPos;   
-   
-    private Action<FloatingText> _pool_ReturnMethod;
-
-    private Color _color, _actualColor;
-
 
     #region Initialize
     private void Awake()
     {
         _ren = _popUpText.GetComponent<MeshRenderer>();
     }
-    //Al crearse                                                     // MI metodo Return es igual al metodo Return que me pasaron por parametro
-    public void Configure(Action<FloatingText> pool_ReturnMethod,DebugableObject debug) 
+
+    /// <summary>Sets the action that returns the text to its pool and the DebugableObject for the gizmos.</summary>
+    public void Configure(Action<FloatingText> pool_ReturnMethod,DebugableObject debug)
     {
         _pool_ReturnMethod = pool_ReturnMethod;
 
@@ -59,10 +64,7 @@ public class FloatingText : MonoBehaviour
         
     }
 
-    /// <summary>
-    /// este metodo es el encargado de preparar a el texto para que haga todos 
-    /// los comportamientos necesarios para su correcta funcion
-    /// </summary>
+    /// <summary>Shows TextValueDamage at pos in color with parametersPass and a random drift.</summary>
     public void InitializeText(string TextValueDamage, Vector3 pos, FloatingTextParam parametersPass, Color color)
     {
         //inital pos lo uso para fijarme(en el gizmos) en que direccion va el texto 
@@ -76,10 +78,7 @@ public class FloatingText : MonoBehaviour
 
     }
 
-    /// <summary>
-    /// este metodo es el encargado de preparar a el texto para que haga todos 
-    /// los comportamientos necesarios para su correcta funcion
-    /// </summary>
+    /// <summary>Shows TextValueDamage at pos in the default color with parametersPass and a random drift.</summary>
     public void InitializeText(string TextValueDamage, Vector3 pos, FloatingTextParam parametersPass)
     {
         //inital pos lo uso para fijarme(en el gizmos) en que direccion va el texto 
@@ -92,7 +91,7 @@ public class FloatingText : MonoBehaviour
        SetRandomForce(parametersPass.x_Spread);
 
     }
- 
+
     private void SetText(string value,int sortOrder)
     {
         // esto es para que el texto actual tenga prioridad de renderizado sobre los anteriores

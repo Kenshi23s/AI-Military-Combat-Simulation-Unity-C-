@@ -7,6 +7,7 @@ using System.Linq;
 using IA2;
 using System.Collections.ObjectModel;
 
+/// <summary>State of a CapturePoint.</summary>
 public enum CaptureState
 {
     Inactive,
@@ -14,23 +15,33 @@ public enum CaptureState
     Disputed
 }
 
+/// <summary>
+/// Cylinder zone that a team captures by keeping more units inside it.
+/// CaptureProgress goes from -ProgressRequiredForCapture to ProgressRequiredForCapture, one sign per team.
+/// </summary>
+/// <remarks>The units inside are queried from the SpatialGrid3D every _searchTime seconds.</remarks>
 [RequireComponent(typeof(DebugableObject))]
 public class CapturePoint : MonoBehaviour
 {
-    #region Variables
-    [SerializeField, Min(0)] private float _searchTime = 0.2f;
+    [field: SerializeField] public float ProgressRequiredForCapture { get; private set; } = 100f;
+
+        public UnityEvent<MilitaryTeam> OnPointOwnerChange;
+    public UnityEvent OnPointNeutralized;
+    public UnityEvent<float> OnProgressChange;
+    public UnityEvent<Dictionary<MilitaryTeam, IMilitary[]>> OnTeamsInPointUpdate;
+        [SerializeField, Min(0)] private float _searchTime = 0.2f;
     [SerializeField, Min(0)] private float _pointRadius = 15, _pointHeight = 8;
     [SerializeField, Min(0)] private float _captureSpeed = 5f;
-    #endregion
-    private DebugableObject _debug;
+        private DebugableObject _debug;
 
     private HashSet<ICapturePointEntity> _entitiesInPoint = new HashSet<ICapturePointEntity>();
     private Dictionary<MilitaryTeam, IMilitary[]> _teamSplit = new Dictionary<MilitaryTeam, IMilitary[]>();
 
-    [field: SerializeField] public float ProgressRequiredForCapture { get; private set; } = 100f;
-
-
     private float _captureProgress = 0;
+
+    private SpatialGrid3D _targetGrid;
+
+    private EventFSM<CaptureState> _fsm;
     public float CaptureProgress
     {
         get => _captureProgress;
@@ -40,37 +51,18 @@ public class CapturePoint : MonoBehaviour
         }
     }
 
-    private SpatialGrid3D _targetGrid;
-
     public CaptureState CurrentState { get; private set; } = CaptureState.Inactive;
 
     public MilitaryTeam BeingCapturedBy { get; private set; } = MilitaryTeam.None;
     public MilitaryTeam CapturedBy { get; private set; } = MilitaryTeam.None;
 
-    #region Questions
-    public bool IsBeingCaptured => BeingCapturedBy != MilitaryTeam.None;
+        public bool IsBeingCaptured => BeingCapturedBy != MilitaryTeam.None;
     public bool IsCaptured => CapturedBy != MilitaryTeam.None;
     public bool IsFullyCaptured => Mathf.Abs(_captureProgress) >= ProgressRequiredForCapture;
-    #endregion
 
-    #region Events
-
-    #region UnityEvents
-    public UnityEvent<MilitaryTeam> OnPointOwnerChange;
-    public UnityEvent OnPointNeutralized;
-    public UnityEvent<float> OnProgressChange;
-    public UnityEvent<Dictionary<MilitaryTeam, IMilitary[]>> OnTeamsInPointUpdate;
-    #endregion
-
-    #region C# Events
-    public event Action OnDisputeStart, OnDisputeEnd,OnStopCapture;
+        public event Action OnDisputeStart, OnDisputeEnd,OnStopCapture;
     public event Action<MilitaryTeam> OnCaptureComplete;
     public event Action<MilitaryTeam> OnBeingCaptured;
-    #endregion
-
-    #endregion
-
-    private EventFSM<CaptureState> _fsm;
 
     private void Awake()
     {
@@ -123,7 +115,6 @@ public class CapturePoint : MonoBehaviour
     {
         return _teamSplit[team].Any() && (!IsFullyCaptured || CapturedBy != team);
     }
-
 
     #region FSM States
     private State<CaptureState> CreateInactiveState()

@@ -9,8 +9,19 @@ using UnityEngine;
 /// </summary>
 public class AI_Manager : MonoSingleton<AI_Manager>
 {
+    /// <summary>Maximum distance between two connected nodes.</summary>
+    public float MaxDistanceBetweenNodes;
     [SerializeField]
     private LayerMask _obstacle, _walls, _ground;
+
+    [SerializeField] private bool debugNodeConnections;
+
+    /// <summary>Every Node child of this transform.</summary>
+    [NonSerialized] public List<Node> nodes;
+    private List<NewAIMovement> _flockingTargets = new List<NewAIMovement>();
+
+    // Squared distance from the queried position to each node, by index. Reused by GetNearestNodeOnSight.
+    private float[] _sqrDistances = new float[0];
 
     /// <summary>Layers of the obstacles.</summary>
     public LayerMask Obstacle => _obstacle;
@@ -23,18 +34,6 @@ public class AI_Manager : MonoSingleton<AI_Manager>
 
     /// <summary>The NewAIMovement components added with AddToFlockingTargets.</summary>
     public List<NewAIMovement> flockingTargets => _flockingTargets;
-    private List<NewAIMovement> _flockingTargets = new List<NewAIMovement>();
-
-    /// <summary>Maximum distance between two connected nodes.</summary>
-    public float MaxDistanceBetweenNodes;
-
-    [SerializeField] private bool debugNodeConnections;
-
-    /// <summary>Every Node child of this transform.</summary>
-    [NonSerialized] public List<Node> nodes;
-
-    // Squared distance from the queried position to each node, by index. Reused by GetNearestNodeOnSight.
-    private float[] _sqrDistances = new float[0];
 
     /// <summary>Adds the NewAIMovement to flockingTargets.</summary>
     public void AddToFlockingTargets(NewAIMovement a) => _flockingTargets.Add(a);

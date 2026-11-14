@@ -6,12 +6,19 @@ using System;
 using Random = UnityEngine.Random;
 using static UnityEngine.ParticleSystem;
 
+/// <summary>
+/// Hitscan weapon: a raycast with random spread that damages the first IDamageable hit.
+/// Each shot spawns a trail from the shoot position to the impact point.
+/// </summary>
 public class ShootComponent : MonoBehaviour
 {
-    public event Action<IDamageable> onHit;
+    /// <summary>Damage of each bullet.</summary>
+    [field : SerializeField] public int BulletDamage { get; private set; }
+
+    /// <summary>Shoot position used by ShootBullets.</summary>
+    public Transform ShootPos;
 
     [SerializeField] private float _bulletspread;
-    [field : SerializeField] public int BulletDamage { get; private set; }
     //estaria bueno sacar esto de un manager mejor, pero por ahora
     [SerializeField]private LayerMask shootableLayers;
     [SerializeField] private TrailRenderer trailSample;
@@ -21,10 +28,12 @@ public class ShootComponent : MonoBehaviour
     [SerializeField] private float _burstCD = 3;
     [SerializeField] private float _bulletCD = 0.3f;
 
-    public Transform ShootPos;
-
     private const float maxTravelDistance = 100;
 
+    /// <summary>Raised with each IDamageable the bullets damage.</summary>
+    public event Action<IDamageable> onHit;
+
+    /// <summary>Shoots one bullet along the forward of shootPos with random spread.</summary>
     public void Shoot(Transform shootPos)
     {
         Vector3 dir = shootPos.transform.forward.RandomDirFrom(Random.Range(0, _bulletspread));
@@ -49,6 +58,7 @@ public class ShootComponent : MonoBehaviour
         StartCoroutine(SpawnTrail(trail, finalTrailPos));
     }
 
+    /// <summary>Shoots one bullet from shootPos along dir with random spread.</summary>
     public void Shoot(Transform shootPos,Vector3 dir)
     {
         Vector3 finalTrailPos = Vector3.zero;
@@ -71,6 +81,11 @@ public class ShootComponent : MonoBehaviour
         StartCoroutine(SpawnTrail(trail, finalTrailPos));
     }
 
+    /// <summary>
+    /// Shoots one bullet from shootPos along dir with random spread.
+    /// The bullet goes through each IDamageable hit where _predicate returns false.
+    /// </summary>
+    /// <param name="_predicate">Returns true for the hits that take damage.</param>
     public void Shoot(Transform shootPos, Vector3 dir,Func<RaycastHit,bool> _predicate)
     {
         Vector3 finalTrailPos = Vector3.zero;
@@ -102,7 +117,11 @@ public class ShootComponent : MonoBehaviour
         StartCoroutine(SpawnTrail(trail, finalTrailPos));
     }
 
-
+    /// <summary>
+    /// Continues a bullet from continuFrom along dir.
+    /// The bullet goes through each IDamageable hit where ignoreIfFalse returns false.
+    /// </summary>
+    /// <param name="shootPos">Start of the trail.</param>
     public void ShootRecursion(Transform shootPos ,Vector3 continuFrom , Vector3 dir, Func<RaycastHit, bool> ignoreIfFalse)
     {
         Vector3 finalTrailPos = Vector3.zero;
@@ -149,6 +168,7 @@ public class ShootComponent : MonoBehaviour
         Destroy(trail.gameObject);
     }
 
+    /// <summary>Shoots bursts from ShootPos forever, with _bulletCD between bullets and _burstCD between bursts.</summary>
     public IEnumerator ShootBullets()
     {
         while (true)
@@ -161,5 +181,4 @@ public class ShootComponent : MonoBehaviour
             yield return new WaitForSeconds(_burstCD);
         }
     }
-
 }

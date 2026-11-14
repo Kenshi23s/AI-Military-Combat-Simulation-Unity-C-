@@ -1,15 +1,21 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using IA2;
 using System;
 
+/// <summary>
+/// Example character from the class that shows the use of EventFSM, StateConfigurer and Transition events.
+/// The states are IDLE, Moving, Jumping, DIE and High.
+/// </summary>
 public class Personaje : MonoBehaviour
 {
-    public enum PlayerInputs { MOVE, JUMP, IDLE, DIE, HIGH }
+    public Renderer _myRen;
     private EventFSM<PlayerInputs> _myFsm;
     private Rigidbody _myRb;
-    public Renderer _myRen;
+
+    /// <summary>Inputs of the FSM.</summary>
+    public enum PlayerInputs { MOVE, JUMP, IDLE, DIE, HIGH }
 
     private void Awake()
     {

@@ -12,10 +12,6 @@ using UnityEngine;
 /// </remarks>
 public class SpatialGrid3D : MonoBehaviour
 {
-    #region Variables
-
-    [SerializeField] private bool takePositionFromTransform = false;
-
     /// <summary>World position of the grid's minimum corner.</summary>
     public float x, y, z;
 
@@ -26,6 +22,17 @@ public class SpatialGrid3D : MonoBehaviour
     /// <summary>Number of cells on each axis.</summary>
     [Min(0)]
     public int width, height, depth;
+
+    /// <summary>Hides every grid gizmo.</summary>
+    public bool AreGizmosShutDown;
+
+    /// <summary>Draws connections only between entities in the same cell.</summary>
+    public bool activatedGrid;
+
+    /// <summary>Logs the connection count of each entity on the next gizmo draw.</summary>
+    public bool showLogs = true;
+
+    [SerializeField] private bool takePositionFromTransform = false;
 
     /// <summary>Cell coordinates of an entity outside the grid.</summary>
     public static readonly Vector3Int Outside = new Vector3Int(-1, -1, -1);
@@ -43,10 +50,6 @@ public class SpatialGrid3D : MonoBehaviour
     private HashSet<GridEntity>[,,] buckets;
 
     private Vector3 _gridCenter;
-
-    #endregion
-
-    #region Unity calls
 
     private void OnValidate()
     {
@@ -95,10 +98,6 @@ public class SpatialGrid3D : MonoBehaviour
 
         _entities.Clear();
     }
-
-    #endregion
-
-    #region Entities
 
     /// <summary>
     /// Registers the entity in the grid and places it in the cell of its position.
@@ -161,10 +160,6 @@ public class SpatialGrid3D : MonoBehaviour
             entity.OnGrid = false;
         }
     }
-
-    #endregion
-
-    #region Queries
 
     /// <summary>
     /// Returns the entities inside the box between aabbFrom and aabbTo that pass filterByPosition.
@@ -232,10 +227,6 @@ public class SpatialGrid3D : MonoBehaviour
     /// <summary>Returns the world position of the grid's center.</summary>
     public Vector3 GetMidleOfGrid() => _gridCenter;
 
-    #endregion
-
-    #region Grid position
-
     private void SetGridPosition()
     {
         x = transform.position.x;
@@ -250,19 +241,6 @@ public class SpatialGrid3D : MonoBehaviour
         Vector3 dimensions = new Vector3(width * cellWidth, height * cellHeight, depth * cellDepth);
         _gridCenter = new Vector3(x, y, z) + dimensions / 2;
     }
-
-    #endregion
-
-    #region Graphic representation
-
-    /// <summary>Hides every grid gizmo.</summary>
-    public bool AreGizmosShutDown;
-
-    /// <summary>Draws connections only between entities in the same cell.</summary>
-    public bool activatedGrid;
-
-    /// <summary>Logs the connection count of each entity on the next gizmo draw.</summary>
-    public bool showLogs = true;
 
     private void OnDrawGizmos()
     {
@@ -346,6 +324,4 @@ public class SpatialGrid3D : MonoBehaviour
                 Debug.Log("tengo " + (group.Count - 1) + " conexiones por individuo");
         }
     }
-
-    #endregion
-}
+    }

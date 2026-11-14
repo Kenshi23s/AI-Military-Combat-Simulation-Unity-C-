@@ -1,46 +1,60 @@
-using System;
-
 namespace IA2
 {
-	public class EventFSM<T>
+    /// <summary>
+    /// Finite state machine driven by inputs.
+    /// SendInput moves to the TargetState of the transition of the current state for that input.
+    /// </summary>
+    /// <typeparam name="T">Type of the inputs.</typeparam>
+    public class EventFSM<T>
     {
-		public State<T> Current { get { return current; } }
-		private State<T> current;
-		public T CurrentKey { get; private set; }
+        private State<T> current;
 
-		public EventFSM(State<T> initial)
+        /// <summary>The current state.</summary>
+        public State<T> Current { get { return current; } }
+
+        /// <summary>The input that led to the current state.</summary>
+        public T CurrentKey { get; private set; }
+
+        /// <summary>Creates the machine and enters initial.</summary>
+        public EventFSM(State<T> initial)
         {
-			current = initial;
-			current.Enter(default(T));
-		}
+            current = initial;
+            current.Enter(default(T));
+        }
 
-		public void SendInput(T input)
+        /// <summary>
+        /// Moves to the next state when the current state has a transition for input.
+        /// Calls Exit on the current state and Enter on the next one.
+        /// </summary>
+        public void SendInput(T input)
         {
-			State<T> newState;
+            State<T> newState;
 
-			if (current.CheckInput(input, out newState))
+            if (current.CheckInput(input, out newState))
             {
-				current.Exit(input);
-				current = newState;
-				CurrentKey = input;
+                current.Exit(input);
+                current = newState;
+                CurrentKey = input;
                 current.Enter(input);
-			}
-		}
+            }
+        }
 
-
-		public void Update()
+        /// <summary>Calls Update on the current state.</summary>
+        public void Update()
         {
-			current.Update();
-		}
+            current.Update();
+        }
 
+        /// <summary>Calls LateUpdate on the current state.</summary>
         public void LateUpdate()
         {
             current.LateUpdate();
         }
 
+        /// <summary>Calls FixedUpdate on the current state.</summary>
         public void FixedUpdate()
         {
             current.FixedUpdate();
         }
-	}
+    }
 }

@@ -4,18 +4,31 @@ using System.IO;
 using System.Reflection;
 using UnityEngine;
 
+/// <summary>
+/// System.Type that Unity can serialize.
+/// The type is written to data before serialization and read back after deserialization.
+/// </summary>
 [System.Serializable]
 public class SerializableType : ISerializationCallbackReceiver
 {
-     public string name;
-    [SerializeField]public System.Type type;
+    /// <summary>Full name of the type.</summary>
+    public string name;
+
+    /// <summary>The type.</summary>
+    [SerializeField] public System.Type type;
+
+    /// <summary>Binary form of the type.</summary>
     public byte[] data;
+
+    /// <summary>Creates a SerializableType for aType.</summary>
     public SerializableType(System.Type aType)
     {
         name = aType.FullName;
         type = aType;
     }
 
+    /// <summary>Reads a type written by Write, including generic arguments.</summary>
+    /// <returns>The type, or null for a null type.</returns>
     public static System.Type Read(BinaryReader aReader)
     {
         var paramCount = aReader.ReadByte();
@@ -37,6 +50,7 @@ public class SerializableType : ISerializationCallbackReceiver
         return type;
     }
 
+    /// <summary>Writes aType with its assembly qualified name and its generic arguments.</summary>
     public static void Write(BinaryWriter aWriter, System.Type aType)
     {
         if (aType == null)
@@ -76,8 +90,6 @@ public class SerializableType : ISerializationCallbackReceiver
        
         using (var stream = new MemoryStream(data))
         {
-            Debug.Log("Stream"+stream);
-            Debug.Log("Data"+data);
             using (var r = new BinaryReader(stream))
             {
                 type = Read(r);

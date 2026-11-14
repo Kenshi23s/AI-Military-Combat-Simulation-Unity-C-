@@ -1,9 +1,16 @@
 using UnityEngine;
 
+/// <summary>
+/// MonoBehaviour with a single instance in the scene, stored in instance.
+/// Subclasses initialize in SingletonAwake.
+/// </summary>
+/// <typeparam name="T">The subclass.</typeparam>
 public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T>
 {
+    /// <summary>The instance in the scene.</summary>
     public static T instance { get; private set; }
-    //no se debe crear un awake nuevo, en caso de querer inicializar usar el metodo ArtificialAwake
+
+    // Awake is reserved for the singleton. Subclasses use SingletonAwake.
     protected void Awake()
     {
         if (instance!=null)

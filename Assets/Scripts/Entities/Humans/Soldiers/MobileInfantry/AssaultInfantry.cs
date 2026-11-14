@@ -13,10 +13,23 @@ using AlignmentType = NewPhysicsMovement.AlignmentType;
 /// </summary>
 public class AssaultInfantry : MobileInfantry
 {
+    [SerializeField] private float _timeBeforeSelectingTarget;
+
+    private State<ASSAULT_INFANTRY_STATES> _awaitingOrders, _leaderMoveTo, _followLeader, _fireAtWill, _die;
+
+    private WaitForSeconds _searchTargetWait, _selectTargetWait;
+
+    // Running coroutines. Each state stops the ones it started.
+    private Coroutine _lookForTargets, _findPoint, _followLeaderRoutine, _setTarget;
+
+    // Seconds between two enemy searches in LookForTargets.
+    private const float _searchTargetWaitTime = 0.5f;
+
     /// <summary>The enemy the soldier shoots at.</summary>
     public Entity ShootTarget { get; private set; }
 
-    [SerializeField] private float _timeBeforeSelectingTarget;
+    /// <summary>The FSM of the soldier.</summary>
+    public EventFSM<ASSAULT_INFANTRY_STATES> FSM { get; private set; }
 
     /// <summary>States of the FSM.</summary>
     public enum ASSAULT_INFANTRY_STATES
@@ -27,19 +40,6 @@ public class AssaultInfantry : MobileInfantry
         FIRE_AT_WILL,
         DIE
     }
-
-    /// <summary>The FSM of the soldier.</summary>
-    public EventFSM<ASSAULT_INFANTRY_STATES> FSM { get; private set; }
-
-    private State<ASSAULT_INFANTRY_STATES> _awaitingOrders, _leaderMoveTo, _followLeader, _fireAtWill, _die;
-
-    // Seconds between two enemy searches in LookForTargets.
-    private const float _searchTargetWaitTime = 0.5f;
-
-    private WaitForSeconds _searchTargetWait, _selectTargetWait;
-
-    // Running coroutines. Each state stops the ones it started.
-    private Coroutine _lookForTargets, _findPoint, _followLeaderRoutine, _setTarget;
 
     protected override void Awake()
     {
@@ -287,6 +287,7 @@ public class AssaultInfantry : MobileInfantry
 
         return state;
     }
+
     #endregion
 
     /// <summary>Stops the NewAIMovement.</summary>

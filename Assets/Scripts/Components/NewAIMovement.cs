@@ -12,6 +12,25 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class NewAIMovement : MonoBehaviour
 {
+    /// <summary>Distance to a point at which the agent counts it as reached.</summary>
+    public float DestinationArriveDistance;
+
+    [SerializeField] private LayerMask obstacleMask;
+
+    // Callback of the current destination. SetDestination replaces it.
+    private Action OnCurrentDestinationReached;
+
+    private DebugableObject _debug;
+
+    private Action _fixedUpdate;
+
+    private readonly List<Vector3> _path = new List<Vector3>();
+
+    // Index in _path of the next waypoint.
+    private int _pathIndex;
+
+    // Coroutine of the path calculation in progress.
+    private Coroutine _pathCalculation;
     // Maximum distance for the straight movement without a path.
     private const float DirectPathMaxDistance = 20f;
 
@@ -35,26 +54,6 @@ public class NewAIMovement : MonoBehaviour
 
     /// <summary>Raised by CancelMovement.</summary>
     public event Action OnMovementCanceled;
-
-    // Callback of the current destination. SetDestination replaces it.
-    private Action OnCurrentDestinationReached;
-
-    private DebugableObject _debug;
-
-    /// <summary>Distance to a point at which the agent counts it as reached.</summary>
-    public float DestinationArriveDistance;
-
-    private Action _fixedUpdate;
-
-    private readonly List<Vector3> _path = new List<Vector3>();
-
-    // Index in _path of the next waypoint.
-    private int _pathIndex;
-
-    // Coroutine of the path calculation in progress.
-    private Coroutine _pathCalculation;
-
-    [SerializeField] private LayerMask obstacleMask;
 
     /// <summary>The last destination given to SetDestination.</summary>
     public Vector3 Destination { get; private set; }

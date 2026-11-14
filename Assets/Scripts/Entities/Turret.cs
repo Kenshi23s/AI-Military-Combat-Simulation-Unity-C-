@@ -13,35 +13,20 @@ using UnityEngine;
 [RequireComponent(typeof(ShootComponent))]
 public class Turret : Entity, IMilitary
 {
-    /// <summary>States of the FSM.</summary>
-    public enum TurretStates
-    {
-        REST,
-        SEARCH_TARGETS,
-        ALIGN,
-        SHOOT
-    }
-
     /// <summary>Team of the turret.</summary>
     [field: SerializeField, Header("Turret")] public MilitaryTeam Team { get; private set; }
 
-    /// <summary>The enemy Plane the turret aims at.</summary>
-    public Plane Target { get; private set; }
-
-    /// <summary>Damage dealt by the bullets of the turret.</summary>
-    public int TotalDamageDealt { get; private set; }
-
     [SerializeField] private Transform _pivotTurret,_pivotCanon;
     [SerializeField] private float _baseMinAngle, _canonMinAngle;
-
-    private GridEntity _myGridEntity;
-    private FOVAgent _fov;
     [SerializeField] private float rotationSpeed;
     [SerializeField] private float _cd_BetweenSearch;
 
     [SerializeField,Header("Shooting")] 
     private Transform[] _shootPos;
     [SerializeField] private float _cd_BetweenShots;
+
+    private GridEntity _myGridEntity;
+    private FOVAgent _fov;
     private int _pos = 0;
     private ShootComponent _ShootHandler;
 
@@ -52,7 +37,22 @@ public class Turret : Entity, IMilitary
 
     private float _fixedCanonPos;
 
+    /// <summary>The enemy Plane the turret aims at.</summary>
+    public Plane Target { get; private set; }
+
+    /// <summary>Damage dealt by the bullets of the turret.</summary>
+    public int TotalDamageDealt { get; private set; }
+
     public event Action OnDeathInCombat;
+
+    /// <summary>States of the FSM.</summary>
+    public enum TurretStates
+    {
+        REST,
+        SEARCH_TARGETS,
+        ALIGN,
+        SHOOT
+    }
 
     protected override void Awake()
     {
@@ -140,7 +140,6 @@ public class Turret : Entity, IMilitary
 
         return state;
     }
-
 
     private State<TurretStates> SearchTargets_State()
     {
@@ -296,8 +295,6 @@ public class Turret : Entity, IMilitary
         return _canonMinAngle > Quaternion.Angle(_pivotCanon.rotation, target);
 
     }
-
-   
 
     private void Update()
     {

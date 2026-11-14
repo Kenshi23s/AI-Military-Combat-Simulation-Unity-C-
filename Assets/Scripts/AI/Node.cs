@@ -8,12 +8,6 @@ using UnityEngine;
 [RequireComponent(typeof(DebugableObject))]
 public class Node : MonoBehaviour
 {
-    /// <summary>Radius of the SphereCast that checks line of sight to a neighbor.</summary>
-    private const float NeighborCastRadius = 1f;
-
-    /// <summary>Nodes connected to this node.</summary>
-    public List<Node> Neighbors { get; private set; } = new List<Node>();
-
     /// <summary>Cost of entering this node.</summary>
     [SerializeField] public int cost = 0;
 
@@ -22,6 +16,12 @@ public class Node : MonoBehaviour
 
     // Same nodes as Neighbors, for O(1) lookups in NodeGizmo.
     private HashSet<Node> _neighborSet = new HashSet<Node>();
+
+    /// <summary>Radius of the SphereCast that checks line of sight to a neighbor.</summary>
+    private const float NeighborCastRadius = 1f;
+
+    /// <summary>Nodes connected to this node.</summary>
+    public List<Node> Neighbors { get; private set; } = new List<Node>();
 
     /// <summary>Adds value to cost.</summary>
     public void AddCost(int value) => cost += value;

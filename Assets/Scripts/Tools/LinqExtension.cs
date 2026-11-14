@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
-using Random = UnityEngine.Random;
+
 //IA2-LINQ
+/// <summary>LINQ-style extensions: Minimum, Maximum, NotOfType and EmptyIfNull.</summary>
 public static class LinqExtension
 {
-    public static T Minimum<T>(this IEnumerable<T> col,Func<T,float> GetValue)
+    /// <summary>Returns the element with the lowest GetValue, or default for an empty col. O(n).</summary>
+    public static T Minimum<T>(this IEnumerable<T> col, Func<T, float> GetValue)
     {
         float minimum = float.MaxValue; T returnItem = default;
 
@@ -16,17 +18,18 @@ public static class LinqExtension
             {
                 minimum = newValue;
                 returnItem = item;
-            }           
+            }
         }
-        return returnItem;     
+        return returnItem;
     }
 
-    public static T Maximum<T>(this IEnumerable<T> col, Func<T,float> GetValue)
+    /// <summary>Returns the element with the highest GetValue, or default for an empty col. O(n).</summary>
+    public static T Maximum<T>(this IEnumerable<T> col, Func<T, float> GetValue)
     {
         float maximum = float.MinValue; T returnItem = default;
 
         foreach (var item in col)
-        {         
+        {
             float newValue = GetValue(item);
 
             if (newValue > maximum)
@@ -38,44 +41,29 @@ public static class LinqExtension
         return returnItem;
     }
 
-    public static IEnumerable<T>NotOfType<T,K>(this IEnumerable<T> col)
+    /// <summary>Returns the elements whose exact type is different from K.</summary>
+    public static IEnumerable<T> NotOfType<T, K>(this IEnumerable<T> col)
     {
         foreach (var item in col)
         {
-            if (item.GetType() != typeof(K))          
-                yield return item;            
+            if (item.GetType() != typeof(K))
+                yield return item;
         }
     }
 
-    //no me dejaba con IEnumerable de tipo T
-
-    public static Dictionary<K, V[]> EmptyIfNull<K,V>(this Dictionary<K, V[]> dic)
+    /// <summary>Adds an empty array for each value of the enum K that dic is missing and returns dic.</summary>
+    /// <exception cref="Exception">K is a type other than an enum.</exception>
+    public static Dictionary<K, V[]> EmptyIfNull<K, V>(this Dictionary<K, V[]> dic)
     {
         if (!typeof(K).IsEnum)
-        {
             throw new Exception("Se paso un tipo que no era Enum");
-           
-        }
-           
 
         foreach (K key in Enum.GetValues(typeof(K)))
         {
             if (dic.ContainsKey(key)) continue;
-            
+
             dic.Add(key, new V[0]);
         }
         return dic;
     }
-
-    //public static IEnumerable<T> GetRandomAmount<T>(this IEnumerable<T> col,int quantity = 1)
-    //{
-    //    HashSet<T> list = new HashSet<T>();
-    //    while (quantity>0)
-    //    {
-    //        yield return col.Skip(Random.Range(0, col.Count())).Take(1);
-    //        quantity--;
-    //    }
-    //}
-
-
 }

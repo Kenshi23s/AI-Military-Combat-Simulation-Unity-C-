@@ -1,18 +1,20 @@
 using System;
 using UnityEngine;
+/// <summary>Pool of FloatingText instances parented to a Transform.</summary>
 [System.Serializable]
-public class TextPool 
+public class TextPool
 {
-    #region PoolRequirements
+    /// <summary>The underlying pool.</summary>
     public PoolObject<FloatingText> DamageTextPool = new PoolObject<FloatingText>();
+
+    /// <summary>Instances created on Initialize.</summary>
+    public int prewarm = 5;
 
     [SerializeField]
     private FloatingText sample;
-    //Action<FloatingText> ReturnMethod;
-    public int prewarm = 5;
     private Transform _transform;
-    #endregion
 
+    /// <summary>Creates the pool with clones of sample under _transform.</summary>
     public void Initialize(Transform _transform, FloatingText sample,DebugableObject _debug)
     {
         this._transform = _transform;
@@ -34,11 +36,9 @@ public class TextPool
         DamageTextPool.Intialize(turnOn, turnOff, build, prewarm);
     }
 
-   
-
+    /// <summary>Returns t to the pool.</summary>
     public void ReturnHolder(FloatingText t) => DamageTextPool.Return(t);
 
+    /// <summary>Returns an active FloatingText from the pool.</summary>
     public FloatingText GetHolder() => DamageTextPool.Get();
-
-
 }

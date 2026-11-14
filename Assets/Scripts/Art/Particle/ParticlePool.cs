@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+/// <summary>One PoolObject of ParticleHolder per particle prefab, indexed by key.</summary>
 public class ParticlePool:MonoSingleton<ParticlePool>
 {
-   
     private Dictionary<int,PoolObject<ParticleHolder>> _vfxPools = new Dictionary<int, PoolObject<ParticleHolder>>();
-   //devuelve la key a la pool
+
+    /// <summary>Creates the pool of particle and returns its key.</summary>
+    /// <returns>The key of the existing pool when particle already has one.</returns>
     public int CreateVFXPool(ParticleHolder particle)
     {
         int key = particle.GetHashCode();
@@ -36,7 +38,8 @@ public class ParticlePool:MonoSingleton<ParticlePool>
            
     }
 
-    public ParticleHolder GetVFX(int key) => _vfxPools.ContainsKey(key) ? _vfxPools[key].Get() : null;
+    /// <summary>Returns a particle from the pool of key, or null for an unknown key.</summary>
+    public ParticleHolder GetVFX(int key) => _vfxPools.TryGetValue(key, out var pool) ? pool.Get() : null;
 
     protected override void SingletonAwake()
     {

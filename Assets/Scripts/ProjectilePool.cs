@@ -3,14 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>Pool of Misile instances, prewarmed on Awake.</summary>
 public class ProjectilePool : MonoSingleton<ProjectilePool>
 {
-    //estaria bueno tener una pool con timeSlicing(?)
-    private PoolObject<Misile> pool = new PoolObject<Misile>();
-
     [SerializeField] private Misile _prefab;
     //devuelve la key a la pool
     [SerializeField] private int _prewarmMisiles = 20;
+    private PoolObject<Misile> pool = new PoolObject<Misile>();
 
     protected override void SingletonAwake()
     {
@@ -33,5 +32,6 @@ public class ProjectilePool : MonoSingleton<ProjectilePool>
         pool.Intialize(turnOn, turnOff, build, _prewarmMisiles);
     }
 
+    /// <summary>Returns an active missile from the pool.</summary>
     public Misile GetMisile() => pool.Get();
 }

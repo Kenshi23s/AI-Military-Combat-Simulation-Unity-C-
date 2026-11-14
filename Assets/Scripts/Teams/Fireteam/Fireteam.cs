@@ -11,6 +11,19 @@ using UnityEngine;
 /// </summary>
 public class Fireteam
 {
+    /// <summary>Read-only view of the members.</summary>
+    public ReadOnlyCollection<MobileInfantry> FireteamMembers;
+
+    private List<MobileInfantry> _fireteamMembers = new List<MobileInfantry>();
+
+    private CapturePoint targetCapturePoint;
+
+    /// <summary>The member that gives the orders.</summary>
+    public MobileInfantry Leader { get; private set; }
+
+    /// <summary>Team of the fireteam.</summary>
+    public MilitaryTeam Team { get; private set; }
+
     /// <summary>Creates a Fireteam with the given members and a random Leader.</summary>
     public static void Create(MilitaryTeam newTeam, List<MobileInfantry> members)
     {
@@ -38,19 +51,6 @@ public class Fireteam
 
         Leader.Initialize(newTeam);
     }
-
-    private List<MobileInfantry> _fireteamMembers = new List<MobileInfantry>();
-
-    private CapturePoint targetCapturePoint;
-
-    /// <summary>Read-only view of the members.</summary>
-    public ReadOnlyCollection<MobileInfantry> FireteamMembers;
-
-    /// <summary>The member that gives the orders.</summary>
-    public MobileInfantry Leader { get; private set; }
-
-    /// <summary>Team of the fireteam.</summary>
-    public MilitaryTeam Team { get; private set; }
 
     #region MemberManagment
 
