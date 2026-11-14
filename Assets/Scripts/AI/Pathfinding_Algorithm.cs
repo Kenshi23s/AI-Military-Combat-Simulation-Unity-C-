@@ -210,8 +210,9 @@ public static class Pathfinding_Algorithm
     /// <param name="endpos">Position appended at the end of the path when it differs from default.</param>
     /// <param name="iterationPerFrame">Number of nodes expanded per frame.</param>
     /// <param name="maxDistance">Maximum line of sight distance between two nodes.</param>
-    /// <remarks>O(E log V) for A* plus O(L) raycasts for the smoothing, where L is the path length.</remarks>
-    public static IEnumerator CalculateLazyThetaStar(this Tuple<Node, Node> nodes, LayerMask wallMask, Action<bool, List<Vector3>> onFinish, Vector3 endpos = default, int iterationPerFrame = 30, float maxDistance = 20f)
+    /// <param name="agentRadius">Radius of the agent. The smoothing keeps a shortcut only when a sphere of this radius fits through it.</param>
+    /// <remarks>O(E log V) for A* plus O(L) casts for the smoothing, where L is the path length.</remarks>
+    public static IEnumerator CalculateLazyThetaStar(this Tuple<Node, Node> nodes, LayerMask wallMask, Action<bool, List<Vector3>> onFinish, Vector3 endpos = default, int iterationPerFrame = 30, float maxDistance = 20f, float agentRadius = 0f)
     {
         return nodes.CalculateLazyAStar((pathMade, path) =>
         {
@@ -221,7 +222,7 @@ public static class Pathfinding_Algorithm
                 return;
             }
 
-            List<Node> smoothed = SmoothPath(path, (from, to) => ColomboMethods.InLineOffSight(from, to, wallMask, maxDistance));
+            List<Node> smoothed = SmoothPath(path, (from, to) => ColomboMethods.InLineOfSightWide(from, to, wallMask, agentRadius, maxDistance));
 
             List<Vector3> positions = ToGroundPositions(smoothed);
             if (endpos != default)

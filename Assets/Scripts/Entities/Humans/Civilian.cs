@@ -5,8 +5,9 @@ using UnityEngine;
 
 /// <summary>
 /// Entity that runs to the nearest Bunker and hides inside.
-/// The civilian prays when it can't enter a Bunker.
+/// The civilian prays when it can't enter a Bunker or can't reach it.
 /// </summary>
+/// <remarks>The civilian reaches the Bunker when it enters the Bunker trigger or arrives at its position.</remarks>
 [SelectionBase]
 [RequireComponent(typeof(NewAIMovement))]
 public class Civilian : Entity
@@ -16,6 +17,9 @@ public class Civilian : Entity
     private Bunker nearestBunker;
 
     private EventFSM<CivilianStates> civilianFSM;
+
+    // true while the civilian runs to nearestBunker. Blocks a second TryEnterBunker.
+    private bool _runningToBunker;
 
     /// <summary>States of the FSM.</summary>
     public enum CivilianStates
@@ -84,13 +88,15 @@ public class Civilian : Entity
             }
 
             anim.SetBool("Running", true);
-            civilian_AI.SetDestination(nearestBunker.transform.position, TryEnterBunker);
+            _runningToBunker = true;
+            civilian_AI.SetDestination(nearestBunker.transform.position, TryEnterBunker, onFailed: OnBunkerUnreachable);
 
             DebugEntity.Log("Corro hacia el refugio");
         };
 
         run.OnExit += (x) =>
         {
+            _runningToBunker = false;
             anim.SetBool("Running", false);
         };
     
@@ -101,7 +107,11 @@ public class Civilian : Entity
     {
         State<CivilianStates> pray = new State<CivilianStates>("Pray");
 
-        pray.OnEnter += (x) => { DebugEntity.Log("A rezar C:"); };
+        pray.OnEnter += (x) =>
+        {
+            DebugEntity.Log("A rezar C:");
+            civilian_AI.CancelMovement();
+        };
 
         pray.OnEnter += (x) => { anim.SetBool("Praying", true); };
 
@@ -126,8 +136,32 @@ public class Civilian : Entity
         return die;
     }
 
+    /// <summary>Enters bunker when the civilian is running to it.</summary>
+    public void ReachBunker(Bunker bunker)
+    {
+        if (!_runningToBunker || bunker != nearestBunker)
+            return;
+
+        civilian_AI.CancelMovement();
+        TryEnterBunker();
+    }
+
+    private void OnBunkerUnreachable()
+    {
+        if (!_runningToBunker)
+            return;
+
+        DebugEntity.Log("No puedo llegar al refugio");
+        civilianFSM.SendInput(CivilianStates.Pray);
+    }
+
     private void TryEnterBunker()
     {
+        if (!_runningToBunker)
+            return;
+
+        _runningToBunker = false;
+
         if (nearestBunker == null) { civilianFSM.SendInput(CivilianStates.Pray); return; }
         if (!nearestBunker.EnterBunker(this)) { civilianFSM.SendInput(CivilianStates.Pray); return; }
 

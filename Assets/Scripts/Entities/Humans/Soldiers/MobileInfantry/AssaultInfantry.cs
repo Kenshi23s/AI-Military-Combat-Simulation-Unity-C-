@@ -155,10 +155,10 @@ public class AssaultInfantry : MobileInfantry
             StopMoving();
 
             DebugEntity.Log("Me muevo hacia posicion x");
-            Movement.SetDestination(Destination, () =>
-            {
-                FSM.SendInput(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS);
-            });
+            // Al llegar, o si se traba y no puede llegar, vuelve a esperar ordenes.
+            Movement.SetDestination(Destination,
+                onDestinationReached: () => FSM.SendInput(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS),
+                onFailed: () => FSM.SendInput(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS));
 
             Anim.SetBool("Running", true);
             RestartCoroutine(ref _lookForTargets, LookForTargets());

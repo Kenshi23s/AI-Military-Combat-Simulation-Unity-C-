@@ -358,6 +358,35 @@ namespace FacundoColomboMethods
             return !Physics.Raycast(start, dir, Mathf.Sqrt(sqrDistance), maskWall);
         }
 
+        /// <summary>
+        /// Returns true when a sphere of radius moves from start to end without hitting maskWall.
+        /// The check covers the width of an agent of that radius.
+        /// </summary>
+        /// <remarks>A radius of 0 or less runs a raycast.</remarks>
+        public static bool InLineOfSightWide(this Vector3 start, Vector3 end, LayerMask maskWall, float radius)
+        {
+            if (radius <= 0f)
+                return InLineOffSight(start, end, maskWall);
+
+            Vector3 dir = end - start;
+            float distance = dir.magnitude;
+            if (distance <= Mathf.Epsilon)
+                return true;
+
+            return !Physics.SphereCast(start, radius, dir / distance, out _, distance, maskWall);
+        }
+
+        /// <summary>
+        /// Returns true when end is within maxDistance of start and a sphere of radius moves between them without hitting maskWall.
+        /// </summary>
+        public static bool InLineOfSightWide(this Vector3 start, Vector3 end, LayerMask maskWall, float radius, float maxDistance)
+        {
+            if ((end - start).sqrMagnitude > maxDistance * maxDistance)
+                return false;
+
+            return InLineOfSightWide(start, end, maskWall, radius);
+        }
+
         /// <summary>Returns the hit point of a raycast from pos along dir, or pos moved range units on Z.</summary>
         public static Vector3 CheckForwardRayColision(Vector3 pos, Vector3 dir, float range = 15)
         {

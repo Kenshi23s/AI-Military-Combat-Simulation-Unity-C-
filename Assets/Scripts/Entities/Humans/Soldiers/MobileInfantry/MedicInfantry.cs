@@ -179,10 +179,10 @@ public class MedicInfantry : MobileInfantry
 
         leaderMoveTo.OnEnter += (x) =>
         {
-            Movement.SetDestination(Destination, () =>
-            {
-                _fsm.SendInput(MEDIC_INFANTRY_STATES.AWAITING_ORDERS);
-            });
+            // Al llegar, o si se traba y no puede llegar, vuelve a esperar ordenes.
+            Movement.SetDestination(Destination,
+                onDestinationReached: () => _fsm.SendInput(MEDIC_INFANTRY_STATES.AWAITING_ORDERS),
+                onFailed: () => _fsm.SendInput(MEDIC_INFANTRY_STATES.AWAITING_ORDERS));
 
             Anim.SetBool("Running", true);
         };
@@ -262,7 +262,9 @@ public class MedicInfantry : MobileInfantry
                         Anim.SetBool("Running", false);
                         Movement.CancelMovement();
                     }
-                });
+                },
+                // Si se traba, frena y el timer de este estado vuelve a calcular el camino.
+                onFailed: () => Anim.SetBool("Running", false));
         }
 
         runTo.OnEnter += _ =>

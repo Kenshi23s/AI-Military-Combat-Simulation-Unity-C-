@@ -4,6 +4,7 @@ using UnityEngine;
 /// Shelter with room for _bunkerCapacity civilians.
 /// Raises onBunkerDestroyed and destroys itself when its LifeComponent dies.
 /// </summary>
+/// <remarks>A Civilian that enters the trigger of the bunker reaches it.</remarks>
 [RequireComponent(typeof(LifeComponent))]
 [RequireComponent(typeof(DebugableObject))]
 public class Bunker : MonoBehaviour
@@ -30,6 +31,13 @@ public class Bunker : MonoBehaviour
     private void Start()
     {
         GameManager.instance.AddBunker(this);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        Civilian civilian = other.GetComponentInParent<Civilian>();
+        if (civilian != null)
+            civilian.ReachBunker(this);
     }
 
     /// <summary>Places civilian in the first free spot. Returns true when the bunker had room.</summary>
