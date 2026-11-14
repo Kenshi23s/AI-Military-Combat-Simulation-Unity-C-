@@ -7,6 +7,7 @@ using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
+/// <summary>Spawn settings of one team.</summary>
 [System.Serializable]
 public struct TeamParameters
 {
@@ -15,27 +16,51 @@ public struct TeamParameters
     [Range(0,50)]public int planesQuantity;
     public Transform SpawnArea;
     public float width, height;
- 
 }
 
+/// <summary>
+/// Spawns the fireteams, planes and civilians of the match.
+/// Stores the entities of each team with their TeamIndicator.
+/// </summary>
+/// <remarks>AddToTeam, GetSprite, GetAllyFireteams and the team membership checks run in O(1) per entity.</remarks>
 public class TeamsManager : MonoSingleton<TeamsManager>
 {
-    [SerializeField] bool _canDebug;
-    [SerializeField] MobileInfantry _assaultPrefab, _medicPrefab;
-    [SerializeField] Plane _planePrefab;
-    [SerializeField] Civilian _civilianPrefab;
- 
-    public LayerMask NotSpawnable,Ground;
+    private const int MaxGroundSpawnAttempts = 200;
+    private const int MaxAirSpawnAttempts = 1000;
 
+    [SerializeField] private bool _canDebug;
+    [SerializeField] private MobileInfantry _assaultPrefab, _medicPrefab;
+    [SerializeField] private Plane _planePrefab;
+    [SerializeField] private Civilian _civilianPrefab;
+
+    /// <summary>Layers where an entity blocks a spawn position.</summary>
+    public LayerMask NotSpawnable;
+
+    /// <summary>Layers of the ground for the spawn raycasts.</summary>
+    public LayerMask Ground;
+
+    /// <summary>Minimum distance between a spawn position and a GridEntity.</summary>
     [field: SerializeField] public float SeparationRadiusBetweenUnits { get; private set; }
 
     #region TeamsDictionary
+
+    /// <summary>Entities of each team, in the order they were added.</summary>
     public Dictionary<MilitaryTeam, List<Entity>> _teams = new Dictionary<MilitaryTeam, List<Entity>>();
 
+    // Same entities as _teams, for O(1) membership checks.
+    private readonly Dictionary<MilitaryTeam, HashSet<Entity>> _teamSets = new Dictionary<MilitaryTeam, HashSet<Entity>>();
+
+    // Fireteams of each team with at least one AssaultInfantry in _teams.
+    private readonly Dictionary<MilitaryTeam, List<Fireteam>> _fireteams = new Dictionary<MilitaryTeam, List<Fireteam>>();
+    private readonly HashSet<Fireteam> _registeredFireteams = new HashSet<Fireteam>();
+
+    // Planes of each team in _teams.
+    private readonly Dictionary<MilitaryTeam, List<Plane>> _planes = new Dictionary<MilitaryTeam, List<Plane>>();
+
     [SerializeField,SerializedDictionary("Team","Parameters")]
-    SerializedDictionary<MilitaryTeam, TeamParameters> _matchParameters = new SerializedDictionary<MilitaryTeam, TeamParameters>();
+    private SerializedDictionary<MilitaryTeam, TeamParameters> _matchParameters = new SerializedDictionary<MilitaryTeam, TeamParameters>();
 
-
+    /// <summary>Icon of the TeamIndicator for each entity type.</summary>
     [Header("Team Indicator")]
     [SerializeField, SerializedDictionary("Type", "Sprite")]
     public SerializedDictionary<SerializableType, Sprite> sprites = new SerializedDictionary<SerializableType, Sprite>()
@@ -44,82 +69,107 @@ public class TeamsManager : MonoSingleton<TeamsManager>
         {new SerializableType(typeof(Sniper)), default },
         {new SerializableType(typeof(Turret)), default },
         {new SerializableType(typeof(IMilitary)), default }
-
     };
 
-    int _watchDog;
+    // sprites indexed by System.Type. Built on the first GetSprite call.
+    private Dictionary<Type, Sprite> _spritesByType;
 
+    /// <summary>Raised in LateUpdate.</summary>
     public event Action OnLateUpdate;
-  
-    [SerializeField] TeamIndicator _prefabTeamIndicator;
-    [SerializeField] float _unitsAboveMilitary;
+
+    [SerializeField] private TeamIndicator _prefabTeamIndicator;
+    [SerializeField] private float _unitsAboveMilitary;
 
     #region Civilian
     [Header("Civilian Spawn")]
-    [SerializeField] Transform _civilianPos;
-    [SerializeField] int _civiliansQuantity;
-    [SerializeField] float _width_CivilianSpawn, _height_CivilianSpawn;
+    [SerializeField] private Transform _civilianPos;
+    [SerializeField] private int _civiliansQuantity;
+    [SerializeField] private float _width_CivilianSpawn, _height_CivilianSpawn;
     #endregion
+
+    #endregion
+
+    /// <summary>Frames between two consecutive spawns.</summary>
+    public const int WaitFramesBeforeContinuing = 144;
 
     #region MemberAdd
 
-    public void AddToTeam(MilitaryTeam key,Entity value,Sprite icon = default)
+    /// <summary>
+    /// Adds the entity to the team and creates its TeamIndicator.
+    /// The icon defaults to the sprite of IMilitary.
+    /// </summary>
+    public void AddToTeam(MilitaryTeam key, Entity value, Sprite icon = default)
     {
-        if (!_teams[key].Contains(value))
-        {
-            _teams[key].Add(value);
-            var indicator = Instantiate(_prefabTeamIndicator, value.transform.position + Vector3.up * _unitsAboveMilitary, Quaternion.identity);
-            indicator.transform.SetParent(value.transform);
+        if (icon == null)
+            icon = GetSprite(typeof(IMilitary));
 
-            if (icon == default)
-                icon = GetSprite(typeof(IMilitary));
-            //agarro solamente el nombre con esto
-            var z = value.gameObject.name.Split("-");
-            indicator.SetName(z.Last());
-            indicator.AssignOwner(value as IMilitary, icon);
-        }
-       
+        RegisterEntity(key, value, icon);
     }
 
-    public void AddToTeam(MilitaryTeam key, IEnumerable<Entity> values,Sprite icon = default)
+    /// <summary>
+    /// Adds each entity to the team and creates its TeamIndicator.
+    /// The icon defaults to the sprite of IMilitary.
+    /// </summary>
+    /// <remarks>O(m) for m entities.</remarks>
+    public void AddToTeam(MilitaryTeam key, IEnumerable<Entity> values, Sprite icon = default)
     {
-     
-        foreach (var item in values.Where(x => !_teams[key].Contains(x)))
-        {            
-            _teams[key].Add(item);
-            var indicator = Instantiate(_prefabTeamIndicator, item.transform.position + Vector3.up * _unitsAboveMilitary,Quaternion.identity);
-            indicator.transform.SetParent(item.transform);
+        if (icon == null)
+            icon = GetSprite(typeof(IMilitary));
 
-
-         
-            if (icon == default)
-                icon = GetSprite(typeof(IMilitary));
-
-            var name = item.gameObject.name.Split("-");
-            indicator.SetName(name.Last());
-            indicator.AssignOwner(item as IMilitary, icon);
-        }
+        foreach (var value in values)
+            RegisterEntity(key, value, icon);
     }
 
+    /// <summary>Removes the entity from the team. Its Fireteam stays in GetAllyFireteams.</summary>
     public void RemoveFromTeam(MilitaryTeam key, Entity value)
     {
-        if (_teams[key].Contains(value))
-        {
-            _teams[key].Remove(value);
-        }
+        if (!_teamSets[key].Remove(value))
+            return;
+
+        _teams[key].Remove(value);
+
+        if (value is Plane plane)
+            _planes[key].Remove(plane);
     }
 
+    /// <summary>Removes each entity from the team with RemoveFromTeam.</summary>
     public void RemoveFromTeam(MilitaryTeam key, IEnumerable<Entity> values)
     {
-        foreach (var item in values.Where(x => _teams[key].Contains(x)))       
-            _teams[key].Remove(item);
-        
+        foreach (var value in values)
+            RemoveFromTeam(key, value);
     }
-    #endregion
+
+    private void RegisterEntity(MilitaryTeam key, Entity value, Sprite icon)
+    {
+        if (!_teamSets[key].Add(value))
+            return;
+
+        _teams[key].Add(value);
+
+        if (value is Plane plane)
+            _planes[key].Add(plane);
+
+        if (value is AssaultInfantry assault && assault.Fireteam != null && _registeredFireteams.Add(assault.Fireteam))
+            _fireteams[key].Add(assault.Fireteam);
+
+        CreateTeamIndicator(value, icon);
+    }
+
+    private void CreateTeamIndicator(Entity value, Sprite icon)
+    {
+        var indicator = Instantiate(_prefabTeamIndicator, value.transform.position + Vector3.up * _unitsAboveMilitary, Quaternion.identity);
+        indicator.transform.SetParent(value.transform);
+
+        // The indicator shows the part of the name after the last "-".
+        string[] nameParts = value.gameObject.name.Split('-');
+        indicator.SetName(nameParts[nameParts.Length - 1]);
+        indicator.AssignOwner(value as IMilitary, icon);
+    }
+
     #endregion
 
-    public const int WaitFramesBeforeContinuing =144;
     #region UnityCalls
+
     protected override void SingletonAwake()
     {
         foreach (MilitaryTeam key in Enum.GetValues(typeof(MilitaryTeam)))
@@ -127,14 +177,12 @@ public class TeamsManager : MonoSingleton<TeamsManager>
             if (key == MilitaryTeam.None) continue;
 
             _teams.Add(key, new List<Entity>());
+            _teamSets.Add(key, new HashSet<Entity>());
+            _fireteams.Add(key, new List<Fireteam>());
+            _planes.Add(key, new List<Plane>());
         }
-       
-
     }
 
-  
-
-  
     private void Start()
     {
         foreach (MilitaryTeam key in _teams.Keys)
@@ -153,316 +201,258 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     private void OnValidate()
     {
         if (_matchParameters.ContainsKey(MilitaryTeam.None))
-        {
             _matchParameters.Remove(MilitaryTeam.None);
-        }
 
+        _spritesByType = null;
     }
+
     #endregion
 
-    #region SpawnMethds
+    #region SpawnMethods
 
-    #region EntitySpawn
-    IEnumerator SpawnFireteams(MilitaryTeam team, TeamParameters param)
+    private IEnumerator SpawnFireteams(MilitaryTeam team, TeamParameters param)
     {
-        GameObject newGO = Instantiate(new GameObject(team + " Infantry"), transform);
+        Transform group = CreateGroup(team + " Infantry", transform);
 
         for (int i = 0; i < param.FireteamQuantity; i++)
-        {       
+        {
             FList<MobileInfantry> members = new FList<MobileInfantry>();
 
-            GameObject fireteamGroup = Instantiate(new GameObject("Fireteam"+ ColomboMethods.GenerateName(5)), newGO.transform);
+            Transform fireteamGroup = CreateGroup("Fireteam" + ColomboMethods.GenerateName(5), group);
             bool medicSpawned = false;
-            string[] surname = new string[param.membersPerFireteam];
+
             for (int j = 0; j < param.membersPerFireteam; j++)
             {
-                _watchDog = 0;
-                if (GetRandomFreePosOnGround(param, out Vector3 pos))
+                if (!TryGetRandomFreePosOnGround(param.SpawnArea.position, param.width, param.height, out Vector3 pos))
+                    break;
+
+                MobileInfantry newUnit;
+
+                if (!medicSpawned && Random.Range(0, 4) == 0)
                 {
-                    MobileInfantry newUnit;
-
-                    if (!medicSpawned && Random.Range(0, 4) == 0)
-                    {
-                        newUnit = Instantiate(_medicPrefab, pos, Quaternion.identity);
-                        medicSpawned = true;
-                    }
-                    else
-                        newUnit = Instantiate(_assaultPrefab, pos, Quaternion.identity);
-
-
-                    newUnit.transform.parent = fireteamGroup.transform;
-
-                 
-                    //IA2-LINQ
-                    members += newUnit;
+                    newUnit = Instantiate(_medicPrefab, pos, Quaternion.identity);
+                    medicSpawned = true;
                 }
                 else
-                    break;
+                    newUnit = Instantiate(_assaultPrefab, pos, Quaternion.identity);
+
+                newUnit.transform.parent = fireteamGroup;
+
+                //IA2-LINQ
+                members += newUnit;
             }
 
+            if (!members.Any())
+                yield break;
 
             //IA2-LINQ
-            var nameAndSurname = members.Zip(members.Count().GenerateNames(6),(x,y) =>
-            {
-
-                return Tuple.Create(x, x.name + " " + y);
-            });
-
+            var nameAndSurname = members.Zip(members.Count().GenerateNames(6), (x, y) => Tuple.Create(x, x.name + " " + y));
 
             foreach (var zip in nameAndSurname) zip.Item1.gameObject.name = zip.Item2;
 
-
             Fireteam.Create(team, members.ToList());
-           
+
             for (int k = 0; k < WaitFramesBeforeContinuing; k++) yield return null;
-            
+
             AddToTeam(team, members);
         }
-     
     }
 
-    IEnumerator SpawnPlanes(MilitaryTeam team, TeamParameters parameters)
+    private IEnumerator SpawnPlanes(MilitaryTeam team, TeamParameters parameters)
     {
-        GameObject newGO = Instantiate(new GameObject(team + " Planes"), transform);
+        Transform group = CreateGroup(team + " Planes", transform);
+
         for (int i = 0; i < parameters.planesQuantity; i++)
         {
-            if (GetRandomFreePosOnAir(parameters, out Vector3 pos))
-            {
-                var x = Instantiate(_planePrefab,pos,Quaternion.identity); x.Initialize(team);
+            if (!TryGetRandomFreePosOnAir(parameters, out Vector3 pos))
+                break;
 
-                AddToTeam(team, x, GetSprite(typeof(Plane)));
-                x.transform.parent = newGO.transform;
+            var plane = Instantiate(_planePrefab, pos, Quaternion.identity);
+            plane.Initialize(team);
 
-                for (int j = 0; j < WaitFramesBeforeContinuing; j++) yield return null;             
-               
-            }
-            else           
-                break;                               
+            AddToTeam(team, plane, GetSprite(typeof(Plane)));
+            plane.transform.parent = group;
+
+            for (int j = 0; j < WaitFramesBeforeContinuing; j++) yield return null;
         }
     }
 
-    IEnumerator SpawnCivilians()
+    private IEnumerator SpawnCivilians()
     {
-        GameObject newGO = Instantiate(new GameObject("Civilians"), transform);
+        Transform group = CreateGroup("Civilians", transform);
 
         for (int i = 0; i < _civiliansQuantity; i++)
         {
-            if (GetRandomFreePosOnGround(_civilianPos.position, _width_CivilianSpawn, _height_CivilianSpawn, out var pos))
+            if (TryGetRandomFreePosOnGround(_civilianPos.position, _width_CivilianSpawn, _height_CivilianSpawn, out var pos))
             {
-                var new_civilian = Instantiate(_civilianPrefab, pos, Quaternion.identity);
-                new_civilian.transform.parent = newGO.transform;
+                var newCivilian = Instantiate(_civilianPrefab, pos, Quaternion.identity);
+                newCivilian.transform.parent = group;
 
-                int _frameRate = ColomboMethods.GetActualFrameRate;
                 for (int j = 0; j < WaitFramesBeforeContinuing; j++) yield return null;
-
             }
             else
             {
                 yield return null;
             }
-          
-            
         }
     }
+
+    private static Transform CreateGroup(string name, Transform parent)
+    {
+        var group = new GameObject(name).transform;
+        group.SetParent(parent, false);
+        return group;
+    }
+
     #endregion
 
     #region GetRandomPos
-    /// <summary>
-    /// obtiene una posicion random en la que no haya ninguna grid entity cerca
-    /// </summary>
-    /// <param name="parameters"></param>
-    /// <returns></returns>
-    /// 
-    bool GetRandomFreePosOnAir(TeamParameters parameters,out Vector3 pos)
-    {  
-        if (_watchDog >= 1000)
-        {
-            pos = Vector3.zero;
-            _canDebug = false;
-            Debug.LogError("STACK OVERFLOW AL BUSCAR POSICIONES RANDOMS EN EL AIRE");
-            return false;
-        }
-        float width = parameters.width;
-        float height = parameters.height;
-        Vector3 randomPos = parameters.SpawnArea.transform.position + new Vector3(Random.Range(-width, width), 0, Random.Range(-height, height));
-        
-        //si no hay ninguna grid entity cerca,devuelvo la posicion
-        bool entityNearby = Physics.OverlapSphere(randomPos, SeparationRadiusBetweenUnits, NotSpawnable)
-            .Where(x => x != this).Where(x => x.TryGetComponent(out GridEntity aux)).Any();
 
-        //esto es pesadisimo, pero como solo se haria en el awake...
-        if (!entityNearby) 
+    // Random position in the air of the spawn area with no GridEntity within SeparationRadiusBetweenUnits.
+    private bool TryGetRandomFreePosOnAir(TeamParameters parameters, out Vector3 pos)
+    {
+        for (int attempt = 0; attempt < MaxAirSpawnAttempts; attempt++)
         {
-            pos = randomPos;
-            return true;
+            Vector3 randomPos = RandomPointInArea(parameters.SpawnArea.position, parameters.width, parameters.height);
+
+            if (!IsGridEntityNearby(randomPos))
+            {
+                pos = randomPos;
+                return true;
+            }
         }
 
-        _watchDog++;
-        return GetRandomFreePosOnAir(parameters,out pos);
+        pos = Vector3.zero;
+        Debug.LogError("STACK OVERFLOW AL BUSCAR POSICIONES RANDOMS EN EL AIRE");
+        return false;
     }
 
-    bool GetRandomFreePosOnGround(TeamParameters  parameters, out Vector3 pos)
+    // Random point on the ground of the area with no GridEntity within SeparationRadiusBetweenUnits.
+    private bool TryGetRandomFreePosOnGround(Vector3 center, float width, float height, out Vector3 pos)
     {
-        if (_watchDog >= 200)
+        for (int attempt = 0; attempt < MaxGroundSpawnAttempts; attempt++)
         {
-            pos = Vector3.zero;
-            Debug.LogError("WATCHDOG AL LIMITE, CORTO EJECUCION");
-            return false;
-        }
-        float width = parameters.width;
-        float height = parameters.height;
-       
-        Vector3 randomPos = parameters.SpawnArea.transform.position + new Vector3(Random.Range(-width, width), 0, Random.Range(-height, height));
+            Vector3 randomPos = RandomPointInArea(center, width, height);
 
-
-        if (Physics.Raycast(randomPos, Vector3.down, out RaycastHit hit, float.MaxValue, Ground))
-        {
-            //si no hay ninguna grid entity cerca,devuelvo la posicion
-            var entityNearby = Physics.OverlapSphere(hit.point, SeparationRadiusBetweenUnits, NotSpawnable)
-                .Where(x => x != this)
-                .Where(x => x.TryGetComponent(out GridEntity aux));
-
-
-            //esto es pesadisimo, pero como solo se haria en el awake...
-            if (!entityNearby.Any())
+            if (Physics.Raycast(randomPos, Vector3.down, out RaycastHit hit, float.MaxValue, Ground) && !IsGridEntityNearby(hit.point))
             {
-             
                 pos = hit.point;
                 return true;
             }
-            //else
-            //    Debug.Log($"no puedo spawnear aca, hay {entityNearby.Count()} cerca, hago recursion C: ");
         }
 
-        //Debug.Log(randomPos);
-        //Debug.Log(hit.point+"watchdog = "+_watchDog);
-
-
-
-        _watchDog++;
-        return GetRandomFreePosOnGround(parameters, out pos);
+        pos = Vector3.zero;
+        Debug.LogError("WATCHDOG AL LIMITE, CORTO EJECUCION");
+        return false;
     }
 
-    bool GetRandomFreePosOnGround(Vector3 spawnArea,float width,float height, out Vector3 pos)
+    private static Vector3 RandomPointInArea(Vector3 center, float width, float height)
     {
-        if (_watchDog >= 200)
-        {
-            pos = Vector3.zero;
-            Debug.LogError("WATCHDOG AL LIMITE, CORTO EJECUCION");
-            return false;
-        }
-        
-
-        Vector3 randomPos = spawnArea + new Vector3(Random.Range(-width, width), 0, Random.Range(-height, height));
-
-
-        if (Physics.Raycast(randomPos, Vector3.down, out RaycastHit hit, float.MaxValue, Ground))
-        {
-            //si no hay ninguna grid entity cerca,devuelvo la posicion
-            var entityNearby = Physics.OverlapSphere(hit.point, SeparationRadiusBetweenUnits, NotSpawnable)
-                .Where(x => x != this)
-                .Where(x => x.TryGetComponent(out GridEntity aux));
-
-
-            //esto es pesadisimo, pero como solo se haria en el awake...
-            if (!entityNearby.Any())
-            {
-
-                pos = hit.point;
-                return true;
-            }
-            else
-                Debug.Log($"no puedo spawnear aca, hay {entityNearby.Count()} cerca, hago recursion C: ");
-        }
-
-       
-        Debug.Log(hit.point + "watchdog = " + _watchDog);
-
-
-
-        _watchDog++;
-        return GetRandomFreePosOnGround(spawnArea, width,height, out pos);
+        return center + new Vector3(Random.Range(-width, width), 0, Random.Range(-height, height));
     }
-    #endregion
+
+    private bool IsGridEntityNearby(Vector3 position)
+    {
+        foreach (Collider collider in Physics.OverlapSphere(position, SeparationRadiusBetweenUnits, NotSpawnable))
+        {
+            if (collider.TryGetComponent(out GridEntity _))
+                return true;
+        }
+
+        return false;
+    }
 
     #endregion
 
     #region UsefulMethods
+
+    /// <summary>
+    /// Returns the sprite for targetType in sprites.
+    /// Returns the sprite of IMilitary for a type outside sprites.
+    /// </summary>
     public Sprite GetSprite(Type targetType)
     {
-        foreach (var keys in sprites.Keys)
-        {
-            if (targetType == keys.type)
-                return sprites[keys];
+        if (_spritesByType == null)
+            BuildSpriteCache();
 
-        }
-        return sprites.Where(x => x.Key.type == typeof(IMilitary)).First().Value;
+        if (_spritesByType.TryGetValue(targetType, out Sprite sprite))
+            return sprite;
+
+        _spritesByType.TryGetValue(typeof(IMilitary), out sprite);
+        return sprite;
     }
 
-    public IEnumerable<Fireteam> GetAllyFireteams(MilitaryTeam team)
+    private void BuildSpriteCache()
     {
-        return _teams[team].OfType<AssaultInfantry>().Select(x => x.Fireteam).Where(x => x != null).Distinct();       
+        _spritesByType = new Dictionary<Type, Sprite>();
+
+        foreach (var pair in sprites)
+        {
+            if (pair.Key?.type != null && !_spritesByType.ContainsKey(pair.Key.type))
+                _spritesByType.Add(pair.Key.type, pair.Value);
+        }
     }
 
+    /// <summary>Returns the fireteams of the team with at least one AssaultInfantry added with AddToTeam.</summary>
+    public IReadOnlyList<Fireteam> GetAllyFireteams(MilitaryTeam team)
+    {
+        return _fireteams[team];
+    }
+
+    /// <summary>Returns the planes of the team whose actualState is different from ABANDONED.</summary>
     public IEnumerable<Plane> GetTeamPlanes(MilitaryTeam team)
     {
-        return _teams[team]
-            .OfType<Plane>()
-            .Where(x => x.actualState != PlaneStates.ABANDONED);
+        foreach (Plane plane in _planes[team])
+        {
+            if (plane != null && plane.actualState != PlaneStates.ABANDONED)
+                yield return plane;
+        }
     }
+
     #endregion
 
     #region Gizmos
+
     private void OnDrawGizmos()
     {
-
         if (Application.isPlaying || !_canDebug) return;
-        
-         DrawCivilianSpawn(); DrawTeamSpawn();
+
+        DrawCivilianSpawn(); DrawTeamSpawn();
     }
 
-    void DrawTeamSpawn()
+    private void DrawTeamSpawn()
     {
         foreach (var item in _matchParameters)
         {
-            Gizmos.color = item.Key == MilitaryTeam.Red ? Color.red : Color.blue;
-            float width = (float)item.Value.width;
-            float height = (float)item.Value.height;
             if (item.Value.SpawnArea == null) continue;
-            Vector3 spawnArea = item.Value.SpawnArea.position;
 
-            Gizmos.DrawLine(spawnArea + new Vector3(-width, 0, height), spawnArea + new Vector3(width, 0, height));
-            Gizmos.DrawLine(spawnArea + new Vector3(width, 0, -height), spawnArea + new Vector3(width, 0, height));
-            Gizmos.DrawLine(spawnArea + new Vector3(width, 0, -height), spawnArea + new Vector3(-width, 0, -height));
-            Gizmos.DrawLine(spawnArea + new Vector3(-width, 0, height), spawnArea + new Vector3(-width, 0, -height));
-            _watchDog = 0;
-            if (GetRandomFreePosOnGround(item.Value, out Vector3 freepos))
-            {
-                Gizmos.DrawWireSphere(freepos, SeparationRadiusBetweenUnits);
-                Gizmos.DrawLine(freepos, freepos + Vector3.up * 50);
-            }
+            Gizmos.color = item.Key == MilitaryTeam.Red ? Color.red : Color.blue;
+            DrawSpawnArea(item.Value.SpawnArea.position, item.Value.width, item.Value.height);
         }
     }
 
-    void DrawCivilianSpawn()
+    private void DrawCivilianSpawn()
     {
-
         if (_civilianPos == null) return;
-      
-        Vector3 spawnArea = _civilianPos.position;
-     
+
         Gizmos.color = Color.white;
-        Gizmos.DrawLine(spawnArea + new Vector3(-_width_CivilianSpawn, 0, _height_CivilianSpawn), spawnArea + new Vector3(_width_CivilianSpawn, 0, _height_CivilianSpawn));
-        Gizmos.DrawLine(spawnArea + new Vector3(_width_CivilianSpawn, 0, -_height_CivilianSpawn), spawnArea + new Vector3(_width_CivilianSpawn, 0, _height_CivilianSpawn));
-        Gizmos.DrawLine(spawnArea + new Vector3(_width_CivilianSpawn, 0, -_height_CivilianSpawn), spawnArea + new Vector3(-_width_CivilianSpawn, 0, -_height_CivilianSpawn));
-        Gizmos.DrawLine(spawnArea + new Vector3(-_width_CivilianSpawn, 0, _height_CivilianSpawn), spawnArea + new Vector3(-_width_CivilianSpawn, 0, -_height_CivilianSpawn));
-        _watchDog = 0;
-        if (GetRandomFreePosOnGround(_civilianPos.position,_width_CivilianSpawn,_height_CivilianSpawn, out Vector3 freepos))
+        DrawSpawnArea(_civilianPos.position, _width_CivilianSpawn, _height_CivilianSpawn);
+    }
+
+    // Draws the rectangle of the area and a sample free spawn position.
+    private void DrawSpawnArea(Vector3 center, float width, float height)
+    {
+        Gizmos.DrawLine(center + new Vector3(-width, 0, height), center + new Vector3(width, 0, height));
+        Gizmos.DrawLine(center + new Vector3(width, 0, -height), center + new Vector3(width, 0, height));
+        Gizmos.DrawLine(center + new Vector3(width, 0, -height), center + new Vector3(-width, 0, -height));
+        Gizmos.DrawLine(center + new Vector3(-width, 0, height), center + new Vector3(-width, 0, -height));
+
+        if (TryGetRandomFreePosOnGround(center, width, height, out Vector3 freePos))
         {
-            Gizmos.DrawWireSphere(freepos, SeparationRadiusBetweenUnits);
-            Gizmos.DrawLine(freepos, freepos + Vector3.up * 50);
+            Gizmos.DrawWireSphere(freePos, SeparationRadiusBetweenUnits);
+            Gizmos.DrawLine(freePos, freePos + Vector3.up * 50);
         }
     }
-    #endregion
 
+    #endregion
 }

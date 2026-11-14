@@ -107,10 +107,13 @@ namespace FacundoColomboMethods
         {
             return new Vector3(value, value, value);
         }
+        /// <summary>Returns a random element of col. Every element has the same chance.</summary>
+        /// <param name="col">Collection with at least one element.</param>
+        /// <remarks>O(1) for an IList. O(n) for any other collection.</remarks>
         public static T PickRandom<T>(this IEnumerable<T> col)
         {
-           int max = col.Count() - 1;
-           return col.Skip(Random.Range(0, max)).First();
+            IList<T> list = col as IList<T> ?? col.ToList();
+            return list[Random.Range(0, list.Count)];
         }
 
         public static Color SetAlpha(this Color color,float newAlpha)
