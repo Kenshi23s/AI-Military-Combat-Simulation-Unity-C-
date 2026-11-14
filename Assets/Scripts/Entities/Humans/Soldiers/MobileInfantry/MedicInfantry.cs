@@ -5,9 +5,14 @@ using IA2;
 using System;
 using System.Linq;
 
+/// <summary>
+/// MobileInfantry that heals the nearest wounded AssaultInfantry of its team.
+/// Healing has priority over following the Leader.
+/// </summary>
 [RequireComponent(typeof(NewAIMovement))]
 public class MedicInfantry : MobileInfantry
 {
+    /// <summary>States of the FSM.</summary>
     public enum MEDIC_INFANTRY_STATES
     {
         AWAITING_ORDERS,
@@ -18,30 +23,36 @@ public class MedicInfantry : MobileInfantry
         DIE
     }
 
-    EventFSM<MEDIC_INFANTRY_STATES> _fsm;
+    private EventFSM<MEDIC_INFANTRY_STATES> _fsm;
 
+    /// <summary>The ally the medic heals.</summary>
     public MobileInfantry HealTarget;
 
-    State<MEDIC_INFANTRY_STATES> _awaitingOrders, _leaderMoveTo, _followLeader, _runToHeal, _heal, _die;
+    private State<MEDIC_INFANTRY_STATES> _awaitingOrders, _leaderMoveTo, _followLeader, _runToHeal, _heal, _die;
 
-    float _queryHealTargetsTime = 1f;
+    private float _queryHealTargetsTime = 1f;
 
     // El porcentaje de vida requerido para considerar que una tropa ya no necesita curacion.
-    float _minHealthNeeded = 0.9f;
+    private float _minHealthNeeded = 0.9f;
 
     // La velocidad de curacion en health points por segundo
-    [SerializeField] float _healSpeed = 40f;
+    [SerializeField] private float _healSpeed = 40f;
 
-    [SerializeField] float _maxHealDistance = 2.5f, _idealHealDistance = 1.5f;
+    [SerializeField] private float _maxHealDistance = 2.5f, _idealHealDistance = 1.5f;
 
-    [SerializeField] ParticleSystem _healParticles;
+    [SerializeField] private ParticleSystem _healParticles;
+
+    // Running coroutines. Each state stops the ones it started.
+    private Coroutine _findPoint, _followLeaderRoutine;
 
     protected override void Awake()
     {
         base.Awake();
+
+        Health.OnKilled += () => SendInputToFSM(MEDIC_INFANTRY_STATES.DIE);
     }
 
-    protected override void CreateFSM() 
+    protected override void CreateFSM()
     {
         _awaitingOrders = CreateAwaitingOrdersState();
         _leaderMoveTo = CreateLeaderMoveToState();
@@ -55,20 +66,24 @@ public class MedicInfantry : MobileInfantry
         _fsm = new EventFSM<MEDIC_INFANTRY_STATES>(_awaitingOrders);
     }
 
-
-    void Start()
+    private void Start()
     {
         StartCoroutine(QueryForHealTarget());
     }
 
+    private void Update()
+    {
+        _fsm?.Update();
+    }
 
-    IEnumerator QueryForHealTarget()
+    private IEnumerator QueryForHealTarget()
     {
         float timer = _queryHealTargetsTime;
 
         // Esperar a que no haya objetivo de curacion
         // y que el tiempo de query haya pasado
-        var wait = new WaitUntil(() => {
+        var wait = new WaitUntil(() =>
+        {
             timer -= Time.deltaTime;
 
             if (timer <= 0 && !CheckHealTarget())
@@ -88,21 +103,21 @@ public class MedicInfantry : MobileInfantry
                .Where(x => x.Team == Team)
                .Where(x => x.IsAlive && x.Life < x.MaxLife)
                .Minimum(x => Vector3.SqrMagnitude(x.transform.position - transform.position));
-            
+
             yield return wait;
         }
     }
 
     // Devuelve verdadero si el HealthTarget deberia seguir siendo el mismo.
-    // Si murio, por ejemplo, devuelve falso. 
-    bool CheckHealTarget() 
+    // Si murio, por ejemplo, devuelve falso.
+    private bool CheckHealTarget()
     {
         // Si no existe un heal target, seguimos haciendo query hasta encontrar uno.
         if (!HealTarget)
             return false;
 
         // Si esta muerto, el heal target actual deberia cambiar
-        if (!HealTarget.IsAlive) 
+        if (!HealTarget.IsAlive)
         {
             HealTarget = null;
             return false;
@@ -119,23 +134,19 @@ public class MedicInfantry : MobileInfantry
         return true;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        _fsm.Update();
-    }
-
     #region States and Transitions
-    State<MEDIC_INFANTRY_STATES> CreateAwaitingOrdersState()
+    private State<MEDIC_INFANTRY_STATES> CreateAwaitingOrdersState()
     {
         var awaitingOrders = new State<MEDIC_INFANTRY_STATES>("AWAITING_ORDERS");
 
         awaitingOrders.OnEnter += _ =>
         {
-            StartCoroutine(Fireteam.FindNearestUntakenPoint());
+            // Solo el lider (o quien esta capturando) le da ordenes al Fireteam, igual que AssaultInfantry.
+            if (IsLeader || IsCapturing)
+                RestartCoroutine(ref _findPoint, Fireteam.FindNearestUntakenPoint());
         };
 
-        awaitingOrders.OnUpdate += () => 
+        awaitingOrders.OnUpdate += () =>
         {
             // Transiciones si no es lider. Se prioriza curar
             if (!IsLeader)
@@ -147,32 +158,22 @@ public class MedicInfantry : MobileInfantry
                 }
 
                 if (!Fireteam.IsNearLeader(this, _minDistanceFromDestination))
-                {
                     SendInputToFSM(MEDIC_INFANTRY_STATES.FOLLOW_LEADER);
-                    return;
-                }
 
                 return;
             }
 
             // Transiciones si es lider. Se prioriza ir al punto, solo que el Fireteam es el que le da la orden.
             if (HealTarget)
-            {
-
                 SendInputToFSM(MEDIC_INFANTRY_STATES.RUN_TO_HEAL);
-            }
         };
 
-        awaitingOrders.OnExit += _ =>
-        {
-            StopCoroutine(Fireteam.FindNearestUntakenPoint());
-
-        };
+        awaitingOrders.OnExit += _ => StopTrackedCoroutine(ref _findPoint);
 
         return awaitingOrders;
     }
 
-    State<MEDIC_INFANTRY_STATES> CreateLeaderMoveToState()
+    private State<MEDIC_INFANTRY_STATES> CreateLeaderMoveToState()
     {
         var leaderMoveTo = new State<MEDIC_INFANTRY_STATES>("LEADER_MOVE_TO");
 
@@ -195,9 +196,9 @@ public class MedicInfantry : MobileInfantry
         return leaderMoveTo;
     }
 
-    State<MEDIC_INFANTRY_STATES> CreateFollowLeaderState()
+    private State<MEDIC_INFANTRY_STATES> CreateFollowLeaderState()
     {
-        var followLeader = new State<MEDIC_INFANTRY_STATES>("LEADER_MOVE_TO");
+        var followLeader = new State<MEDIC_INFANTRY_STATES>("FOLLOW_LEADER");
 
         followLeader.OnEnter += (x) =>
         {
@@ -207,7 +208,7 @@ public class MedicInfantry : MobileInfantry
                 return;
             }
 
-            StartCoroutine(FollowLeaderRoutine());
+            RestartCoroutine(ref _followLeaderRoutine, FollowLeaderRoutine());
 
             Anim.SetBool("Running", true);
         };
@@ -215,24 +216,15 @@ public class MedicInfantry : MobileInfantry
         followLeader.OnUpdate += () =>
         {
             // Si hay un heal target cerca priorizar ir a el antes de seguir al lider.
+            // FollowLeaderRoutine frena al medico cuando esta cerca del lider.
             if (HealTarget)
-            {
                 SendInputToFSM(MEDIC_INFANTRY_STATES.RUN_TO_HEAL);
-                return;
-            }
-
-            // Si esta lo suficientemente cerca del lider, pasar a await orders 
-            if (Fireteam.IsNearLeader(this, _minDistanceFromDestination))
-            {
-                SendInputToFSM(MEDIC_INFANTRY_STATES.AWAITING_ORDERS);
-                return;
-            }
         };
 
         followLeader.OnExit += (x) =>
         {
-            StopCoroutine(FollowLeaderRoutine());
-            
+            StopTrackedCoroutine(ref _followLeaderRoutine);
+
             Anim.SetBool("Running", false);
             Movement.CancelMovement();
         };
@@ -240,7 +232,7 @@ public class MedicInfantry : MobileInfantry
         return followLeader;
     }
 
-    State<MEDIC_INFANTRY_STATES> CreateRunToHealState()
+    private State<MEDIC_INFANTRY_STATES> CreateRunToHealState()
     {
         var runTo = new State<MEDIC_INFANTRY_STATES>("RUN_TO");
         float recalculatePathTime = 2;
@@ -248,13 +240,13 @@ public class MedicInfantry : MobileInfantry
         bool calculatingPath = false;
         float sqrIdealHealDistance = _idealHealDistance * _idealHealDistance;
 
-        void GoToHealTarget() 
+        void GoToHealTarget()
         {
             // Empezar a calcular camino hacia posicion, y cuando se haya calculado
             // empezar a moverse y pasar a animacion de correr.
             calculatingPath = true;
 
-            Movement.SetDestination(HealTarget.transform.position, 
+            Movement.SetDestination(HealTarget.transform.position,
                 onFinishCalculating: pathFound =>
                 {
                     calculatingPath = false;
@@ -281,7 +273,7 @@ public class MedicInfantry : MobileInfantry
 
         runTo.OnUpdate += () =>
         {
-            if (!HealTarget) 
+            if (!HealTarget)
             {
                 // Si no se encontro camino volvemos a idle
                 SendInputToFSM(MEDIC_INFANTRY_STATES.AWAITING_ORDERS);
@@ -291,7 +283,7 @@ public class MedicInfantry : MobileInfantry
             // Si llegamos, pasar a estado de curacion
             if (Vector3.SqrMagnitude(HealTarget.transform.position - transform.position) <= sqrIdealHealDistance)
             {
-                Debug.Log("Entrando al estado de Heal");
+                DebugEntity.Log("Entrando al estado de Heal");
                 SendInputToFSM(MEDIC_INFANTRY_STATES.HEAL);
                 return;
             }
@@ -309,6 +301,7 @@ public class MedicInfantry : MobileInfantry
 
         runTo.OnExit += _ =>
         {
+            calculatingPath = false;
             Anim.SetBool("Running", false);
             Movement.CancelMovement();
         };
@@ -316,7 +309,7 @@ public class MedicInfantry : MobileInfantry
         return runTo;
     }
 
-    State<MEDIC_INFANTRY_STATES> CreateHealState()
+    private State<MEDIC_INFANTRY_STATES> CreateHealState()
     {
         var heal = new State<MEDIC_INFANTRY_STATES>("HEAL");
         float floatHealAmount = 0;
@@ -336,7 +329,6 @@ public class MedicInfantry : MobileInfantry
 
         heal.OnUpdate += () =>
         {
-            // TRANSICIONES
             // Si ya no hay un objetivo a quien curar, pasar a idle.
             if (!HealTarget)
             {
@@ -350,10 +342,9 @@ public class MedicInfantry : MobileInfantry
                 SendInputToFSM(MEDIC_INFANTRY_STATES.RUN_TO_HEAL);
                 return;
             }
-            //
 
             floatHealAmount += _healSpeed * Time.deltaTime;
-            
+
             // Transformamos el valor de curacion de flotante a entero
             int intHealAmount = Mathf.FloorToInt(floatHealAmount);
             floatHealAmount -= intHealAmount;
@@ -371,22 +362,24 @@ public class MedicInfantry : MobileInfantry
         return heal;
     }
 
-    State<MEDIC_INFANTRY_STATES> CreateDieState()
+    private State<MEDIC_INFANTRY_STATES> CreateDieState()
     {
         var die = new State<MEDIC_INFANTRY_STATES>("DIE");
 
         die.OnEnter += _ =>
         {
+            // Disabling the components keeps their coroutines running, so they are stopped here.
+            StopAllCoroutines();
+
             Movement.ManualMovement.Alignment = NewPhysicsMovement.AlignmentType.Custom;
             InCombat = false;
 
-
             var colliders = FList.Create(GetComponent<Collider>()) + GetComponentsInChildren<Collider>();
 
-            foreach (var item in colliders.Where(x => x != null)) 
+            foreach (var item in colliders.Where(x => x != null))
                 item.enabled = false;
 
-            foreach (var item in GetComponents<MonoBehaviour>()) 
+            foreach (var item in GetComponents<MonoBehaviour>())
                 item.enabled = false;
 
             Movement.CancelMovement();
@@ -395,12 +388,13 @@ public class MedicInfantry : MobileInfantry
 
             Anim.SetBool("Die", true);
             DebugEntity.Log("Mori");
+            Fireteam.RemoveMember(this);
         };
 
         return die;
     }
 
-    void ConfigureTransitions()
+    private void ConfigureTransitions()
     {
         StateConfigurer.Create(_awaitingOrders)
             .SetTransition(MEDIC_INFANTRY_STATES.RUN_TO_HEAL, _runToHeal)
@@ -415,10 +409,11 @@ public class MedicInfantry : MobileInfantry
             .Done();
 
         StateConfigurer.Create(_followLeader)
+            .SetTransition(MEDIC_INFANTRY_STATES.AWAITING_ORDERS, _awaitingOrders)
+            .SetTransition(MEDIC_INFANTRY_STATES.LEADER_MOVE_TO, _leaderMoveTo)
             .SetTransition(MEDIC_INFANTRY_STATES.RUN_TO_HEAL, _runToHeal)
             .SetTransition(MEDIC_INFANTRY_STATES.DIE, _die)
             .Done();
-
 
         StateConfigurer.Create(_runToHeal)
             .SetTransition(MEDIC_INFANTRY_STATES.AWAITING_ORDERS, _awaitingOrders)
@@ -436,7 +431,7 @@ public class MedicInfantry : MobileInfantry
     }
     #endregion
 
-    private void SendInputToFSM(MEDIC_INFANTRY_STATES inp) => _fsm.SendInput(inp);
+    private void SendInputToFSM(MEDIC_INFANTRY_STATES inp) => _fsm?.SendInput(inp);
 
     public override void LeaderMoveTo(Vector3 pos)
     {
@@ -451,7 +446,6 @@ public class MedicInfantry : MobileInfantry
 
     public override void AwaitOrders()
     {
-
         SendInputToFSM(MEDIC_INFANTRY_STATES.AWAITING_ORDERS);
     }
 }

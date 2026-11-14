@@ -7,11 +7,18 @@ using UnityEngine;
 using IA2;
 using AlignmentType = NewPhysicsMovement.AlignmentType;
 
+/// <summary>
+/// MobileInfantry that shoots the nearest enemy in its FOVAgent.
+/// The Leader requests support when the enemies outnumber the Fireteam.
+/// </summary>
 public class AssaultInfantry : MobileInfantry
 {
+    /// <summary>The enemy the soldier shoots at.</summary>
     public Entity ShootTarget { get; private set; }
-    [SerializeField] float _timeBeforeSelectingTarget;
 
+    [SerializeField] private float _timeBeforeSelectingTarget;
+
+    /// <summary>States of the FSM.</summary>
     public enum ASSAULT_INFANTRY_STATES
     {
         AWAITING_ORDERS,
@@ -21,23 +28,30 @@ public class AssaultInfantry : MobileInfantry
         DIE
     }
 
+    /// <summary>The FSM of the soldier.</summary>
     public EventFSM<ASSAULT_INFANTRY_STATES> FSM { get; private set; }
 
-    State<ASSAULT_INFANTRY_STATES> _awaitingOrders, _leaderMoveTo, _followLeader, _fireAtWill, _die;
+    private State<ASSAULT_INFANTRY_STATES> _awaitingOrders, _leaderMoveTo, _followLeader, _fireAtWill, _die;
 
-    const float _searchTargetWaitTime = 0.5f;
+    // Seconds between two enemy searches in LookForTargets.
+    private const float _searchTargetWaitTime = 0.5f;
+
+    private WaitForSeconds _searchTargetWait, _selectTargetWait;
+
+    // Running coroutines. Each state stops the ones it started.
+    private Coroutine _lookForTargets, _findPoint, _followLeaderRoutine, _setTarget;
 
     protected override void Awake()
     {
         base.Awake();
 
+        _searchTargetWait = new WaitForSeconds(_searchTargetWaitTime);
+        _selectTargetWait = new WaitForSeconds(_timeBeforeSelectingTarget);
+
         Health.OnTakeDamage += (x) =>
         {
             if (LookForEnemiesAlive().Any())
-            {
                 FSM.SendInput(ASSAULT_INFANTRY_STATES.FIRE_AT_WILL);
-            }
-
         };
 
         Health.OnKilled += () => FSM.SendInput(ASSAULT_INFANTRY_STATES.DIE);
@@ -71,8 +85,6 @@ public class AssaultInfantry : MobileInfantry
             .SetTransition(ASSAULT_INFANTRY_STATES.DIE, _die)
             .Done();
 
-
-
         StateConfigurer.Create(_leaderMoveTo)
             .SetTransition(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS, _awaitingOrders)
             .SetTransition(ASSAULT_INFANTRY_STATES.FOLLOW_LEADER, _followLeader)
@@ -80,14 +92,12 @@ public class AssaultInfantry : MobileInfantry
             .SetTransition(ASSAULT_INFANTRY_STATES.DIE, _die)
             .Done();
 
-
         StateConfigurer.Create(_followLeader)
             .SetTransition(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS, _awaitingOrders)
             .SetTransition(ASSAULT_INFANTRY_STATES.LEADER_MOVE_TO, _leaderMoveTo)
             .SetTransition(ASSAULT_INFANTRY_STATES.FIRE_AT_WILL, _fireAtWill)
             .SetTransition(ASSAULT_INFANTRY_STATES.DIE, _die)
             .Done();
-
 
         StateConfigurer.Create(_fireAtWill)
             .SetTransition(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS, _awaitingOrders)
@@ -100,7 +110,7 @@ public class AssaultInfantry : MobileInfantry
             .Done();
     }
 
-    State<ASSAULT_INFANTRY_STATES> CreateAwaitingOrdersState()
+    private State<ASSAULT_INFANTRY_STATES> CreateAwaitingOrdersState()
     {
         State<ASSAULT_INFANTRY_STATES> state = new State<ASSAULT_INFANTRY_STATES>("WaitingOrders");
 
@@ -111,28 +121,31 @@ public class AssaultInfantry : MobileInfantry
 
             DebugEntity.Log("Espero Ordenes");
 
-            StartCoroutine(LookForTargets());
+            RestartCoroutine(ref _lookForTargets, LookForTargets());
 
             if (!IsLeader && !IsCapturing) return;
 
-            StartCoroutine(Fireteam.FindNearestUntakenPoint());
+            RestartCoroutine(ref _findPoint, Fireteam.FindNearestUntakenPoint());
 
             DebugEntity.Log("Busco la zona mas cercana");
         };
 
-        state.OnExit += (x) => StopCoroutine(LookForTargets());
-        state.OnExit += (x) => StopCoroutine(Fireteam.FindNearestUntakenPoint());
+        state.OnExit += (x) =>
+        {
+            StopTrackedCoroutine(ref _lookForTargets);
+            StopTrackedCoroutine(ref _findPoint);
+        };
 
         return state;
     }
 
-    State<ASSAULT_INFANTRY_STATES> CreateLeaderMoveToState()
+    private State<ASSAULT_INFANTRY_STATES> CreateLeaderMoveToState()
     {
         State<ASSAULT_INFANTRY_STATES> state = new State<ASSAULT_INFANTRY_STATES>("MoveTowards");
 
         state.OnEnter += (x) =>
         {
-            if (_minDistanceFromDestination > Vector3.SqrMagnitude(Destination - transform.position))
+            if (Vector3.SqrMagnitude(Destination - transform.position) < _minDistanceFromDestination * _minDistanceFromDestination)
             {
                 Movement.ManualMovement.Alignment = AlignmentType.Velocity;
                 FSM.SendInput(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS);
@@ -148,19 +161,20 @@ public class AssaultInfantry : MobileInfantry
             });
 
             Anim.SetBool("Running", true);
-            StartCoroutine(LookForTargets());
+            RestartCoroutine(ref _lookForTargets, LookForTargets());
         };
 
         state.OnExit += (x) =>
         {
             Anim.SetBool("Running", false);
-            StopCoroutine(LookForTargets()); StopMoving();
+            StopTrackedCoroutine(ref _lookForTargets);
+            StopMoving();
         };
 
         return state;
     }
 
-    State<ASSAULT_INFANTRY_STATES> CreateFollowLeaderState()
+    private State<ASSAULT_INFANTRY_STATES> CreateFollowLeaderState()
     {
         State<ASSAULT_INFANTRY_STATES> state = new State<ASSAULT_INFANTRY_STATES>("FollowLeader");
 
@@ -177,23 +191,22 @@ public class AssaultInfantry : MobileInfantry
 
             Anim.SetBool("Running", true);
 
-            StartCoroutine(LookForTargets());
-            StartCoroutine(FollowLeaderRoutine());
+            RestartCoroutine(ref _lookForTargets, LookForTargets());
+            RestartCoroutine(ref _followLeaderRoutine, FollowLeaderRoutine());
         };
-
 
         state.OnExit += (x) =>
         {
             Anim.SetBool("Running", false);
-            StopCoroutine(LookForTargets());
-            StopCoroutine(FollowLeaderRoutine());
+            StopTrackedCoroutine(ref _lookForTargets);
+            StopTrackedCoroutine(ref _followLeaderRoutine);
             Movement.CancelMovement();
         };
 
         return state;
     }
 
-    State<ASSAULT_INFANTRY_STATES> CreateFireAtWillState()
+    private State<ASSAULT_INFANTRY_STATES> CreateFireAtWillState()
     {
         State<ASSAULT_INFANTRY_STATES> state = new State<ASSAULT_INFANTRY_STATES>("FireAtWill");
 
@@ -209,7 +222,7 @@ public class AssaultInfantry : MobileInfantry
 
             DebugEntity.Log("Entro en combate");
 
-            StartCoroutine(SetTarget());
+            RestartCoroutine(ref _setTarget, SetTarget());
 
             if (!IsLeader) return;
 
@@ -226,8 +239,7 @@ public class AssaultInfantry : MobileInfantry
         state.OnUpdate += () =>
         {
             if (ShootTarget == null) return;
-        
-            
+
             Movement.ManualMovement.Alignment = AlignmentType.Custom;
 
             Vector3 dir = ShootTarget.AimPoint - transform.position;
@@ -236,24 +248,25 @@ public class AssaultInfantry : MobileInfantry
 
         state.OnExit += (x) =>
         {
-
             InCombat = false;
             Anim.SetBool("Shooting", false);
-            StopCoroutine(SetTarget());
+            StopTrackedCoroutine(ref _setTarget);
         };
 
         return state;
     }
 
-    State<ASSAULT_INFANTRY_STATES> CreateDieState()
+    private State<ASSAULT_INFANTRY_STATES> CreateDieState()
     {
         State<ASSAULT_INFANTRY_STATES> state = new State<ASSAULT_INFANTRY_STATES>("Die");
 
         state.OnEnter += (x) =>
         {
+            // Disabling the components keeps their coroutines running, so they are stopped here.
+            StopAllCoroutines();
+
             Movement.ManualMovement.Alignment = AlignmentType.Custom;
             InCombat = false;
-
 
             var colliders = FList.Create(GetComponent<Collider>()) + GetComponentsInChildren<Collider>();
 
@@ -270,13 +283,13 @@ public class AssaultInfantry : MobileInfantry
 
             DebugEntity.Log("Mori");
             Fireteam.RemoveMember(this);
-
         };
 
         return state;
     }
     #endregion
 
+    /// <summary>Stops the NewAIMovement.</summary>
     public void StopMoving()
     {
         Movement.CancelMovement();
@@ -284,81 +297,78 @@ public class AssaultInfantry : MobileInfantry
 
     #region Metodos Utiles
 
-    IEnumerator LookForTargets()
+    // Sends FIRE_AT_WILL when an enemy is in sight. Checks every _searchTargetWaitTime seconds.
+    private IEnumerator LookForTargets()
     {
+        // The first check waits one frame. A state change inside StartCoroutine would run before the handle is stored.
+        yield return null;
+
         while (true)
         {
-            var z = LookForEnemiesAlive();
-
-
-            if (z.Any())
+            if (LookForEnemiesAlive().Any())
             {
                 FSM.SendInput(ASSAULT_INFANTRY_STATES.FIRE_AT_WILL);
-                break;
+                yield break;
             }
 
-            for (int i = 0; i < _searchTargetWaitTime; i++)
-                yield return null;
+            yield return _searchTargetWait;
         }
     }
 
-    IEnumerable<Soldier> LookForEnemiesAlive()
+    private IEnumerable<Soldier> LookForEnemiesAlive()
     {
-        return GetMilitaryAround().Where(x => x.Team != Team)
-                  .Where(x => x.Health.IsAlive)
-                  .Where(x => _fovAgent.IN_FOV(x.transform.position));
+        return GetMilitaryAround()
+            .Where(x => x.Team != Team)
+            .Where(x => x.Health.IsAlive)
+            .Where(x => _fovAgent.IN_FOV(x.transform.position));
     }
 
-    IEnumerator SetTarget()
+    // Shoots the nearest enemy every _timeBeforeSelectingTarget seconds.
+    private IEnumerator SetTarget()
     {
+        // The first check waits one frame. A state change inside StartCoroutine would run before the handle is stored.
+        yield return null;
+
         while (true)
         {
-            ShootTarget = LookForEnemiesAlive().Minimum(GetWeakestAndNearest);
+            ShootTarget = LookForEnemiesAlive().Minimum(GetSqrDistance);
 
             if (ShootTarget != null)
             {
-         
-                //Movement.ManualMovement.Alignment = AlignmentType.Custom;
-
                 Vector3 dir = ShootTarget.AimPoint - transform.position;
-                //transform.rotation = GetTargetRotation(dir);
                 ShootComponent.Shoot(_shootPos, dir, CheckIfDifferentTeam);
+            }
+            else if (IsLeader)
+            {
+                // pregunto si alguno de mis miembros tiene un enemigo cerca con vida
+                if (Fireteam.AlliesWithEnemiesNearby(this, out Entity ally))
+                {
+                    Destination = ally.transform.position;
+                    FSM.SendInput(ASSAULT_INFANTRY_STATES.LEADER_MOVE_TO);
+                }
             }
             else
             {
-                //si soy el lider
-                if (IsLeader)
-                {
-                    //pregunto si alguno de mis miembros tiene un enemigo cerca con vida
-
-                    if (Fireteam.AlliesWithEnemiesNearby(this, out Entity ally))
-                    {
-                        Destination = ally.transform.position;
-                        FSM.SendInput(ASSAULT_INFANTRY_STATES.LEADER_MOVE_TO);
-                    }
-                }
-                else
-                    FSM.SendInput(ASSAULT_INFANTRY_STATES.FOLLOW_LEADER);
+                FSM.SendInput(ASSAULT_INFANTRY_STATES.FOLLOW_LEADER);
             }
-            yield return new WaitForSeconds(_timeBeforeSelectingTarget);
+
+            yield return _selectTargetWait;
         }
     }
 
-    Quaternion GetTargetRotation(Vector3 dir)
+    private Quaternion GetTargetRotation(Vector3 dir)
     {
         Vector3 gunForward = _shootPos.forward; gunForward.y = 0;
         dir.y = 0;
 
         Quaternion fromToRotation = Quaternion.FromToRotation(gunForward.normalized, dir.normalized);
 
-        Quaternion targetRotation = transform.rotation * fromToRotation;
-
-        return targetRotation;
+        return transform.rotation * fromToRotation;
     }
 
     #endregion
 
-    bool CheckIfDifferentTeam(RaycastHit hit)
+    private bool CheckIfDifferentTeam(RaycastHit hit)
     {
         if (hit.transform.TryGetComponent<IMilitary>(out var x))
             return x.Team != Team;
@@ -366,12 +376,9 @@ public class AssaultInfantry : MobileInfantry
         return true;
     }
 
-    float GetWeakestAndNearest(Entity entity)
+    private float GetSqrDistance(Entity entity)
     {
-        float result = 0;
-        result += Vector3.Distance(transform.position, entity.transform.position);
-
-        return result;
+        return Vector3.SqrMagnitude(transform.position - entity.transform.position);
     }
 
     #region Transitions
@@ -400,5 +407,4 @@ public class AssaultInfantry : MobileInfantry
         FSM.SendInput(ASSAULT_INFANTRY_STATES.AWAITING_ORDERS);
     }
     #endregion
-
 }
