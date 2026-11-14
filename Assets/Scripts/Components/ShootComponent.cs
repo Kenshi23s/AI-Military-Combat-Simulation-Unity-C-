@@ -10,6 +10,7 @@ using static UnityEngine.ParticleSystem;
 /// Hitscan weapon: a raycast with random spread that damages the first IDamageable hit.
 /// Each shot spawns a trail from the shoot position to the impact point.
 /// </summary>
+/// <remarks>The trail keeps a minimum width of MinTrailPixels on the main camera.</remarks>
 public class ShootComponent : MonoBehaviour
 {
     /// <summary>Damage of each bullet.</summary>
@@ -29,6 +30,9 @@ public class ShootComponent : MonoBehaviour
     [SerializeField] private float _bulletCD = 0.3f;
 
     private const float maxTravelDistance = 100;
+
+    // Minimum on-screen width of a bullet trail, in pixels.
+    private const float MinTrailPixels = 2f;
 
     /// <summary>Raised with each IDamageable the bullets damage.</summary>
     public event Action<IDamageable> onHit;
@@ -52,7 +56,7 @@ public class ShootComponent : MonoBehaviour
             finalTrailPos = hit.point;
         }
 
-        if (finalTrailPos == Vector3.zero) finalTrailPos = dir.normalized * maxTravelDistance;
+        if (finalTrailPos == Vector3.zero) finalTrailPos = shootPos.position + dir.normalized * maxTravelDistance;
 
         var trail = Instantiate(trailSample, shootPos.position, Quaternion.identity);
         StartCoroutine(SpawnTrail(trail, finalTrailPos));
@@ -75,7 +79,7 @@ public class ShootComponent : MonoBehaviour
             finalTrailPos = hit.point;
         }
 
-        if (finalTrailPos == Vector3.zero) finalTrailPos = randomDir.normalized * maxTravelDistance;
+        if (finalTrailPos == Vector3.zero) finalTrailPos = shootPos.position + randomDir.normalized * maxTravelDistance;
 
         var trail = Instantiate(trailSample, shootPos.position, Quaternion.identity);
         StartCoroutine(SpawnTrail(trail, finalTrailPos));
@@ -111,7 +115,7 @@ public class ShootComponent : MonoBehaviour
             finalTrailPos = hit.point;
         }
 
-        if (finalTrailPos == Vector3.zero) finalTrailPos = randomDir.normalized * maxTravelDistance;
+        if (finalTrailPos == Vector3.zero) finalTrailPos = shootPos.position + randomDir.normalized * maxTravelDistance;
 
         var trail = Instantiate(trailSample, shootPos.position, Quaternion.identity);
         StartCoroutine(SpawnTrail(trail, finalTrailPos));
@@ -146,7 +150,7 @@ public class ShootComponent : MonoBehaviour
             finalTrailPos = hit.point;
         }
 
-        if (finalTrailPos == Vector3.zero) finalTrailPos = dir.normalized * maxTravelDistance;
+        if (finalTrailPos == Vector3.zero) finalTrailPos = shootPos.position + dir.normalized * maxTravelDistance;
 
         var trail = Instantiate(trailSample, shootPos.position, Quaternion.identity);
         StartCoroutine(SpawnTrail(trail, finalTrailPos));
@@ -158,14 +162,36 @@ public class ShootComponent : MonoBehaviour
         float dist = Vector3.Distance(startPos, impactPos);
         float time = 0f;
 
+        float baseMultiplier = trail.widthMultiplier;
+        float baseWidth = trail.startWidth;
+
         while (time < 1)
         {
             trail.transform.position = Vector3.Lerp(startPos, impactPos, time);
+            KeepMinimumScreenWidth(trail, baseMultiplier, baseWidth);
             time += (Time.deltaTime / trail.time) * (dist / Vector3.Distance(trail.transform.position, impactPos));
             yield return null;
         }
         trail.transform.position = impactPos;
-        Destroy(trail.gameObject);
+
+        // The trail fades out over its own time before the object is destroyed.
+        Destroy(trail.gameObject, trail.time);
+    }
+
+    // Widens the trail so it covers at least MinTrailPixels pixels of the main camera at its distance.
+    private static void KeepMinimumScreenWidth(TrailRenderer trail, float baseMultiplier, float baseWidth)
+    {
+        Camera camera = Camera.main;
+        if (camera == null || baseWidth <= 0f)
+            return;
+
+        float distance = Vector3.Distance(camera.transform.position, trail.transform.position);
+
+        // World size of one pixel at that distance.
+        float worldPerPixel = 2f * distance * Mathf.Tan(camera.fieldOfView * 0.5f * Mathf.Deg2Rad) / camera.pixelHeight;
+
+        float scale = Mathf.Max(1f, MinTrailPixels * worldPerPixel / baseWidth);
+        trail.widthMultiplier = baseMultiplier * scale;
     }
 
     /// <summary>Shoots bursts from ShootPos forever, with _bulletCD between bullets and _burstCD between bursts.</summary>
