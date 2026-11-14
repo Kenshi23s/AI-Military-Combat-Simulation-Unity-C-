@@ -8,7 +8,7 @@ using System;
 [RequireComponent(typeof(GridEntity))]
 public class Misile : Entity, IMilitary
 {  
-    NewPhysicsMovement _movement;
+    private NewPhysicsMovement _movement;
     [Serializable]
     public struct MisileStats
     {
@@ -31,16 +31,22 @@ public class Misile : Entity, IMilitary
 
     public int TotalDamageDealt { get; private set; }
 
-    [SerializeField] ParticleHold explosionParticle;
-    [SerializeField] ParticleHold explosionParticleonGround;
+    [SerializeField] private ParticleHold explosionParticle;
+    [SerializeField] private ParticleHold explosionParticleonGround;
 
     [NonSerialized] public MisileStats myStats;
 
     protected GridEntity _gridEntity;
 
-    Action<Misile> returnToPool;
+    private Action<Misile> returnToPool;
 
-    string ownerName;
+    private string ownerName;
+
+    // true after the explosion of the current launch. Blocks a second explosion and a second return to the pool.
+    private bool _exploded;
+
+    // Countdown of the current launch.
+    private Coroutine _countdown;
 
     public event Action OnDeathInCombat;
 
@@ -55,7 +61,9 @@ public class Misile : Entity, IMilitary
         base.Awake();
 
         _gridEntity = GetComponent<GridEntity>();
-        Health.OnKilled += OnDeathInCombat;
+
+        // A lambda reads OnDeathInCombat when the missile dies. Subscribing the event directly would copy its value at Awake.
+        Health.OnKilled += () => OnDeathInCombat?.Invoke();
         Health.OnKilled += Explosion;
         
         _movement = GetComponent<NewPhysicsMovement>();
@@ -64,7 +72,7 @@ public class Misile : Entity, IMilitary
     }
 
 
-    void Start()
+    private void Start()
     {
         explosionParticle.key = ParticlePool.instance.CreateVFXPool(explosionParticle.particle);
         explosionParticleonGround.key = ParticlePool.instance.CreateVFXPool(explosionParticleonGround.particle);
@@ -102,22 +110,30 @@ public class Misile : Entity, IMilitary
     }
     #endregion
 
+    /// <summary>
+    /// Launches the missile at newTarget with newStats.
+    /// The missile explodes on contact or after timeBeforeExplosion seconds.
+    /// </summary>
     public void ShootMisile(MisileStats newStats, Transform newTarget)
     {
         myStats = newStats;
         ownerName = myStats.owner.name;
-        SetMovementStats();
-        StartCoroutine(CountdownForExplosion());
-
         Team = newStats.Team;
         target = newTarget;
+        _exploded = false;
+
+        SetMovementStats();
+
+        if (_countdown != null)
+            StopCoroutine(_countdown);
+        _countdown = StartCoroutine(CountdownForExplosion());
+
         transform.parent = null;
         enabled = true;
     }
 
-    void SetMovementStats()
+    private void SetMovementStats()
     {
-      
         _movement.Acceleration = myStats.acceleration;
         _movement.MaxSpeed = myStats.maxSpeed;
         _movement.Velocity = myStats.initialVelocity;
@@ -125,50 +141,63 @@ public class Misile : Entity, IMilitary
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject == myStats.owner) return;
+        if (_exploded || other.gameObject == myStats.owner) return;
 
+        // groundMask es una mascara de bits, layer es un indice: se compara el bit de la layer.
+        bool hitGround = (PlanesManager.instance.groundMask.value & (1 << other.gameObject.layer)) != 0;
 
-        ParticleHold particleToSpawn = explosionParticle;
-        if (other.gameObject.layer == PlanesManager.instance.groundMask)       
-            particleToSpawn = explosionParticleonGround;
+        Explode(hitGround ? explosionParticleonGround : explosionParticle);
+    }
 
-       ParticleHolder x = ParticlePool.instance.GetVFX(particleToSpawn.key);
+    // Spawns the explosion particle at the missile position and applies the explosion.
+    private void Explode(ParticleHold particle)
+    {
+        if (_exploded) return;
 
-        x.transform.localScale = myStats.explosionRadius.ToVector();
-        x.transform.position = transform.position;
+        ParticleHolder vfx = ParticlePool.instance.GetVFX(particle.key);
+        vfx.transform.localScale = myStats.explosionRadius.ToVector();
+        vfx.transform.position = transform.position;
 
         Explosion();
     }
 
-    void Explosion()
-    { 
-        var _damagables = _gridEntity.GetEntitiesInRange(myStats.explosionRadius)
-        .Where(x => x != myStats.owner)
-        .Where(x => x != null)
-        .OfType<IDamageable>()
-        .Where(FilterUnitsByTeam);
+    // Damages the entities within explosionRadius and returns the missile to the pool once per launch.
+    private void Explosion()
+    {
+        if (_exploded) return;
+        _exploded = true;
 
-        foreach (var entity in _damagables)
+        if (_countdown != null)
         {
-            GameManager.instance.DebugDamageFeed(ownerName,entity);
+            StopCoroutine(_countdown);
+            _countdown = null;
+        }
+
+        var damagables = _gridEntity.GetEntitiesInRange(myStats.explosionRadius)
+            .Where(x => x != null)
+            .Where(x => x.gameObject != myStats.owner)
+            .OfType<IDamageable>()
+            .Where(FilterUnitsByTeam);
+
+        foreach (var entity in damagables)
+        {
+            GameManager.instance.DebugDamageFeed(ownerName, entity);
             entity.TakeDamage(myStats.damage); onHit?.Invoke(entity);
         }
+
         returnToPool?.Invoke(this);
     }
 
-    bool FilterUnitsByTeam(IDamageable x)
+    private bool FilterUnitsByTeam(IDamageable x)
     {
         var cast = x as IMilitary;
         return cast == null || cast.Team != Team;
     }
 
-    IEnumerator CountdownForExplosion()
+    private IEnumerator CountdownForExplosion()
     {
         yield return new WaitForSeconds(myStats.timeBeforeExplosion);
-        ParticleHolder x = ParticlePool.instance.GetVFX(explosionParticle.key);
-        Explosion();
+        _countdown = null;
+        Explode(explosionParticle);
     }
-   
-
-  
 }

@@ -46,7 +46,7 @@ public abstract class Vehicle : Entity, IMilitary, IFlockableEntity
     {
         base.Awake();
 
-        Health.OnKilled += () => OnDeathInCombat();
+        Health.OnKilled += () => OnDeathInCombat?.Invoke();
 
         _gridEntity = GetComponent<GridEntity>();
         _movement = GetComponent<NewPhysicsMovement>();
@@ -108,7 +108,7 @@ public abstract class Vehicle : Entity, IMilitary, IFlockableEntity
     //////private void Update()
     //////{
     //////    //si el motor esta prendido se ejecuta el evento
-    //////    //me la estoy complicando talvez¿?
+    //////    //me la estoy complicando talvezÂ¿?
     //////    if (EngineOn) whileEngineOn?.Invoke();
     //////}
 

@@ -14,53 +14,68 @@ public enum PlaneStates
     ABANDONED
 }
 
+/// <summary>
+/// Vehicle that flies over the grid, fights enemy planes and runs air strikes for its Fireteams.
+/// </summary>
 [SelectionBase]
 public class Plane : Vehicle
 {
 
-    EventFSM<PlaneStates> _planeFSM;
+    private EventFSM<PlaneStates> _planeFSM;
+
+    /// <summary>Current state of the FSM.</summary>
     public PlaneStates actualState => _planeFSM.CurrentKey;
+
+    /// <summary>The enemy plane this plane pursues.</summary>
     [field : Header("Plane Variables"),SerializeField]
     public Plane targetPlane { get; private set; }
-    [SerializeField] 
+
+    /// <summary>The enemy plane that pursues this plane.</summary>
+    [SerializeField]
     public Plane beingChasedBy { get; private set; }
 
     //para que el avion que es perseguido se mueva de manera "dinamica" en la dogfight
     //estaria bueno cambiarlo cada x seg con una corrutina cuando se esta en ese estado
-    Vector3 _evadingDir;
+    private Vector3 _evadingDir;
 
-    [SerializeField] float _cd_OnRandomDir;
-    [SerializeField] float RandomAngleToStart = 90;
-    [SerializeField, Min(0)] float _unitsBehindPlane = 30f;
-    [SerializeField, Min(0)] float _collisionCheckDistance = 30f;
-    [SerializeField] int _ExplosionDamageOnDeath = 50;
+    [SerializeField] private float _cd_OnRandomDir;
+    [SerializeField] private float RandomAngleToStart = 90;
+    [SerializeField, Min(0)] private float _unitsBehindPlane = 30f;
+    [SerializeField, Min(0)] private float _collisionCheckDistance = 30f;
+    [SerializeField] private int _ExplosionDamageOnDeath = 50;
 
     #region Misile
     [SerializeField]
-    Transform[] misilePos;
-    [SerializeField] Misile.MisileStats misileStats;
-    [SerializeField]float misileCD;
+    private Transform[] misilePos;
+    [SerializeField] private Misile.MisileStats misileStats;
+    [SerializeField]private float misileCD;
 
     #endregion
 
     #region AirStrike
-    Vector3 airStrikeCordinates;
-    [SerializeField] float minimumDistanceForStrike;
+    // Seconds before the air strike pivot is destroyed.
+    private const float AirStrikePivotLifetime = 120f;
+
+    // Reused by FlyAround to collect the allied planes.
+    private readonly List<Plane> _alliesBuffer = new List<Plane>();
+
+    private Vector3 airStrikeCordinates;
+    [SerializeField] private float minimumDistanceForStrike;
     #endregion
 
     #region ShootingBullets
     [Header("Shooting Parameters")]
-    [SerializeField] float bulletsPerBurst;
-    [SerializeField] float burstCD = 3;
-    [SerializeField] float BulletCD = 0.3f;
-    [SerializeField] Transform shootPos;
+    [SerializeField] private float bulletsPerBurst;
+    [SerializeField] private float burstCD = 3;
+    [SerializeField] private float BulletCD = 0.3f;
+    [SerializeField] private Transform shootPos;
     #endregion
 
 
     [Header("VFX")]
-    [SerializeField] ParticleHolder ExplosionParticle;
-    int keyExplosionParticle;
-    const float explosionRadius = 20f;
+    [SerializeField] private ParticleHolder ExplosionParticle;
+    private int keyExplosionParticle;
+    private const float explosionRadius = 20f;
 
     public override void VehicleAwake()
     {
@@ -78,7 +93,7 @@ public class Plane : Vehicle
     }
 
     #region UnityCalls
-    void Start()
+    private void Start()
     {
         //Vector3 dir = _gridEntity.SpatialGrid.GetMidleOfGrid() - transform.position;
         ////dir = dir.RandomDirFrom(RandomAngleToStart);
@@ -103,7 +118,7 @@ public class Plane : Vehicle
     #region ShootingLogic
 
 
-    IEnumerator ShootBullets()
+    private IEnumerator ShootBullets()
     {
         while (true)
         {         
@@ -116,7 +131,7 @@ public class Plane : Vehicle
         }       
     }
 
-    IEnumerator ShootMisiles()
+    private IEnumerator ShootMisiles()
     {
         while (true)
         {
@@ -130,6 +145,10 @@ public class Plane : Vehicle
 
     #region Useful Methods
 
+    /// <summary>
+    /// Sets beingChasedBy to newChaser.
+    /// A plane sends the FSM to FLEE_FROM_PURSUITER. null sends it to FLY_AROUND.
+    /// </summary>
     public void SetChaser(Plane newChaser)
     {
         if (newChaser == null)
@@ -149,7 +168,7 @@ public class Plane : Vehicle
       
     }
 
-    Vector3 GroundInFront()
+    private Vector3 GroundInFront()
     {
         if (Physics.Raycast(transform.position, transform.forward, _collisionCheckDistance + _movement.CurrentSpeed, PlanesManager.instance.groundMask))
         {
@@ -159,7 +178,7 @@ public class Plane : Vehicle
         return Vector3.zero;
     }
 
-    IEnumerator RandomEvasionDir()
+    private IEnumerator RandomEvasionDir()
     {
         while (_planeFSM.CurrentKey == PlaneStates.FLEE_FROM_PURSUITER)
         {
@@ -168,13 +187,14 @@ public class Plane : Vehicle
         }
     }
 
-    void ShootMisile(Transform target)
+    private void ShootMisile(Transform target)
     {
         var misile = ProjectilePool.instance.GetMisile();
 
         misile.transform.position = misilePos.PickRandom().transform.position;
 
         misileStats.initialVelocity = _movement.Velocity;
+        misileStats.Team = Team;
 
         misile.ShootMisile(misileStats, target);
     }
@@ -183,7 +203,7 @@ public class Plane : Vehicle
     /// obtengo los aviones cercanos que no sean yo y que no esten "abandonados"
     /// </summary>
     /// <returns></returns>
-    IEnumerable<Plane> GetNearbyPlanes()
+    private IEnumerable<Plane> GetNearbyPlanes()
     {
         var z = _gridEntity.GetEntitiesInRange(_fov.ViewRadius)
             .OfType<Plane>()
@@ -193,6 +213,11 @@ public class Plane : Vehicle
         return z;
     }
 
+    /// <summary>
+    /// Sends the plane to New_AirStrikePosition.
+    /// The plane shoots one missile at the point and goes back to FLY_AROUND.
+    /// The FSM accepts the call only in FLY_AROUND.
+    /// </summary>
     public void CallAirStrike(Vector3 New_AirStrikePosition)
     {
         airStrikeCordinates = New_AirStrikePosition;
@@ -202,7 +227,7 @@ public class Plane : Vehicle
 
     #region PlaneStates
 
-    EventFSM<PlaneStates> CreateFSM()
+    private EventFSM<PlaneStates> CreateFSM()
     {
         var flyAround = FlyAround();
         var pursuitTarget = PursuitTarget();
@@ -213,6 +238,7 @@ public class Plane : Vehicle
         StateConfigurer.Create(flyAround)
             .SetTransition(PlaneStates.PURSUIT_TARGET, pursuitTarget)
             .SetTransition(PlaneStates.FLEE_FROM_PURSUITER, fleeDogFight)
+            .SetTransition(PlaneStates.AIRSTRIKE, airStrike)
             .SetTransition(PlaneStates.ABANDONED, abandonPlane)
             .Done();
 
@@ -239,7 +265,7 @@ public class Plane : Vehicle
         return new EventFSM<PlaneStates>(flyAround);
     }
 
-    State<PlaneStates> FlyAround()
+    private State<PlaneStates> FlyAround()
     {
         State<PlaneStates> state = new State<PlaneStates>("FlyAround");
 
@@ -249,35 +275,58 @@ public class Plane : Vehicle
         };
         state.OnUpdate += () =>
         {
-            //obtengo los aviones cercanos que no sean de mi equipo y esten en mi fov
-            var col = GetNearbyPlanes()
-            .Where(x => x != this)
-            .Where(x => x.Team != Team)
-            .Where(x => x.beingChasedBy == null)
-            .Where(x => _fov.IN_FOV(x.transform.position, PlanesManager.instance.groundMask));
-            if (col.Any())
+            // Un solo recorrido: el enemigo mas cercano que no este siendo perseguido y este en mi fov.
+            // Cada IN_FOV hace un raycast, asi que se evalua una vez por avion.
+            Plane nearestEnemy = null;
+            float nearestSqrDistance = float.MaxValue;
+            int enemiesInSight = 0;
+
+            foreach (Plane plane in GetNearbyPlanes())
             {
-                DebugEntity.Log($"Aviones enemigos a la vista, elijo el mas cercano de{col.Count()}");
-                //si encuentro alguno, obtengo el mas cercano
-                targetPlane = col.Minimum((x) => Vector3.Distance(x.transform.position, transform.position));
-                //y empiezo la persecucion
-                _planeFSM.SendInput(PlaneStates.PURSUIT_TARGET);
+                if (plane.Team == Team || plane.beingChasedBy != null)
+                    continue;
+
+                if (!_fov.IN_FOV(plane.transform.position, PlanesManager.instance.groundMask))
+                    continue;
+
+                enemiesInSight++;
+                float sqrDistance = Vector3.SqrMagnitude(plane.transform.position - transform.position);
+                if (sqrDistance < nearestSqrDistance)
+                {
+                    nearestSqrDistance = sqrDistance;
+                    nearestEnemy = plane;
+                }
             }
+
+            if (nearestEnemy == null)
+                return;
+
+            if (DebugEntity.canDebug)
+                DebugEntity.Log($"Aviones enemigos a la vista, elijo el mas cercano de {enemiesInSight}");
+
+            targetPlane = nearestEnemy;
+            _planeFSM.SendInput(PlaneStates.PURSUIT_TARGET);
         };
 
         state.OnFixedUpdate += () =>
         {
             Vector3 dir = Vector3.zero;
+
             //agarro los aviones mas cercanos de mi equipo
-            var col = GetNearbyPlanes().Where(x => x.Team == Team).Where(x => x != this);
+            _alliesBuffer.Clear();
+            foreach (Plane plane in GetNearbyPlanes())
+            {
+                if (plane.Team == Team)
+                    _alliesBuffer.Add(plane);
+            }
 
             //si hay alguno y estoy en zona de combate, hago flocking
-            if (col.Any() && _gridEntity.OnGrid)
+            if (_alliesBuffer.Count > 0 && _gridEntity.OnGrid)
             {
-                var endPromise = col.ToArray();
-                dir += col.Flocking(_flockingParameters);
-                
-                DebugEntity.Log($"hago flocking con {endPromise.Length} aviones aliados");
+                dir += _alliesBuffer.Flocking(_flockingParameters);
+
+                if (DebugEntity.canDebug)
+                    DebugEntity.Log($"hago flocking con {_alliesBuffer.Count} aviones aliados");
             }
                 
             else if (!_gridEntity.OnGrid)
@@ -304,7 +353,7 @@ public class Plane : Vehicle
         return state;
     }
 
-    State<PlaneStates> PursuitTarget()
+    private State<PlaneStates> PursuitTarget()
     {
         State<PlaneStates> state = new State<PlaneStates>("DogFight");
 
@@ -337,7 +386,7 @@ public class Plane : Vehicle
             }
 
 
-            if (Vector3.Distance(transform.position,targetPlane.transform.position) > _loseSightRadius)
+            if (Vector3.SqrMagnitude(transform.position - targetPlane.transform.position) > _loseSightRadius * _loseSightRadius)
             {
                 targetPlane.beingChasedBy = null;
                 _planeFSM.SendInput(PlaneStates.FLY_AROUND);
@@ -393,7 +442,7 @@ public class Plane : Vehicle
         return state;
     }
 
-    State<PlaneStates> FleeFromDogFight()
+    private State<PlaneStates> FleeFromDogFight()
     {
         State<PlaneStates> state = new State<PlaneStates>("FleeFromFight");
         state.OnEnter += (x) =>
@@ -436,7 +485,7 @@ public class Plane : Vehicle
         return state;
     }
 
-    State<PlaneStates> AbandonPlane()
+    private State<PlaneStates> AbandonPlane()
     {
         State<PlaneStates> state = new State<PlaneStates>("Die");
         state.OnEnter += (x) =>
@@ -448,30 +497,46 @@ public class Plane : Vehicle
         return state;
     }
 
-    State<PlaneStates> AirStrike()
+    private State<PlaneStates> AirStrike()
     {
         State<PlaneStates> state = new State<PlaneStates>("AirStrike");
 
+        state.OnEnter += (x) => DebugEntity.Log($"Voy a bombardear {airStrikeCordinates}");
 
         state.OnUpdate += () =>
         {
-            if (Vector3.Distance(transform.position, airStrikeCordinates) < minimumDistanceForStrike)
-            {
-                GameObject AirStrikePos = new GameObject($"Pivot {nameof(airStrikeCordinates)} [{gameObject.name}]");
-                Transform WorldReference = Instantiate(AirStrikePos, airStrikeCordinates, Quaternion.identity).transform;
-                Destroy(WorldReference,120f); ShootMisile(WorldReference);
+            // La distancia se mide en el plano horizontal: el avion mantiene su altura.
+            Vector3 toStrike = airStrikeCordinates - transform.position;
+            toStrike.y = 0;
 
-            }
+            if (toStrike.sqrMagnitude >= minimumDistanceForStrike * minimumDistanceForStrike)
+                return;
+
+            // Un solo misil por pedido de apoyo, guiado a un pivot en el punto del bombardeo.
+            Transform strikePivot = new GameObject($"Pivot {nameof(airStrikeCordinates)} [{gameObject.name}]").transform;
+            strikePivot.position = airStrikeCordinates;
+            Destroy(strikePivot.gameObject, AirStrikePivotLifetime);
+
+            ShootMisile(strikePivot);
+            _planeFSM.SendInput(PlaneStates.FLY_AROUND);
         };
 
-        state.OnFixedUpdate += () => _movement.AccelerateTowardsTarget(airStrikeCordinates);
+        state.OnFixedUpdate += () =>
+        {
+            // Vuela hacia el punto a su altura actual y esquiva el piso.
+            Vector3 target = airStrikeCordinates;
+            target.y = transform.position.y;
+
+            Vector3 dir = (target - transform.position).normalized + GroundInFront();
+            _movement.AccelerateTowards(dir);
+        };
 
         return state;
     }
 
     #endregion
 
-    void DrawTowardsTarget()
+    private void DrawTowardsTarget()
     {
         if (targetPlane == null) return;
         
@@ -486,7 +551,7 @@ public class Plane : Vehicle
         
     }
 
-    void DrawAirstrikeZone()
+    private void DrawAirstrikeZone()
     {
         if (airStrikeCordinates == Vector3.zero) return;
         Gizmos.color = Color.green;

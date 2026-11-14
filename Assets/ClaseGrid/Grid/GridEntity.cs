@@ -10,7 +10,7 @@ using UnityEngine;
 public class GridEntity : MonoBehaviour
 {
     // Grid shared by every GridEntity, found once with FindObjectOfType.
-    static SpatialGrid3D _sceneGrid;
+    private static SpatialGrid3D _sceneGrid;
 
     /// <summary>Raised in LateUpdate when the transform position changed.</summary>
     public event Action<GridEntity> OnMove = delegate { };
@@ -24,16 +24,33 @@ public class GridEntity : MonoBehaviour
     /// <summary>The grid that holds this entity.</summary>
     public SpatialGrid3D SpatialGrid { get; private set; }
 
-    Vector3 _previousPos;
+    private Vector3 _previousPos;
 
     private void Awake()
     {
         Owner = GetComponent<Entity>();
     }
 
+    // true after Start. The first registration waits for Start so the grid has run its Awake.
+    private bool _started;
+
     private void Start()
     {
+        _started = true;
         LookGrid();
+    }
+
+    private void OnEnable()
+    {
+        if (_started)
+            LookGrid();
+    }
+
+    // A disabled entity leaves the grid: pooled missiles and dead soldiers stop appearing in queries.
+    private void OnDisable()
+    {
+        if (SpatialGrid != null)
+            SpatialGrid.RemoveEntity(this);
     }
 
     private void OnDestroy()

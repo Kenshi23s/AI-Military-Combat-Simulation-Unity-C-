@@ -6,11 +6,15 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
+/// <summary>
+/// Static defense that aligns its base and canon with the nearest enemy Plane in its FOVAgent and shoots it.
+/// </summary>
 [RequireComponent(typeof(GridEntity))]
 [RequireComponent(typeof(FOVAgent))]
 [RequireComponent(typeof(ShootComponent))]
 public class Turret : Entity, IMilitary
 {
+    /// <summary>States of the FSM.</summary>
     public enum TurretStates
     {
         REST,
@@ -18,29 +22,36 @@ public class Turret : Entity, IMilitary
         ALIGN,
         SHOOT
     }
+
+    /// <summary>Team of the turret.</summary>
     [field: SerializeField, Header("Turret")] public MilitaryTeam Team { get; private set; }
 
+    /// <summary>The enemy Plane the turret aims at.</summary>
     public Plane Target { get; private set; }
 
+    /// <summary>Damage dealt by the bullets of the turret.</summary>
     public int TotalDamageDealt { get; private set; }
 
-    [SerializeField] Transform _pivotTurret,_pivotCanon;
-    [SerializeField] float _baseMinAngle, _canonMinAngle;
+    [SerializeField] private Transform _pivotTurret,_pivotCanon;
+    [SerializeField] private float _baseMinAngle, _canonMinAngle;
 
-    GridEntity _myGridEntity;
-    FOVAgent _fov;
-    [SerializeField] float rotationSpeed;
-    [SerializeField] float _cd_BetweenSearch;
+    private GridEntity _myGridEntity;
+    private FOVAgent _fov;
+    [SerializeField] private float rotationSpeed;
+    [SerializeField] private float _cd_BetweenSearch;
 
     [SerializeField,Header("Shooting")] 
-    Transform[] _shootPos;
-    [SerializeField] float _cd_BetweenShots;
-    int _pos = 0;
-    ShootComponent _ShootHandler;
+    private Transform[] _shootPos;
+    [SerializeField] private float _cd_BetweenShots;
+    private int _pos = 0;
+    private ShootComponent _ShootHandler;
 
-    EventFSM<TurretStates> _turretFSM;
+    private EventFSM<TurretStates> _turretFSM;
 
-    float _fixedCanonPos;
+    // Running coroutines of the SEARCH and SHOOT states.
+    private Coroutine _searchRoutine, _shootRoutine;
+
+    private float _fixedCanonPos;
 
     public event Action OnDeathInCombat;
 
@@ -48,7 +59,8 @@ public class Turret : Entity, IMilitary
     {
         base.Awake();
 
-        Health.OnKilled += OnDeathInCombat;
+        // A lambda reads OnDeathInCombat when the turret dies. Subscribing the event directly would copy its value at Awake.
+        Health.OnKilled += () => OnDeathInCombat?.Invoke();
         _myGridEntity = GetComponent<GridEntity>();
         _ShootHandler = GetComponent<ShootComponent>();
         _fov = GetComponent<FOVAgent>();
@@ -62,7 +74,7 @@ public class Turret : Entity, IMilitary
         var sprite = TeamsManager.instance.GetSprite(typeof(Turret));
         TeamsManager.instance.AddToTeam(Team,this, sprite);
     }
-    void SetFSM()
+    private void SetFSM()
     {
 
         var restState = Rest_State();
@@ -93,13 +105,16 @@ public class Turret : Entity, IMilitary
         _turretFSM = new EventFSM<TurretStates>(restState);
     }
 
-    void LateUpdate()
+    private void StopTrackedCoroutine(ref Coroutine handle)
     {
-        //var fixPos = new Vector3(_pivotCanon.localRotation.eulerAngles.x,fixedCanonPos,_pivotCanon.localRotation.y);
-        //_pivotCanon.localRotation = Quaternion.LookRotation(fixPos); 
+        if (handle == null)
+            return;
+
+        StopCoroutine(handle);
+        handle = null;
     }
 
-    State<TurretStates> Rest_State()
+    private State<TurretStates> Rest_State()
     {
         var state = new State<TurretStates>("Rest");
 
@@ -128,7 +143,7 @@ public class Turret : Entity, IMilitary
     }
 
 
-    State<TurretStates> SearchTargets_State()
+    private State<TurretStates> SearchTargets_State()
     {
         var state = new State<TurretStates>("SEARCH");
 
@@ -136,14 +151,14 @@ public class Turret : Entity, IMilitary
 
         state.OnExit += (x) => DebugEntity.Log("Salgo de  " + state.Name);
 
-        state.OnEnter += (x) => StartCoroutine(LookForHostilePlane());
+        state.OnEnter += (x) => _searchRoutine = StartCoroutine(LookForHostilePlane());
 
-        state.OnExit  += (x) => StopCoroutine(LookForHostilePlane());
+        state.OnExit += (x) => StopTrackedCoroutine(ref _searchRoutine);
 
         return state;
     }
 
-    State<TurretStates> Align_State()
+    private State<TurretStates> Align_State()
     {
         var state = new State<TurretStates>("ALIGN");
 
@@ -178,14 +193,14 @@ public class Turret : Entity, IMilitary
         return state;
     }
 
-    State<TurretStates> Shoot_State()
+    private State<TurretStates> Shoot_State()
     {
         var state = new State<TurretStates>("SHOOT");
 
         state.OnEnter += (x) => DebugEntity.Log("Entro en " + state.Name);
         state.OnExit += (x) => DebugEntity.Log("Salgo de  " + state.Name);
 
-        state.OnEnter += (x) => StartCoroutine(ShootBullets());
+        state.OnEnter += (x) => _shootRoutine = StartCoroutine(ShootBullets());
 
         state.OnUpdate += () =>
         {
@@ -206,16 +221,14 @@ public class Turret : Entity, IMilitary
             Vector3 dir = Target.AimPoint - transform.position;
 
             AlignCanon(dir); AlignBase(dir);
-            
-            _turretFSM.SendInput(TurretStates.SHOOT);
         };
 
-        state.OnExit += (x) => StopCoroutine(ShootBullets());
+        state.OnExit += (x) => StopTrackedCoroutine(ref _shootRoutine);
         
         return state;
     }
 
-    Transform GetShootPos()
+    private Transform GetShootPos()
     {
         _pos++;
         if (_pos > _shootPos.Length - 1) _pos = 0;
@@ -223,7 +236,7 @@ public class Turret : Entity, IMilitary
         return _shootPos[_pos];
     }
 
-    IEnumerator ShootBullets()
+    private IEnumerator ShootBullets()
     {
         var wait = new WaitForSeconds(_cd_BetweenShots);
         while (_turretFSM.CurrentKey == TurretStates.SHOOT)
@@ -239,16 +252,18 @@ public class Turret : Entity, IMilitary
         }
     }
 
-    IEnumerator LookForHostilePlane() 
+    private IEnumerator LookForHostilePlane() 
     {
         var wait = new WaitForSeconds(_cd_BetweenSearch);
         while (true) 
         {
 
+            // Solo aviones enemigos vivos. IN_FOV va ultimo porque hace un raycast.
             Target = _myGridEntity.GetEntitiesInRange(_fov.ViewRadius)
                 .OfType<Plane>()
+                .Where(x => x.Team != Team && x.Health.IsAlive)
                 .Where(x => _fov.IN_FOV(x.transform.position))
-                .Minimum(x => Vector3.Distance(x.transform.position,transform.position));
+                .Minimum(x => Vector3.SqrMagnitude(x.transform.position - transform.position));
 
             if (Target != null)
             {
@@ -261,7 +276,7 @@ public class Turret : Entity, IMilitary
         }
     }
 
-    bool AlignBase(Vector3 dir)
+    private bool AlignBase(Vector3 dir)
     {
         var desiredLookRotation = new Vector3(dir.x ,0 , dir.z);
         Quaternion target = Quaternion.LookRotation(desiredLookRotation);
@@ -272,7 +287,7 @@ public class Turret : Entity, IMilitary
 
     }
 
-    bool AlignCanon(Vector3 dir)
+    private bool AlignCanon(Vector3 dir)
     {     
         var desiredLookRotation = dir;
         Quaternion target = Quaternion.LookRotation(desiredLookRotation);
@@ -298,7 +313,6 @@ public class Turret : Entity, IMilitary
     private void OnDrawGizmos()
     {
         if (Target == null) return;
-        Debug.Log("Gizmo Draw");
         Gizmos.color = new Color(255, 165, 0)/255  + new Color(0, 0, 0, 1);
         Gizmos.DrawLine(transform.position, Target.transform.position);
         Gizmos.DrawWireSphere(Target.transform.position,2f);
