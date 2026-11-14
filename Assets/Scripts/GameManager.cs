@@ -1,16 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Unity.VisualScripting;
 using UnityEngine;
 using static UnityEngine.EventSystems.EventTrigger;
 
 [RequireComponent(typeof(DebugableObject))]
 public class GameManager : MonoSingleton<GameManager>
 {
-    List<Bunker> _bunkers=new List<Bunker>();
+    private List<Bunker> _bunkers=new List<Bunker>();
     public ReadOnlyCollection<Bunker> Bunkers;
-    DebugableObject DebugGM;
+    private DebugableObject DebugGM;
     public int timeScale = 1;
 
     public const int targetFrameRate = 144;
@@ -39,7 +38,7 @@ public class GameManager : MonoSingleton<GameManager>
 
     public void DebugDamageFeed(string name, IDamageable Victim)
     {
-        string Text = "Le hizo daño a";
+        string Text = "Le hizo daÃ±o a";
         if (!Victim.IsAlive)
         {
             Text = "Mato a";

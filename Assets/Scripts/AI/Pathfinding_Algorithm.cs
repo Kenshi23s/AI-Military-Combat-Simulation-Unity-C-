@@ -16,7 +16,7 @@ using UnityEngine;
 public static class Pathfinding_Algorithm
 {
     /// <summary>Length of the downward raycast that snaps endpos to the ground.</summary>
-    const float GroundSnapDistance = 10f;
+    private const float GroundSnapDistance = 10f;
 
     #region A*
 
@@ -74,10 +74,10 @@ public static class Pathfinding_Algorithm
     /// A cheaper path to a node enqueues the node again.
     /// Step discards the stale frontier entries.
     /// </summary>
-    sealed class AStarSearch
+    private sealed class AStarSearch
     {
         /// <summary>Node in the frontier with the cost it was enqueued with.</summary>
-        readonly struct FrontierEntry
+        private readonly struct FrontierEntry
         {
             public readonly Node Node;
             public readonly float CostSoFar;
@@ -89,18 +89,18 @@ public static class Pathfinding_Algorithm
             }
         }
 
-        readonly Node _goal;
-        readonly Vector3 _goalPosition;
+        private readonly Node _goal;
+        private readonly Vector3 _goalPosition;
 
-        readonly PriorityQueue<FrontierEntry> _frontier = new PriorityQueue<FrontierEntry>();
+        private readonly PriorityQueue<FrontierEntry> _frontier = new PriorityQueue<FrontierEntry>();
 
         // For each visited node: the node we came from (the start maps to null).
-        readonly Dictionary<Node, Node> _cameFrom = new Dictionary<Node, Node>();
+        private readonly Dictionary<Node, Node> _cameFrom = new Dictionary<Node, Node>();
 
         // For each visited node: the lowest known accumulated cost from the start.
-        readonly Dictionary<Node, float> _costSoFar = new Dictionary<Node, float>();
+        private readonly Dictionary<Node, float> _costSoFar = new Dictionary<Node, float>();
 
-        bool _finished;
+        private bool _finished;
 
         /// <summary>Nodes of the path from start to goal. Empty until the search reaches the goal.</summary>
         public List<Node> Path { get; private set; } = new List<Node>();
@@ -166,7 +166,7 @@ public static class Pathfinding_Algorithm
         /// <summary>
         /// Dequeues frontier entries until one has the lowest known cost for its node.
         /// </summary>
-        bool TryPopValidEntry(out FrontierEntry entry)
+        private bool TryPopValidEntry(out FrontierEntry entry)
         {
             while (_frontier.TryDequeue(out entry, out _))
             {
@@ -178,7 +178,7 @@ public static class Pathfinding_Algorithm
         }
 
         /// <summary>Builds the path by following _cameFrom back from the goal.</summary>
-        List<Node> BuildPath(Node goal)
+        private List<Node> BuildPath(Node goal)
         {
             var path = new List<Node>();
             for (Node node = goal; node != null; node = _cameFrom[node])
@@ -266,7 +266,7 @@ public static class Pathfinding_Algorithm
     /// <param name="path">Path returned by A*.</param>
     /// <param name="hasLineOfSight">Returns true when two positions have line of sight.</param>
     /// <remarks>O(L) calls to hasLineOfSight, where L is the path length.</remarks>
-    static List<Node> SmoothPath(List<Node> path, Func<Vector3, Vector3, bool> hasLineOfSight)
+    private static List<Node> SmoothPath(List<Node> path, Func<Vector3, Vector3, bool> hasLineOfSight)
     {
         if (path.Count <= 2)
             return new List<Node>(path);
@@ -299,7 +299,7 @@ public static class Pathfinding_Algorithm
     }
 
     /// <summary>Returns the groundPosition of each node in the path.</summary>
-    static List<Vector3> ToGroundPositions(List<Node> path)
+    private static List<Vector3> ToGroundPositions(List<Node> path)
     {
         var positions = new List<Vector3>(path.Count + 1);
         foreach (Node node in path)

@@ -18,7 +18,7 @@ public class FloatingText : MonoBehaviour
         public float fadeSpeed;
 
         public int sortingOrderRead => _sortingOrder;
-        int _sortingOrder;
+        private int _sortingOrder;
 
         public void IncreaseSortingOrder() => _sortingOrder++;
        
@@ -26,19 +26,19 @@ public class FloatingText : MonoBehaviour
     }
    
 
-    DebugableObject _debug;
+    private DebugableObject _debug;
     [SerializeField]
-    FloatingTextParam _textParameters;
+    private FloatingTextParam _textParameters;
 
-    Renderer _ren;
+    private Renderer _ren;
 
     public TMP_Text _popUpText;
 
-    Vector3 _textForce, _initialPos;   
+    private Vector3 _textForce, _initialPos;   
    
-    Action<FloatingText> _pool_ReturnMethod;
+    private Action<FloatingText> _pool_ReturnMethod;
 
-    Color _color, _actualColor;
+    private Color _color, _actualColor;
 
 
     #region Initialize
@@ -93,7 +93,7 @@ public class FloatingText : MonoBehaviour
 
     }
  
-    void SetText(string value,int sortOrder)
+    private void SetText(string value,int sortOrder)
     {
         // esto es para que el texto actual tenga prioridad de renderizado sobre los anteriores
         _ren.sortingOrder = sortOrder;
@@ -105,18 +105,18 @@ public class FloatingText : MonoBehaviour
         _popUpText.gameObject.name = "Text Damage  " + value ;
     }
 
-    void SetRandomForce(float RandomX)
+    private void SetRandomForce(float RandomX)
     {
         _textParameters.x_Spread = SetRandomValue(RandomX);
        
         _textForce = new Vector3(_textParameters.x_Spread, 1);
     }
 
-    float SetRandomValue(float Randomness) => Random.Range(-Mathf.Abs(Randomness), Mathf.Abs(Randomness));
+    private float SetRandomValue(float Randomness) => Random.Range(-Mathf.Abs(Randomness), Mathf.Abs(Randomness));
     #endregion
 
     #region Update 
-    void Update()
+    private void Update()
     {
         //se le suma al transform una fuerza para que se mueva a lo largo del tiempo hasta que
         //el "Alpha" del texto llegue a 0 (va de 0 a 1, no de 0 a 255)
@@ -129,9 +129,9 @@ public class FloatingText : MonoBehaviour
         transform.forward = Camera.main.transform.position - transform.position;
     } 
 
-    void LookCamera(Vector3 cam, Vector3 posToChange) => transform.LookAt(new Vector3(posToChange.x, cam.y, cam.z));
+    private void LookCamera(Vector3 cam, Vector3 posToChange) => transform.LookAt(new Vector3(posToChange.x, cam.y, cam.z));
 
-    void SubstractAlpha(float decreaseSpeed)
+    private void SubstractAlpha(float decreaseSpeed)
     {
         _actualColor.a = Mathf.Max(_actualColor.a - decreaseSpeed * Time.deltaTime, 0);
         _popUpText.color = _actualColor;
@@ -140,7 +140,7 @@ public class FloatingText : MonoBehaviour
     }
     #endregion
    
-    void GoToPool()
+    private void GoToPool()
     {     
         _initialPos = _textForce = Vector3.zero;
         _pool_ReturnMethod(this);

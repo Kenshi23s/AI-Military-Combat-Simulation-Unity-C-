@@ -21,7 +21,7 @@ public abstract class Entity : MonoBehaviour, ILifeObject
         ? AimingPoint.position
         : transform.position;  
 
-    [SerializeField, Header("Entity")] Transform AimingPoint; 
+    [SerializeField, Header("Entity")] private Transform AimingPoint; 
 
     public void SetCaptureState(bool arg)
     {

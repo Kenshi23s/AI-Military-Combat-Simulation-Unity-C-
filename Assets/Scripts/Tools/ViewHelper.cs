@@ -63,9 +63,9 @@ public static class ViewHelper
         return alignment >= minViewDotProduct;
     }
 
-    public static bool IsInSight(Vector3 origin, Vector3 forward, Vector3 target, float viewRadius, float viewAngle, LayerMask obstacleLayer) //Revisa si el objeto B est· en el angulo de visiÛn del objeto A
+    public static bool IsInSight(Vector3 origin, Vector3 forward, Vector3 target, float viewRadius, float viewAngle, LayerMask obstacleLayer) //Revisa si el objeto B est√° en el angulo de visi√≥n del objeto A
     {
-        // Preguntar si el objeto B est· dentro del rango de vision del objeto A
+        // Preguntar si el objeto B est√° dentro del rango de vision del objeto A
         if (!IsNear(origin, target, viewRadius)) return false; 
 
         Vector3 dir = target - origin; //Toma el vector entre los dos objetos
@@ -76,7 +76,7 @@ public static class ViewHelper
         // solo que el punto en el espacio no lo esta.
         if (IsInFOV(forward, dir, viewAngle)) return IsInLineOfSight(origin, target, obstacleLayer);
 
-        return false; // Si est· fuera de su angulo de vision devuelve false
+        return false; // Si est√° fuera de su angulo de vision devuelve false
     }
 
     public static void DrawFieldOfView(Vector3 origin, Vector3 forward, float viewRadius, float viewAngle)

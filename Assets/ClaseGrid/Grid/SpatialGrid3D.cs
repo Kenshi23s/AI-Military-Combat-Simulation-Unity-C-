@@ -14,7 +14,7 @@ public class SpatialGrid3D : MonoBehaviour
 {
     #region Variables
 
-    [SerializeField] bool takePositionFromTransform = false;
+    [SerializeField] private bool takePositionFromTransform = false;
 
     /// <summary>World position of the grid's minimum corner.</summary>
     public float x, y, z;
@@ -34,15 +34,15 @@ public class SpatialGrid3D : MonoBehaviour
     public static readonly GridEntity[] Empty = new GridEntity[0];
 
     // Every entity registered with AddEntity, inside or outside the grid.
-    readonly HashSet<GridEntity> _entities = new HashSet<GridEntity>();
+    private readonly HashSet<GridEntity> _entities = new HashSet<GridEntity>();
 
     // Last known cell of each entity inside the grid.
-    Dictionary<GridEntity, Vector3Int> lastPositions;
+    private Dictionary<GridEntity, Vector3Int> lastPositions;
 
     // The entities in each cell.
-    HashSet<GridEntity>[,,] buckets;
+    private HashSet<GridEntity>[,,] buckets;
 
-    Vector3 _gridCenter;
+    private Vector3 _gridCenter;
 
     #endregion
 
@@ -81,7 +81,7 @@ public class SpatialGrid3D : MonoBehaviour
 #endif
     }
 
-    void OnDestroy()
+    private void OnDestroy()
     {
         foreach (var entity in _entities)
         {
@@ -236,7 +236,7 @@ public class SpatialGrid3D : MonoBehaviour
 
     #region Grid position
 
-    void SetGridPosition()
+    private void SetGridPosition()
     {
         x = transform.position.x;
         y = transform.position.y;
@@ -245,7 +245,7 @@ public class SpatialGrid3D : MonoBehaviour
         CalculateGridCenter();
     }
 
-    void CalculateGridCenter()
+    private void CalculateGridCenter()
     {
         Vector3 dimensions = new Vector3(width * cellWidth, height * cellHeight, depth * cellDepth);
         _gridCenter = new Vector3(x, y, z) + dimensions / 2;
@@ -284,7 +284,7 @@ public class SpatialGrid3D : MonoBehaviour
         showLogs = false;
     }
 
-    void DrawGridLines()
+    private void DrawGridLines()
     {
         float sizeX = cellWidth * width;
         float sizeY = cellHeight * height;
@@ -316,7 +316,7 @@ public class SpatialGrid3D : MonoBehaviour
     }
 
     // Draws a line between every pair of entities in the grid: O(n²).
-    void DrawAllConnections()
+    private void DrawAllConnections()
     {
         var all = new List<GridEntity>();
         foreach (var bucket in buckets)
@@ -326,13 +326,13 @@ public class SpatialGrid3D : MonoBehaviour
     }
 
     // Draws a line between every pair of entities that share a cell.
-    void DrawConnectionsInsideCells()
+    private void DrawConnectionsInsideCells()
     {
         foreach (var bucket in buckets)
             DrawConnections(bucket);
     }
 
-    void DrawConnections(IReadOnlyCollection<GridEntity> group)
+    private void DrawConnections(IReadOnlyCollection<GridEntity> group)
     {
         foreach (var entity in group)
         {

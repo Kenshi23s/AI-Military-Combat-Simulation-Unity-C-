@@ -1,26 +1,17 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using IA2;
-using System.Linq;
 using System;
-[System.Serializable]
-public struct Seat
-{
-    public bool Available;
-    public int seatPriority;
-    public MobileInfantry passenger;  
-    public Transform seatPos;
-}
+using UnityEngine;
 
+/// <summary>
+/// Base class of the military vehicles.
+/// Holds the movement, field of view, weapon and flocking parameters of the vehicle.
+/// </summary>
 [RequireComponent(typeof(NewPhysicsMovement))]
 [RequireComponent(typeof(FOVAgent))]
 [RequireComponent(typeof(GridEntity))]
 [RequireComponent(typeof(ShootComponent))]
 public abstract class Vehicle : Entity, IMilitary, IFlockableEntity
 {
-
-    [SerializeField,Header("Vehicle Variables")] 
+    [SerializeField, Header("Vehicle Variables")]
     protected FlockingParameters _flockingParameters;
     [SerializeField] protected float _sightRadius;
     [SerializeField] protected float _loseSightRadius;
@@ -28,20 +19,23 @@ public abstract class Vehicle : Entity, IMilitary, IFlockableEntity
     protected NewPhysicsMovement _movement;
     protected ShootComponent _shootComponent;
 
+    /// <summary>Team of the vehicle.</summary>
     public MilitaryTeam Team { get; private set; }
 
-    public bool InCombat => throw new NotImplementedException();
+    /// <summary>true while the vehicle fights.</summary>
+    public virtual bool InCombat => false;
 
+    /// <summary>Damage dealt by the weapons of the vehicle.</summary>
     public int TotalDamageDealt { get; protected set; }
 
     protected GridEntity _gridEntity;
 
+    /// <summary>Raised when the vehicle dies.</summary>
     public event Action OnDeathInCombat;
 
-
+    /// <summary>Initializes the vehicle at the end of Awake.</summary>
     public abstract void VehicleAwake();
 
-    
     protected override void Awake()
     {
         base.Awake();
@@ -58,90 +52,26 @@ public abstract class Vehicle : Entity, IMilitary, IFlockableEntity
         VehicleAwake();
     }
 
-    //#region Ya no va en los vehiculos :C
-    //public List<Seat> vehicleSeats = new List<Seat>();
-
-    //public event Action OnEngineTurnOff;
-    //public event Action OnEngineTurnOn;
-    //public event Action whileEngineOn;
-
-    //public bool EngineOn;
-
-    ///// <summary>
-    ///// Subirse al vehiculo, requiere que le pasen un pasajero, solo se subira si hay asientos disponibles,
-    ///// devuelve una booleana para chequear eso
-    ///// </summary>
-    ///// <param name="NewPassenger"></param>
-    ///// <returns></returns>
-    ////public bool GetInVehicle(Infantry NewPassenger)
-    ////{
-    ////    var col = vehicleSeats.Where(x => x.Available);
-    ////    if (!col.Any()) return false;
-      
-    ////    var seat = col.Maximum(x => x.seatPriority);
-    ////    seat.Available = false;
-    ////    seat.passenger = NewPassenger;
-    ////    NewPassenger.transform.position = seat.seatPos.position;
-    ////    NewPassenger.transform.parent = seat.seatPos;
-
-    ////    if (!EngineOn) TurnOnEngine();
-
-
-    ////    return true;
-    ////}
-  
-    ////public void GetOffVehicle(Infantry removePassenger)
-    ////{
-    ////    var col = vehicleSeats.Where((x) => x.passenger == removePassenger);
-    ////    if (!col.Any()) return;       
-            
-    ////    var seat = col.First();
-    ////    seat.Available = true;
-    ////    seat.passenger = null;
-    ////    removePassenger.transform.parent = null;
-    ////    if (vehicleSeats.Where(x => !x.Available).Any())
-    ////    {
-    ////        TurnOffEngine();
-    ////    }
-    ////}
-
-    //////private void Update()
-    //////{
-    //////    //si el motor esta prendido se ejecuta el evento
-    //////    //me la estoy complicando talvez¿?
-    //////    if (EngineOn) whileEngineOn?.Invoke();
-    //////}
-
-    ////void TurnOffEngine()
-    ////{
-    ////    EngineOn = false;
-    ////    OnEngineTurnOff?.Invoke();
-    ////}
-
-    ////void TurnOnEngine()
-    ////{
-    ////    EngineOn=true;
-    ////    OnEngineTurnOn?.Invoke();
-
-    ////}
-    //#endregion
-
     private void OnValidate()
     {
         _sightRadius = Mathf.Clamp(_sightRadius, 0, Mathf.Infinity);
         _loseSightRadius = Mathf.Clamp(_loseSightRadius, _sightRadius, Mathf.Infinity);
         GetComponent<FOVAgent>().SetFov(_sightRadius);
     }
+
+    /// <summary>Sets the Team.</summary>
     public void Initialize(MilitaryTeam newTeam)
     {
         Team = newTeam;
     }
 
+    /// <summary>Returns the position of the vehicle.</summary>
     public Vector3 GetPosition()
     {
         return transform.position;
     }
 
+    /// <summary>Returns the velocity of the vehicle.</summary>
     public Vector3 GetVelocity()
     {
         return _movement.Velocity;

@@ -8,7 +8,7 @@ using static NewPhysicsMovement;
 [CustomEditor(typeof(NewPhysicsMovement))]
 public class NewPhysicsMovementEditor : Editor
 {
-    NewPhysicsMovement myTarget;
+    private NewPhysicsMovement myTarget;
 
     public override void OnInspectorGUI()
     {
@@ -66,7 +66,7 @@ public class NewPhysicsMovementEditor : Editor
             EditorUtility.SetDirty(myTarget);
     }
 
-    void ShowGroundedMovementGUI() 
+    private void ShowGroundedMovementGUI() 
     {
         myTarget.MaxGroundAngle = EditorGUILayout.Slider("Max Ground Angle", myTarget.MaxGroundAngle, 0, 90f);
         myTarget.GroundSnapping = EditorGUILayout.Toggle("Snap To Ground", myTarget.GroundSnapping);
@@ -79,5 +79,5 @@ public class NewPhysicsMovementEditor : Editor
             EditorGUI.indentLevel--;
         }
     }
-    void ShowFreeMovementGUI() { }
+    private void ShowFreeMovementGUI() { }
 }

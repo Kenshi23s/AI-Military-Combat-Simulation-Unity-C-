@@ -6,7 +6,7 @@ using UnityEngine;
 public class ParticlePool:MonoSingleton<ParticlePool>
 {
    
-    Dictionary<int,PoolObject<ParticleHolder>> _vfxPools = new Dictionary<int, PoolObject<ParticleHolder>>();
+    private Dictionary<int,PoolObject<ParticleHolder>> _vfxPools = new Dictionary<int, PoolObject<ParticleHolder>>();
    //devuelve la key a la pool
     public int CreateVFXPool(ParticleHolder particle)
     {

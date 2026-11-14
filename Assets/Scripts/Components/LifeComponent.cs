@@ -4,16 +4,16 @@ using UnityEngine;
 [RequireComponent(typeof(DebugableObject))]
 public class LifeComponent : MonoBehaviour, IDamageable, IHealable,ILifeObject
 {
-    DebugableObject _debug;
+    private DebugableObject _debug;
 
-    [SerializeField] int _life = 100;
-    [SerializeField] int _maxLife = 100;
+    [SerializeField] private int _life = 100;
+    [SerializeField] private int _maxLife = 100;
     public bool IsAlive => Life > 0;
     public int Life => _life;
     public int MaxLife => _maxLife;
 
     [SerializeField, Range(0.1f, 2)]
-    float _dmgMultiplier = 1f;
+    private float _dmgMultiplier = 1f;
 
     public int dmgResist = 1;
 
@@ -37,7 +37,7 @@ public class LifeComponent : MonoBehaviour, IDamageable, IHealable,ILifeObject
 
         }
     }
-    bool _showDamageNumber = true;
+    private bool _showDamageNumber = true;
 
     
     [SerializeField] public bool CanTakeDamage = true;
@@ -48,7 +48,7 @@ public class LifeComponent : MonoBehaviour, IDamageable, IHealable,ILifeObject
     public event Action<int, int> OnHealthChange;
     public event Action OnHeal;
 
-    //pasar TODA LA INFORMACION AL TOMAR DAÑO (USAR EL STRUCT DE DAMAGE DATA)
+    //pasar TODA LA INFORMACION AL TOMAR DAÃ‘O (USAR EL STRUCT DE DAMAGE DATA)
     public event Action<int> OnTakeDamage;
     public event Action OnKilled;
 
@@ -95,7 +95,7 @@ public class LifeComponent : MonoBehaviour, IDamageable, IHealable,ILifeObject
         FloatingTextManager.instance.PopUpText(x.ToString(), hitPos != Vector3.zero? hitPos : transform.position, IsCrit);
         hitPos = Vector3.zero;
     }
-    Vector3 hitPos = Vector3.zero;
+    private Vector3 hitPos = Vector3.zero;
 
     public void SetHitPos(Vector3 x) => hitPos = x;
 
@@ -122,7 +122,7 @@ public class LifeComponent : MonoBehaviour, IDamageable, IHealable,ILifeObject
 
          dmgDealt = (int)(Mathf.Abs(dmgDealt) * _dmgMultiplier) / dmgResist;
         _life -= dmgDealt; OnTakeDamage?.Invoke(dmgDealt);
-        _debug.Log($" recibio {dmgDealt} de daño ");
+        _debug.Log($" recibio {dmgDealt} de daÃ±o ");
 
         if (_life <= 0)
         {
@@ -138,7 +138,7 @@ public class LifeComponent : MonoBehaviour, IDamageable, IHealable,ILifeObject
 
     #region HealingSide
     /// <summary>
-    /// añade vida, no supera la vida maxima
+    /// aÃ±ade vida, no supera la vida maxima
     /// </summary>
     /// <param name="HealAmount"></param>
     /// <returns></returns>
@@ -155,7 +155,7 @@ public class LifeComponent : MonoBehaviour, IDamageable, IHealable,ILifeObject
         return HealAmount;
     }
     /// <summary>
-    /// Añade x cantidad de vida al objetivo a lo largo de y segundos(no supera la vida maxima)
+    /// AÃ±ade x cantidad de vida al objetivo a lo largo de y segundos(no supera la vida maxima)
     /// </summary>
     /// <param name="totalHeal"></param>
     /// <param name="timeAmount"></param>

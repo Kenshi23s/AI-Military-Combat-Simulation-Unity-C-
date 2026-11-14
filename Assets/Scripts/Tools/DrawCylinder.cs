@@ -30,7 +30,7 @@ public static class DrawCylinder
         DrawCircle(topPosition, circleOrientation, radius, 32);
     }
 
-    static void DrawCircle(Vector3 position, Quaternion rotation, float radius, int segments)
+    private static void DrawCircle(Vector3 position, Quaternion rotation, float radius, int segments)
     {
         // If either radius or number of segments are less or equal to 0, skip drawing
         if (radius <= 0.0f || segments <= 0)

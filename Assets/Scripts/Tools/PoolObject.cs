@@ -9,11 +9,11 @@ public class PoolObject<T>
 
     [SerializeField]public Stack<T> pool = new Stack<T>();
 
-    Action<T> turnOn;
-    Action<T> turnOff;
-    Func<T> build;
+    private Action<T> turnOn;
+    private Action<T> turnOff;
+    private Func<T> build;
 
-    int prewarm = 0;
+    private int prewarm = 0;
 
     // al crearse una "PoolObject" se le deberan pasar estas referencias para que funcione correctamente
     public void Intialize(Action<T> _turnOn, Action<T> _turnOff, Func<T> _build, int prewarm = 5)
@@ -39,8 +39,8 @@ public class PoolObject<T>
         pool.Push(obj);
         turnOff(obj);
     }
-    // añade mas objetos a la lista
-    void AddMore()
+    // aÃ±ade mas objetos a la lista
+    private void AddMore()
     {
         for (int i = 0; i < prewarm; i++)
         {

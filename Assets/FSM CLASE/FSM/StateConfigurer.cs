@@ -3,8 +3,8 @@ using System.Collections.Generic;
 namespace IA2 {
 	public class StateConfigurer<T>
     {
-		State<T> instance;
-		Dictionary<T, Transition<T>> transitions = new Dictionary<T, Transition<T>>();
+		private State<T> instance;
+		private Dictionary<T, Transition<T>> transitions = new Dictionary<T, Transition<T>>();
 
 		public StateConfigurer(State<T> state) => instance = state;
 

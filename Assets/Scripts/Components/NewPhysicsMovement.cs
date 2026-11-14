@@ -39,7 +39,7 @@ public class NewPhysicsMovement : MonoBehaviour
         set => _acceleration = Mathf.Max(0, value);
     }
     [SerializeField, Min(0)] 
-    float _acceleration = 37.5f;
+    private float _acceleration = 37.5f;
 
     public float MaxSpeed
     {
@@ -47,13 +47,13 @@ public class NewPhysicsMovement : MonoBehaviour
         set => _maxSpeed = Mathf.Max(0, value);
     }
     [SerializeField, Min(0)]
-    float _maxSpeed = 8f;
+    private float _maxSpeed = 8f;
     #endregion
 
     #region Grounding
-    int _groundContactCount;
-    Vector3 _groundContactNormal;
-    [SerializeField] float _maxGroundAngle = 45f;
+    private int _groundContactCount;
+    private Vector3 _groundContactNormal;
+    [SerializeField] private float _maxGroundAngle = 45f;
     public float MaxGroundAngle 
     {
         get => _maxGroundAngle;
@@ -63,16 +63,16 @@ public class NewPhysicsMovement : MonoBehaviour
             _minGroundDotProduct = Mathf.Cos(_maxGroundAngle * Mathf.Deg2Rad);
         }
     }
-    float _minGroundDotProduct;
+    private float _minGroundDotProduct;
 
     public bool OnGround => _groundContactCount > 0;
-    int _stepsSinceLastGrounded;
+    private int _stepsSinceLastGrounded;
 
     // Snap To Ground Settings
     public bool GroundSnapping = true;
 
     [SerializeField, Min(0f)]
-    float _groundProbeDistance = 0.5f;
+    private float _groundProbeDistance = 0.5f;
     public float GroundProbeDistance 
     {
         get => _groundProbeDistance;
@@ -92,7 +92,7 @@ public class NewPhysicsMovement : MonoBehaviour
         set => _alignmentMix = Mathf.Clamp01(value);
     }
     [SerializeField, Range(0, 1)]
-    float _alignmentMix = 0.5f;
+    private float _alignmentMix = 0.5f;
     public Transform AlignmentTarget;
 
     public Quaternion CustomAlignment
@@ -101,7 +101,7 @@ public class NewPhysicsMovement : MonoBehaviour
         set => _customAlignment = value.normalized;
     }
 
-    Quaternion _customAlignment = Quaternion.identity;
+    private Quaternion _customAlignment = Quaternion.identity;
 
     public float AlignTime
     {
@@ -116,10 +116,10 @@ public class NewPhysicsMovement : MonoBehaviour
         }
     }
     [SerializeField, Min(0), Tooltip("El tiempo maximo que puede llegar a tardar en alinearse")]
-    float _alignTime = 0f;
-    bool _hasAlignTime = false;
+    private float _alignTime = 0f;
+    private bool _hasAlignTime = false;
 
-    float _radiansAlignSpeed;
+    private float _radiansAlignSpeed;
 
     public bool FreezeXAlignment, FreezeYAlignment, FreezeZAlignment;
 
@@ -132,11 +132,11 @@ public class NewPhysicsMovement : MonoBehaviour
     #endregion
 
     public Rigidbody Rigidbody { get; private set; }
-    DebugableObject _debug;
+    private DebugableObject _debug;
 
-    Vector3 _velocity;
-    Quaternion _rotation;
-    Vector3 _inputMoveDirection;
+    private Vector3 _velocity;
+    private Quaternion _rotation;
+    private Vector3 _inputMoveDirection;
 
     private void Awake()
     {
@@ -147,7 +147,7 @@ public class NewPhysicsMovement : MonoBehaviour
     }
 
 
-    Vector3 _desiredMoveDir;
+    private Vector3 _desiredMoveDir;
     private void FixedUpdate()
     {
         UpdateState();
@@ -164,7 +164,7 @@ public class NewPhysicsMovement : MonoBehaviour
         ClearState();
     }
 
-    void AdjustVelocity() 
+    private void AdjustVelocity() 
     {
         switch (Movement)
         {
@@ -179,7 +179,7 @@ public class NewPhysicsMovement : MonoBehaviour
         }
     }
 
-    void AdjustRotation() 
+    private void AdjustRotation() 
     {
         Quaternion desiredRotation = default;
 
@@ -250,7 +250,7 @@ public class NewPhysicsMovement : MonoBehaviour
         throw new System.Exception("El metodo 'SendInput(Vector3, float)' no esta implementado");
     }
 
-    void GroundedAccelerate()
+    private void GroundedAccelerate()
     {
         // Aplanar la direccion
         Vector3 flattenedDesiredVelocity = _desiredMoveDir.ProjectDirectionOnPlane(Vector3.up) * MaxSpeed;
@@ -281,7 +281,7 @@ public class NewPhysicsMovement : MonoBehaviour
         EvaluateCollision(collision);
     }
 
-    void GetMoveDirection() 
+    private void GetMoveDirection() 
     {
         switch (Movement)
         {
@@ -296,27 +296,27 @@ public class NewPhysicsMovement : MonoBehaviour
         }
     }
 
-    void EvaluateCollision(Collision collision) 
+    private void EvaluateCollision(Collision collision) 
     {
         for (int i = 0; i < collision.contactCount; i++)
         {
             // minGroundDotProduct es un calculo que proviene de maxGroundAngle.
-            // Aca se esta comparando si el ángulo entre el jugador y la superficie es mayor o menor a maxGroundAngle.
+            // Aca se esta comparando si el Ã¡ngulo entre el jugador y la superficie es mayor o menor a maxGroundAngle.
             Vector3 normal = collision.GetContact(i).normal;
 
             if (normal.y >= _minGroundDotProduct)
             {
                 _groundContactCount++;
 
-                // En el caso que de haya multiples contactos con el piso. ¿Qué dirección es la mejor? No hay una.
-                // Tiene más sentido combinarlas a todas en una sola normal que represente un plano de tierra promedio.
+                // En el caso que de haya multiples contactos con el piso. Â¿QuÃ© direcciÃ³n es la mejor? No hay una.
+                // Tiene mÃ¡s sentido combinarlas a todas en una sola normal que represente un plano de tierra promedio.
                 // Para hacer eso tenemos que acumular los vectores normales.
                 _groundContactNormal += normal;
             }
         }
     }
 
-    void UpdateState()
+    private void UpdateState()
     {
 
         _velocity = Rigidbody.velocity;
@@ -351,7 +351,7 @@ public class NewPhysicsMovement : MonoBehaviour
         Rigidbody.velocity = Vector3.zero;
     }
 
-    bool SnapToGround() 
+    private bool SnapToGround() 
     {
         if (!GroundSnapping) 
             return false;
@@ -363,22 +363,22 @@ public class NewPhysicsMovement : MonoBehaviour
         if (!Physics.Raycast(Rigidbody.position, Vector3.down, out RaycastHit hit, _groundProbeDistance, GroundMask))
             return false;
 
-        // Si el Raycast golpeó algo, entonces debemos verificar si cuenta como suelo.
+        // Si el Raycast golpeÃ³ algo, entonces debemos verificar si cuenta como suelo.
         if (hit.normal.y < _minGroundDotProduct)
             return false;
 
         // Si no hemos abortado en este punto, simplemente perdimos el contacto con el suelo,
-        // pero todavía estamos sobre el suelo, por lo que nos snappeamos a él.
+        // pero todavÃ­a estamos sobre el suelo, por lo que nos snappeamos a Ã©l.
         _groundContactCount = 1;
         _groundContactNormal = hit.normal;
 
-        // Ahora nos consideramos grounded, aunque todavía estamos en el aire.
+        // Ahora nos consideramos grounded, aunque todavÃ­a estamos en el aire.
         // El siguiente paso es ajustar nuestra velocidad para alinearnos con el suelo.
         float speed = _velocity.magnitude;
         float dot = Vector3.Dot(_velocity, hit.normal);
 
-        // En esta instancia todavía estamos flotando sobre el suelo, pero la gravedad se encargará de bajarnos hacia la superficie.
-        // De hecho, la velocidad ya podría apuntar un poco hacia abajo, en cuyo caso, realinearla retrasaría la convergencia hacia el suelo.
+        // En esta instancia todavÃ­a estamos flotando sobre el suelo, pero la gravedad se encargarÃ¡ de bajarnos hacia la superficie.
+        // De hecho, la velocidad ya podrÃ­a apuntar un poco hacia abajo, en cuyo caso, realinearla retrasarÃ­a la convergencia hacia el suelo.
         // Por lo tanto, solo debemos ajustar la velocidad cuando el producto escalar de esta y la superficie normal sea positivo (i.e. cuando hay algo de velocidad hacia abajo).
         if (dot > 0f)
             _velocity = (_velocity - hit.normal * dot).normalized * speed;
@@ -386,7 +386,7 @@ public class NewPhysicsMovement : MonoBehaviour
         return true;
     }
 
-    void ClearState()
+    private void ClearState()
     {
         if (Movement != MovementType.Grounded)
             return;
@@ -405,7 +405,7 @@ public class NewPhysicsMovement : MonoBehaviour
     public void AddImpulse(Vector3 force) => Rigidbody.velocity += force;
     #endregion
 
-    void DrawSpeedArrow()
+    private void DrawSpeedArrow()
     {
         DrawArrow.ForGizmo(transform.position, Velocity, Color.green, 2f);
     }

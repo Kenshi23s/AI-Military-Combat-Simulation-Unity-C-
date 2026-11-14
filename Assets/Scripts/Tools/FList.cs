@@ -4,7 +4,7 @@ using System.Linq;
 
 public class FList<T> : IEnumerable<T>
 {
-	readonly IEnumerable<T> collection;
+	private readonly IEnumerable<T> collection;
 
     /// <summary>
     /// Use FList.Create instead of this constructor directly

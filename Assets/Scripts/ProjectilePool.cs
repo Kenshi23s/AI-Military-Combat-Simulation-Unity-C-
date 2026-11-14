@@ -6,11 +6,11 @@ using UnityEngine;
 public class ProjectilePool : MonoSingleton<ProjectilePool>
 {
     //estaria bueno tener una pool con timeSlicing(?)
-    PoolObject<Misile> pool = new PoolObject<Misile>();
+    private PoolObject<Misile> pool = new PoolObject<Misile>();
 
-    [SerializeField] Misile _prefab;
+    [SerializeField] private Misile _prefab;
     //devuelve la key a la pool
-    [SerializeField] int _prewarmMisiles = 20;
+    [SerializeField] private int _prewarmMisiles = 20;
 
     protected override void SingletonAwake()
     {

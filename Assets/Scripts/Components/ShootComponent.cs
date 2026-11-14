@@ -10,20 +10,20 @@ public class ShootComponent : MonoBehaviour
 {
     public event Action<IDamageable> onHit;
 
-    [SerializeField] float _bulletspread;
+    [SerializeField] private float _bulletspread;
     [field : SerializeField] public int BulletDamage { get; private set; }
     //estaria bueno sacar esto de un manager mejor, pero por ahora
-    [SerializeField]LayerMask shootableLayers;
-    [SerializeField] TrailRenderer trailSample;
+    [SerializeField]private LayerMask shootableLayers;
+    [SerializeField] private TrailRenderer trailSample;
 
     [Header("Shooting Parameters")]
-    [SerializeField] float _bulletsPerBurst;
-    [SerializeField] float _burstCD = 3;
-    [SerializeField] float _bulletCD = 0.3f;
+    [SerializeField] private float _bulletsPerBurst;
+    [SerializeField] private float _burstCD = 3;
+    [SerializeField] private float _bulletCD = 0.3f;
 
     public Transform ShootPos;
 
-    const float maxTravelDistance = 100;
+    private const float maxTravelDistance = 100;
 
     public void Shoot(Transform shootPos)
     {
@@ -133,7 +133,7 @@ public class ShootComponent : MonoBehaviour
         StartCoroutine(SpawnTrail(trail, finalTrailPos));
     }
 
-    IEnumerator SpawnTrail(TrailRenderer trail, Vector3 impactPos)
+    private IEnumerator SpawnTrail(TrailRenderer trail, Vector3 impactPos)
     {
         Vector3 startPos = trail.transform.position;
         float dist = Vector3.Distance(startPos, impactPos);

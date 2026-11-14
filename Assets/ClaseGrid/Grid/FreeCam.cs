@@ -49,7 +49,7 @@ public class FreeCam : MonoBehaviour
     /// </summary>
     private bool looking = false;
 
-    void Update()
+    private void Update()
     {
         var fastMode = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         var movementSpeed = fastMode ? this.fastMovementSpeed : this.movementSpeed;
@@ -118,7 +118,7 @@ public class FreeCam : MonoBehaviour
         }
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
         StopLooking();
     }

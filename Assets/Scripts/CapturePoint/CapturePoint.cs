@@ -18,19 +18,19 @@ public enum CaptureState
 public class CapturePoint : MonoBehaviour
 {
     #region Variables
-    [SerializeField, Min(0)] float _searchTime = 0.2f;
-    [SerializeField, Min(0)] float _pointRadius = 15, _pointHeight = 8;
-    [SerializeField, Min(0)] float _captureSpeed = 5f;
+    [SerializeField, Min(0)] private float _searchTime = 0.2f;
+    [SerializeField, Min(0)] private float _pointRadius = 15, _pointHeight = 8;
+    [SerializeField, Min(0)] private float _captureSpeed = 5f;
     #endregion
-    DebugableObject _debug;
+    private DebugableObject _debug;
 
-    HashSet<ICapturePointEntity> _entitiesInPoint = new HashSet<ICapturePointEntity>();
-    Dictionary<MilitaryTeam, IMilitary[]> _teamSplit = new Dictionary<MilitaryTeam, IMilitary[]>();
+    private HashSet<ICapturePointEntity> _entitiesInPoint = new HashSet<ICapturePointEntity>();
+    private Dictionary<MilitaryTeam, IMilitary[]> _teamSplit = new Dictionary<MilitaryTeam, IMilitary[]>();
 
     [field: SerializeField] public float ProgressRequiredForCapture { get; private set; } = 100f;
 
 
-    float _captureProgress = 0;
+    private float _captureProgress = 0;
     public float CaptureProgress
     {
         get => _captureProgress;
@@ -40,7 +40,7 @@ public class CapturePoint : MonoBehaviour
         }
     }
 
-    SpatialGrid3D _targetGrid;
+    private SpatialGrid3D _targetGrid;
 
     public CaptureState CurrentState { get; private set; } = CaptureState.Inactive;
 
@@ -70,7 +70,7 @@ public class CapturePoint : MonoBehaviour
 
     #endregion
 
-    EventFSM<CaptureState> _fsm;
+    private EventFSM<CaptureState> _fsm;
 
     private void Awake()
     {
@@ -119,14 +119,14 @@ public class CapturePoint : MonoBehaviour
         _fsm.Update();
     }
 
-    bool CanTeamCapture(MilitaryTeam team)
+    private bool CanTeamCapture(MilitaryTeam team)
     {
         return _teamSplit[team].Any() && (!IsFullyCaptured || CapturedBy != team);
     }
 
 
     #region FSM States
-    State<CaptureState> CreateInactiveState()
+    private State<CaptureState> CreateInactiveState()
     {
         var inactive = new State<CaptureState>("Neutral");
 
@@ -149,7 +149,7 @@ public class CapturePoint : MonoBehaviour
         return inactive;
     }
 
-    State<CaptureState> CreateBeingCapturedState()
+    private State<CaptureState> CreateBeingCapturedState()
     {
         var beingCaptured = new State<CaptureState>("BeingTaken");
 
@@ -172,7 +172,7 @@ public class CapturePoint : MonoBehaviour
         return beingCaptured;
     }
 
-    State<CaptureState> CreateDisputedState()
+    private State<CaptureState> CreateDisputedState()
     {
         var disputed = new State<CaptureState>("Disputed");
 
@@ -196,7 +196,7 @@ public class CapturePoint : MonoBehaviour
     }
     #endregion
 
-    IEnumerator UpdateEntitiesInPoint()
+    private IEnumerator UpdateEntitiesInPoint()
     {
         while (true)
         {
@@ -226,7 +226,7 @@ public class CapturePoint : MonoBehaviour
         }
     }
 
-    void UpdateCaptureProgress()
+    private void UpdateCaptureProgress()
     {
         int sign = BeingCapturedBy == MilitaryTeam.Red ? 1 : -1;
 
@@ -248,7 +248,7 @@ public class CapturePoint : MonoBehaviour
         }
     }
 
-    void CheckState()
+    private void CheckState()
     {
         // Chequear si esta siendo disputada.
         if (_teamSplit[MilitaryTeam.Red].Any() && _teamSplit[MilitaryTeam.Blue].Any() && CurrentState != CaptureState.Disputed)
@@ -282,7 +282,7 @@ public class CapturePoint : MonoBehaviour
         }
     }
 
-    bool CheckNeutralization() 
+    private bool CheckNeutralization() 
     {
         if (!IsCaptured || CapturedBy == BeingCapturedBy)
             return false;
@@ -296,7 +296,7 @@ public class CapturePoint : MonoBehaviour
         return false;
     }
 
-    MilitaryTeam GetOppositeTeam(MilitaryTeam team)
+    private MilitaryTeam GetOppositeTeam(MilitaryTeam team)
     {
         if (team == MilitaryTeam.Blue)
             return MilitaryTeam.Red;
@@ -307,7 +307,7 @@ public class CapturePoint : MonoBehaviour
         return MilitaryTeam.None;
     }
 
-    bool CheckCaptureFinish() 
+    private bool CheckCaptureFinish() 
     {
         if (CapturedBy == BeingCapturedBy)
             return false;
@@ -322,7 +322,7 @@ public class CapturePoint : MonoBehaviour
     }
 
     // Hace un query cilindrico de objetos de tipo ICapturePointEntity.
-    IEnumerable<ICapturePointEntity> PointQuery()
+    private IEnumerable<ICapturePointEntity> PointQuery()
     {
         // Creo una "caja" con las dimensiones deseadas, y luego filtro segun distancia para formar el cilindro.
         var col = _targetGrid.Query(

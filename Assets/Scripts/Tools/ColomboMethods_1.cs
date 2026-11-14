@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
 
 namespace FacundoColomboMethods
@@ -387,79 +386,6 @@ namespace FacundoColomboMethods
         #region se pueden hacer con linq mas facil D: :D
 
         /// <summary>
-        /// obtiene el componente "T" mas cercano sin importar si esta a la vista o no
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="objPosition"></param>
-        /// <param name="myPos"></param>
-        /// <returns></returns>
-        /// 
-
-        //existe una funcion de linq para esto(order by)
-        //public static T GetNearest<T>(T[] objPosition, Vector3 myPos) where T : MonoBehaviour
-        //{
-        //    int nearestIndex = 0;
-
-        //    float nearestMagnitude = (objPosition[0].transform.position - myPos).magnitude;
-
-        //    for (int i = 1; i < objPosition.Length; i++)
-        //    {
-        //        float tempMagnitude = (objPosition[i].transform.position - myPos).magnitude;
-
-        //        if (nearestMagnitude > tempMagnitude)
-        //        {
-        //            nearestMagnitude = tempMagnitude;
-        //            nearestIndex = i;
-        //        }
-
-        //    }
-
-        //    return objPosition[nearestIndex];
-        //}
-
-        // existe una funcion de linq para esto(order By)
-        //public static T GetFurthest<T>(this T[] objPosition, Vector3 myPos) where T : Transform
-        //{
-        //    int nearestIndex = 0;
-
-        //    float nearestMagnitude = (objPosition[0].transform.position - myPos).magnitude;
-
-        //    for (int i = 1; i < objPosition.Length; i++)
-        //    {
-        //        float tempMagnitude = (objPosition[i].transform.position - myPos).magnitude;
-
-        //        if (nearestMagnitude > tempMagnitude)
-        //        {
-        //            nearestMagnitude = tempMagnitude;
-        //            nearestIndex = i;
-        //        }
-
-        //    }
-
-        //    return objPosition[nearestIndex];
-        //}
-
-        //public static T CheckNearest<T>(Transform[] objPosition, Vector3 myPos)
-        //{
-        //    int nearestIndex = 0;
-
-        //    float nearestMagnitude = (objPosition[0].transform.position - myPos).magnitude;
-
-        //    for (int i = 1; i < objPosition.Length; i++)
-        //    {
-        //        float tempMagnitude = (objPosition[i].transform.position - myPos).magnitude;
-
-        //        if (nearestMagnitude > tempMagnitude)
-        //        {
-        //            nearestMagnitude = tempMagnitude;
-        //            nearestIndex = i;
-        //        }
-
-        //    }
-
-        //    return objPosition[nearestIndex].GetComponent<T>();
-        //}
-        /// <summary>
         /// obtiene el componente "T" mas cercano a la vista
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -560,7 +486,7 @@ namespace FacundoColomboMethods
         }
 
         // mis raycasts
-        static bool FacundoRaycast<T>(Vector3 pos, Vector3 dir, T item) where T : MonoBehaviour
+        private static bool FacundoRaycast<T>(Vector3 pos, Vector3 dir, T item) where T : MonoBehaviour
         {
             RaycastHit hit;
             if (!Physics.Raycast(pos, dir, out hit,dir.magnitude))
@@ -580,7 +506,7 @@ namespace FacundoColomboMethods
 
         }
 
-        static List<T> FacundoRaycastAll<T>(Vector3 pos, List<T> items) where T : MonoBehaviour
+        private static List<T> FacundoRaycastAll<T>(Vector3 pos, List<T> items) where T : MonoBehaviour
         {
             List<T> Tlist = items.Where(x =>
             {
@@ -594,12 +520,12 @@ namespace FacundoColomboMethods
 
         }
 
-        static bool FacundoSphereCast(Vector3 pos, Vector3 dir, float radius,LayerMask layer) 
+        private static bool FacundoSphereCast(Vector3 pos, Vector3 dir, float radius,LayerMask layer) 
         {
             return !Physics.SphereCast(pos, radius, dir, out RaycastHit hit, dir.magnitude, layer);
         }
 
-        static List<T> FacundoSphereCastAll<T>(Vector3 pos, List<T> items, float radius,LayerMask wallMask) where T : MonoBehaviour
+        private static List<T> FacundoSphereCastAll<T>(Vector3 pos, List<T> items, float radius,LayerMask wallMask) where T : MonoBehaviour
         {   
             return items.Where(x =>
             {

@@ -4,13 +4,13 @@ using static FloatingText;
 public class FloatingTextManager : MonoSingleton<FloatingTextManager>
 {
 
-    DebugableObject _debug;
-    TextPool pool = new TextPool();
+    private DebugableObject _debug;
+    private TextPool pool = new TextPool();
 
     [SerializeField]
-    FloatingTextParam _parameters;
+    private FloatingTextParam _parameters;
     [SerializeField]
-    FloatingText sampleFloatingText;
+    private FloatingText sampleFloatingText;
 
  
     protected override void SingletonAwake()

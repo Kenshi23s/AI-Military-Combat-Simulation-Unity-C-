@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace IA2
 {
@@ -8,8 +8,8 @@ namespace IA2
 		public T Input { get { return input; } }
 		public State<T> TargetState { get { return targetState;  } }
 
-		T input;
-		State<T> targetState;
+		private T input;
+		private State<T> targetState;
 
 
         public void OnTransitionExecute(T input)

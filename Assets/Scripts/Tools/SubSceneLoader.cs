@@ -6,15 +6,15 @@ using UnityEngine.SceneManagement;
 public class SubSceneLoader : MonoBehaviour
 {
     public int scenesCount;
-    [SerializeField] string[] extras;
+    [SerializeField] private string[] extras;
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         StartCoroutine(LoadScenes());
     }
 
-    IEnumerator LoadScenes() 
+    private IEnumerator LoadScenes() 
     {
         string sceneName = SceneManager.GetActiveScene().name;
 
@@ -26,7 +26,7 @@ public class SubSceneLoader : MonoBehaviour
             if (SceneManager.GetSceneByName(currentSceneName).IsValid())
                 continue;
 
-            // Cargar la escena y esperar para cargar la siguiente. ¿Por que? No estoy seguro.
+            // Cargar la escena y esperar para cargar la siguiente. Â¿Por que? No estoy seguro.
             yield return SceneManager.LoadSceneAsync(currentSceneName, LoadSceneMode.Additive);
             yield return new WaitForSeconds(0.2f);
         }
@@ -40,7 +40,7 @@ public class SubSceneLoader : MonoBehaviour
             if (SceneManager.GetSceneByName(currentSceneName).IsValid())
                 continue;
 
-            // Cargar la escena y esperar para cargar la siguiente. ¿Por que? No estoy seguro.
+            // Cargar la escena y esperar para cargar la siguiente. Â¿Por que? No estoy seguro.
             yield return SceneManager.LoadSceneAsync(sceneName + "_" + extras[i], LoadSceneMode.Additive);
             yield return new WaitForSeconds(0.2f);
         }

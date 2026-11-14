@@ -10,7 +10,7 @@ using UnityEngine;
 public class AI_Manager : MonoSingleton<AI_Manager>
 {
     [SerializeField]
-    LayerMask _obstacle, _walls, _ground;
+    private LayerMask _obstacle, _walls, _ground;
 
     /// <summary>Layers of the obstacles.</summary>
     public LayerMask Obstacle => _obstacle;
@@ -28,13 +28,13 @@ public class AI_Manager : MonoSingleton<AI_Manager>
     /// <summary>Maximum distance between two connected nodes.</summary>
     public float MaxDistanceBetweenNodes;
 
-    [SerializeField] bool debugNodeConnections;
+    [SerializeField] private bool debugNodeConnections;
 
     /// <summary>Every Node child of this transform.</summary>
     [NonSerialized] public List<Node> nodes;
 
     // Squared distance from the queried position to each node, by index. Reused by GetNearestNodeOnSight.
-    float[] _sqrDistances = new float[0];
+    private float[] _sqrDistances = new float[0];
 
     /// <summary>Adds the NewAIMovement to flockingTargets.</summary>
     public void AddToFlockingTargets(NewAIMovement a) => _flockingTargets.Add(a);
@@ -112,7 +112,7 @@ public class AI_Manager : MonoSingleton<AI_Manager>
     }
 
     // Returns the index of the lowest value in _sqrDistances, or -1 when every value is infinity.
-    int IndexOfMinDistance(int count)
+    private int IndexOfMinDistance(int count)
     {
         int index = -1;
         float min = float.PositiveInfinity;

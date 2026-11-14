@@ -3,12 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class CapturePointManager : MonoSingleton<CapturePointManager> 
 {
-    List<CapturePoint> _capturePoints = new List<CapturePoint>();
+    private List<CapturePoint> _capturePoints = new List<CapturePoint>();
 
     public ReadOnlyCollection<CapturePoint> CapturePoints { get; private set; }
 

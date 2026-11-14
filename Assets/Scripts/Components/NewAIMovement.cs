@@ -15,6 +15,9 @@ public class NewAIMovement : MonoBehaviour
     // Maximum distance for the straight movement without a path.
     private const float DirectPathMaxDistance = 20f;
 
+    // Length of the downward raycast that snaps a destination to the ground.
+    private const float GroundSnapDistance = 10f;
+
     // Nodes that CalculateLazyThetaStar expands per frame.
     private const int PathStepsPerFrame = 200;
 
@@ -112,7 +115,7 @@ public class NewAIMovement : MonoBehaviour
     private void OnDesinationAtSight(Vector3 newDestination)
     {
         // Conseguir la posicion en el piso
-        if (Physics.Raycast(newDestination, Vector3.down, out RaycastHit hitInfo, 10f, AI_Manager.instance.WallMask))
+        if (Physics.Raycast(newDestination, Vector3.down, out RaycastHit hitInfo, GroundSnapDistance, AI_Manager.instance.GroundMask))
         {
             newDestination = hitInfo.point;
             Destination = newDestination;

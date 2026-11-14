@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class PlanesManager : MonoSingleton<PlanesManager> 
 {
@@ -37,7 +36,7 @@ public class PlanesManager : MonoSingleton<PlanesManager>
         //CombatZoneLimitsZ();
     }
 
-    void HeightLimit()
+    private void HeightLimit()
     {
         for (int i = 0; i < 50; i++)
         {
@@ -55,7 +54,7 @@ public class PlanesManager : MonoSingleton<PlanesManager>
 
 
 
-    void CombatZoneLimitsX()
+    private void CombatZoneLimitsX()
     {
         Vector3 pos = transform.position;
         for (int i = 0; i < DistanceX; i++)
@@ -79,7 +78,7 @@ public class PlanesManager : MonoSingleton<PlanesManager>
         }
 
     }
-    void CombatZoneLimitsZ()
+    private void CombatZoneLimitsZ()
     {
         Vector3 pos = transform.position;
         for (int z = 0; z < maxDistanceZ; z++)

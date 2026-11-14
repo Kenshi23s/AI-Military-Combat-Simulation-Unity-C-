@@ -8,19 +8,19 @@ using UnityEngine.UI;
 
 public class Flag_UI : MonoBehaviour
 {
-    [SerializeField] Image _flagOwner;
+    [SerializeField] private Image _flagOwner;
    
 
-    Material _mat;
-    CapturePoint _myCapturePoint;
+    private Material _mat;
+    private CapturePoint _myCapturePoint;
 
     [Header("OnTake")]
-    [SerializeField] GameObject OnTakeGO;
-    [SerializeField] TextMeshProUGUI UnitAmountText;
+    [SerializeField] private GameObject OnTakeGO;
+    [SerializeField] private TextMeshProUGUI UnitAmountText;
 
     [Header("OnDispute")]
-    [SerializeField] GameObject OnDisputeGO;
-    [SerializeField, SerializedDictionary("Team", "TextMesh")] SerializedDictionary<MilitaryTeam, TextMeshProUGUI> TeamTexts;
+    [SerializeField] private GameObject OnDisputeGO;
+    [SerializeField, SerializedDictionary("Team", "TextMesh")] private SerializedDictionary<MilitaryTeam, TextMeshProUGUI> TeamTexts;
 
     private void Awake()
     {
@@ -51,7 +51,7 @@ public class Flag_UI : MonoBehaviour
     }
 
     #region OnTake
-    void ActivateOnTake(MilitaryTeam team)
+    private void ActivateOnTake(MilitaryTeam team)
     {
         if (!OnTakeGO.activeInHierarchy)
         {
@@ -63,12 +63,12 @@ public class Flag_UI : MonoBehaviour
       
     }
 
-    void ChangeOnTakeText(Dictionary<MilitaryTeam, IMilitary[]> col)
+    private void ChangeOnTakeText(Dictionary<MilitaryTeam, IMilitary[]> col)
     {
         UnitAmountText.text = col.Select(x => x.Value).Maximum(x => x.Count()).Count().ToString();
     }
 
-    void DeActivateOnTake()
+    private void DeActivateOnTake()
     {
         OnTakeGO.SetActive(false);
         _myCapturePoint.OnTeamsInPointUpdate.RemoveListener(ChangeOnTakeText);
@@ -77,7 +77,7 @@ public class Flag_UI : MonoBehaviour
     #region OnDispute
 
     #endregion
-    void UpdateProgressUI(float progress)
+    private void UpdateProgressUI(float progress)
     {
         _mat.SetFloat("_CaptureProgress", progress);
 
@@ -86,7 +86,7 @@ public class Flag_UI : MonoBehaviour
         _mat.SetColor("_ProgressFillColor", color);
     }
 
-    void ActivateDisputeUI()
+    private void ActivateDisputeUI()
     {
         if (!OnDisputeGO.activeInHierarchy)
         {
@@ -96,7 +96,7 @@ public class Flag_UI : MonoBehaviour
       
     }
 
-    void SetTexts(Dictionary<MilitaryTeam, IMilitary[]> col)
+    private void SetTexts(Dictionary<MilitaryTeam, IMilitary[]> col)
     {
         foreach (var key in TeamTexts.Keys)
         {
@@ -107,14 +107,14 @@ public class Flag_UI : MonoBehaviour
         }
     }
 
-    void DeActivateDisputeUI()
+    private void DeActivateDisputeUI()
     {
         OnDisputeGO.SetActive(false);
         _myCapturePoint.OnTeamsInPointUpdate.RemoveListener(SetTexts);
     }
 
 
-    void SetLetterColor(MilitaryTeam team) 
+    private void SetLetterColor(MilitaryTeam team) 
     {
         Color color;
         switch (team)

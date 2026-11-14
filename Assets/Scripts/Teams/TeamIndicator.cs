@@ -11,9 +11,9 @@ public class TeamIndicator : MonoBehaviour
     public IMilitary Owner { get; private set; }
 
 
-    [SerializeField] Image Image;
-    [SerializeField] TMP_Text nameText;
-    [SerializeField] Gradient _lifeGradient;
+    [SerializeField] private Image Image;
+    [SerializeField] private TMP_Text nameText;
+    [SerializeField] private Gradient _lifeGradient;
 
     public void AssignOwner(IMilitary NewOwner,Sprite icon)
     {
@@ -57,7 +57,7 @@ public class TeamIndicator : MonoBehaviour
         nameText.text = x;
     }
     
-    void EvaluateLife()
+    private void EvaluateLife()
     {
         var x = Owner as ILifeObject;
       
@@ -66,7 +66,7 @@ public class TeamIndicator : MonoBehaviour
 
 
 
-    void LookCamera()
+    private void LookCamera()
     {
         transform.forward = (Camera.main.transform.position - transform.position).normalized;
     }

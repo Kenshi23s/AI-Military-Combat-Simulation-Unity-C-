@@ -7,10 +7,10 @@ public class TextPool
     public PoolObject<FloatingText> DamageTextPool = new PoolObject<FloatingText>();
 
     [SerializeField]
-    FloatingText sample;
+    private FloatingText sample;
     //Action<FloatingText> ReturnMethod;
     public int prewarm = 5;
-    Transform _transform;
+    private Transform _transform;
     #endregion
 
     public void Initialize(Transform _transform, FloatingText sample,DebugableObject _debug)

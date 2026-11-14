@@ -4,9 +4,9 @@ using UnityEngine;
 [RequireComponent(typeof(DebugableObject))]
 public class Bunker : MonoBehaviour
 {
-    Civilian[] _refugees;
-    [SerializeField,Range(1,30)]int _bunkerCapacity;
-    DebugableObject _debug;
+    private Civilian[] _refugees;
+    [SerializeField,Range(1,30)]private int _bunkerCapacity;
+    private DebugableObject _debug;
     public event Action onBunkerDestroyed;
 
     private void Awake()

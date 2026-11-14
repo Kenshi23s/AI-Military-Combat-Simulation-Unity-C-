@@ -7,26 +7,26 @@ using UnityEngine;
 public class ScoreManager : MonoBehaviour
 {
 
-    [SerializeField] int leaderboardQuantity;
-    [SerializeField] GameObject _panel,_scoreFatherGO;
-    [SerializeField] UnitScore prefabUnitScore;
-    List<UnitScore> _scoreList = new List<UnitScore>();
+    [SerializeField] private int leaderboardQuantity;
+    [SerializeField] private GameObject _panel,_scoreFatherGO;
+    [SerializeField] private UnitScore prefabUnitScore;
+    private List<UnitScore> _scoreList = new List<UnitScore>();
 
-    const float refreshTime = 0.5f;
-    Action ActualState = delegate { };
+    private const float refreshTime = 0.5f;
+    private Action ActualState = delegate { };
     
 
     // Start is called before the first frame update
-    void Start() => ActualState = CreateScores;
+    private void Start() => ActualState = CreateScores;
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Tab))      
             ActualState();    
     }
 
-    void CreateScores()
+    private void CreateScores()
     {
         _scoreFatherGO.SetActive(true);
         for (int i = 0; i < leaderboardQuantity; i++)
@@ -38,7 +38,7 @@ public class ScoreManager : MonoBehaviour
         ActualState = RemoveScores;
     }
 
-    IEnumerator UpdateButtons()
+    private IEnumerator UpdateButtons()
     {
 
         WaitForSeconds wait = new WaitForSeconds(refreshTime);
@@ -64,7 +64,7 @@ public class ScoreManager : MonoBehaviour
 
 
 
-    void RemoveScores()
+    private void RemoveScores()
     {
         StopCoroutine(UpdateButtons());
 

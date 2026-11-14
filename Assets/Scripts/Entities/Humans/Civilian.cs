@@ -3,10 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Entity that runs to the nearest Bunker and hides inside.
+/// The civilian prays when it can't enter a Bunker.
+/// </summary>
 [SelectionBase]
 [RequireComponent(typeof(NewAIMovement))]
 public class Civilian : Entity
 {
+    /// <summary>States of the FSM.</summary>
     public enum CivilianStates
     {
         Idle,
@@ -14,18 +19,19 @@ public class Civilian : Entity
         LookForRefugee,
         Die
     }
-    [SerializeField]Animator anim;
-    NewAIMovement civilian_AI;
-    Bunker nearestBunker;
+    [SerializeField]private Animator anim;
+    private NewAIMovement civilian_AI;
+    private Bunker nearestBunker;
 
-    EventFSM<CivilianStates> civilianFSM;
+    private EventFSM<CivilianStates> civilianFSM;
 
     protected override void Awake()
     {
         base.Awake();
 
         civilian_AI = GetComponent<NewAIMovement>();
-       
+
+        Health.OnKilled += () => civilianFSM?.SendInput(CivilianStates.Die);
     }
 
     private void Start()
@@ -49,26 +55,36 @@ public class Civilian : Entity
             .Done();
         StateConfigurer.Create(die).Done();
 
-        civilianFSM = new EventFSM<CivilianStates>(run);
+        // Arranca en Idle y pasa a LookForRefugee: asi el OnEnter de run ya tiene civilianFSM asignado.
+        civilianFSM = new EventFSM<CivilianStates>(idle);
+        civilianFSM.SendInput(CivilianStates.LookForRefugee);
 
     }
 
-    public State<CivilianStates> Idle()
+    private State<CivilianStates> Idle()
     {
         State<CivilianStates> Idle = new State<CivilianStates>("Idle");
         return Idle;
     }
 
-    public State<CivilianStates> RunToRefugee()
+    private State<CivilianStates> RunToRefugee()
     {
         State<CivilianStates> run = new State<CivilianStates>("LookForRefugee");
 
         run.OnEnter += (x) =>
         {
-            anim.SetBool("Running",true);
-            nearestBunker = GameManager.instance.Bunkers.Minimum(x => Vector3.Distance(x.transform.position,transform.position));
-            civilian_AI.SetDestination(nearestBunker.transform.position , TryEnterBunker);
-            
+            nearestBunker = GameManager.instance.Bunkers.Minimum(x => Vector3.SqrMagnitude(x.transform.position - transform.position));
+
+            // Sin bunkers en la escena, el civil se queda rezando.
+            if (nearestBunker == null)
+            {
+                civilianFSM.SendInput(CivilianStates.Pray);
+                return;
+            }
+
+            anim.SetBool("Running", true);
+            civilian_AI.SetDestination(nearestBunker.transform.position, TryEnterBunker);
+
             DebugEntity.Log("Corro hacia el refugio");
         };
 
@@ -80,7 +96,7 @@ public class Civilian : Entity
         return run;
     }
 
-    public State<CivilianStates> Pray()
+    private State<CivilianStates> Pray()
     {
         State<CivilianStates> pray = new State<CivilianStates>("Pray");
 
@@ -93,22 +109,23 @@ public class Civilian : Entity
         return pray;
     }
 
-    public State<CivilianStates> DieState()
+    private State<CivilianStates> DieState()
     {
         State<CivilianStates> die = new State<CivilianStates>("Die");
 
         die.OnEnter += (x) =>
         {
             DebugEntity.Log("ha muerto");
+            civilian_AI.CancelMovement();
             Destroy(GetComponent<BoxCollider>());
             Destroy(Health);
-            anim.SetBool("Die", false);
+            anim.SetBool("Die", true);
         };
 
         return die;
     }
 
-    void TryEnterBunker()
+    private void TryEnterBunker()
     {
         if (nearestBunker == null) { civilianFSM.SendInput(CivilianStates.Pray); return; }
         if (!nearestBunker.EnterBunker(this)) { civilianFSM.SendInput(CivilianStates.Pray); return; }

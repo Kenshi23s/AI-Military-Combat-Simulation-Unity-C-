@@ -3,43 +3,51 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
+/// <summary>
+/// Static Soldier that aims at the furthest enemy in its FOVAgent and shoots after a focus time.
+/// A LineRenderer shows the laser while the sniper focuses.
+/// </summary>
 [RequireComponent(typeof(LineRenderer))]
 public class Sniper : Soldier
 {
+    /// <summary>States of the FSM.</summary>
     public enum SNIPER_STATES
     {
-
         LOOK_FOR_TARGETS,
         AIM,
         FOCUS_N_SHOOT,
         DIE
     }
 
+    /// <summary>Raised when LookForEnemiesCoroutine finds a target.</summary>
     public event Action OnEnemyFound = delegate { };
 
-    EventFSM<SNIPER_STATES> _fsm;
+    private EventFSM<SNIPER_STATES> _fsm;
 
-    LineRenderer _laser;
+    private LineRenderer _laser;
 
+    // Running search of the LOOK_FOR_TARGETS state.
+    private Coroutine _lookForEnemies;
+
+    /// <summary>The enemy the sniper aims at.</summary>
     public Soldier target { get; private set; }
 
-    [SerializeField] int FramesBetweenEnemySearch = 4;
-    [SerializeField] float _aimSpeed;
-    float _currentAimLerp, _currentFocusTime;
+    [SerializeField] private int FramesBetweenEnemySearch = 4;
+    [SerializeField] private float _aimSpeed;
+    private float _currentAimLerp, _currentFocusTime;
 
-    [SerializeField, Header("Shoot State")] float _addPerTimesFocused;
-    [SerializeField] float _requiredFocusTime, maxShootsInRow = 1;
-    int timesFocused = 1;
+    [SerializeField, Header("Shoot State")] private float _addPerTimesFocused;
+    [SerializeField] private float _requiredFocusTime, maxShootsInRow = 1;
+    private int timesFocused = 1;
 
     protected override void Awake()
     {
         base.Awake();
         _laser = GetComponent<LineRenderer>(); _laser.enabled = false;
         ShootComponent.onHit += _ => TotalDamageDealt += ShootComponent.BulletDamage;
-        Health.OnKilled += () => _fsm.SendInput(SNIPER_STATES.DIE);
+        Health.OnKilled += () => _fsm?.SendInput(SNIPER_STATES.DIE);
       
     }
     private void Start()
@@ -52,7 +60,7 @@ public class Sniper : Soldier
 
 
     #region FSM SET AND STATES
-    void CreateFSM()
+    private void CreateFSM()
     {
         var lookEnemies = LookForEnemies();
         var aimEnemy = AimAtEnemy();
@@ -84,7 +92,7 @@ public class Sniper : Soldier
     }
 
     //busca a los enemigos cercanos en su fov
-    State<SNIPER_STATES> LookForEnemies()
+    private State<SNIPER_STATES> LookForEnemies()
     {
         var state = new State<SNIPER_STATES>("Look For Enemies");
 
@@ -97,30 +105,36 @@ public class Sniper : Soldier
         {
             Anim.SetBool("Shooting", false);
             OnEnemyFound += onFound;
-            StartCoroutine(LookForEnemiesCoroutine());
-
+            _lookForEnemies = StartCoroutine(LookForEnemiesCoroutine());
         };
 
         state.OnExit += (x) =>
         {
-            OnEnemyFound -= onFound;         
+            OnEnemyFound -= onFound;
+
+            if (_lookForEnemies != null)
+            {
+                StopCoroutine(_lookForEnemies);
+                _lookForEnemies = null;
+            }
         };
 
         return state;
     }
 
     //obtiene el soldado mas lejano
-    Soldier GetFurthestEnemy()
+    private Soldier GetFurthestEnemy()
     {
         return _gridEntity.GetEntitiesInRange(_fovAgent.ViewRadius)
             .OfType<Soldier>()
             .Where(x => x.Team != Team && x.Team != MilitaryTeam.None)
-            .Where(x => _fovAgent.IN_FOV(x.transform.position))
             .Where(x => x.Health.IsAlive)
+            // IN_FOV va ultimo porque hace un raycast.
+            .Where(x => _fovAgent.IN_FOV(x.transform.position))
             .Maximum(x => Vector3.SqrMagnitude(x.transform.position - transform.position));
     }
 
-    IEnumerator LookForEnemiesCoroutine()
+    private IEnumerator LookForEnemiesCoroutine()
     {
         while (true)
         {
@@ -135,17 +149,18 @@ public class Sniper : Soldier
     }
 
     //apunta al enemigo encontrado 
-    State<SNIPER_STATES> AimAtEnemy()
+    private State<SNIPER_STATES> AimAtEnemy()
     {
         var state = new State<SNIPER_STATES>("Aim At Enemy");
 
         state.OnEnter += (x) =>
         {
-            if (target == null) 
+            if (target == null)
             {
-                _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
-                DebugEntity.Log("El Target es null, paso a buscar otro enemigo");
                 _laser.enabled = false;
+                DebugEntity.Log("El Target es null, paso a buscar otro enemigo");
+                _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
+                return;
             }
             Anim.SetBool("Shooting", true);
             _currentAimLerp = 0;
@@ -153,11 +168,12 @@ public class Sniper : Soldier
 
         state.OnUpdate += () =>
         {
-            if (!_fovAgent.IN_FOV(target.transform.position) || !target.Health.IsAlive) 
+            if (!target.Health.IsAlive || !_fovAgent.IN_FOV(target.transform.position))
             {
-                _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
                 DebugEntity.Log("El objetivo murio o ya no lo veo, cambio a LOOK_FOR_TARGETS");
-            } 
+                _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
+                return;
+            }
 
             Vector3 dir = target.AimPoint - transform.position;
 
@@ -186,24 +202,31 @@ public class Sniper : Soldier
     }
 
 
-    State<SNIPER_STATES> ShootAtEnemy()
+    private State<SNIPER_STATES> ShootAtEnemy()
     {
-        var state = new State<SNIPER_STATES>("Aim At Enemy");
+        var state = new State<SNIPER_STATES>("Focus N Shoot");
 
-       
         state.OnEnter += (x) =>
         {
-            if (target == null) _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
+            if (target == null)
+            {
+                _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
+                return;
+            }
+
             _currentFocusTime = 0;
             timesFocused = 1;
             UpdateLaser();
-
         };
 
         state.OnUpdate += () =>
         {
             // si no lo veo o ya no esta vivo, paso a buscar otro objetivo
-            if (!_fovAgent.IN_FOV(target.transform.position) || !target.Health.IsAlive) _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
+            if (!target.Health.IsAlive || !_fovAgent.IN_FOV(target.transform.position))
+            {
+                _fsm.SendInput(SNIPER_STATES.LOOK_FOR_TARGETS);
+                return;
+            }
 
             Vector3 dir = target.AimPoint - transform.position;
          
@@ -226,7 +249,10 @@ public class Sniper : Soldier
                 {
                     DebugEntity.Log("Tengo que volver a apuntar :C");
                     _fsm.SendInput(SNIPER_STATES.AIM);
-                } 
+
+                    // OnExit ya apago el laser.
+                    return;
+                }
             }
             UpdateLaser();
         };
@@ -241,11 +267,12 @@ public class Sniper : Soldier
         return state;
     }
 
-    State<SNIPER_STATES> Die()
+    private State<SNIPER_STATES> Die()
     {
         State<SNIPER_STATES> state = new State<SNIPER_STATES>("Die");
         state.OnEnter += (x) =>
         {
+            StopAllCoroutines();
             Anim.SetBool("Shooting", false);
             Anim.SetBool("Die",true);
             _laser.enabled = false;
@@ -255,7 +282,7 @@ public class Sniper : Soldier
     }
     #endregion
 
-    void UpdateLaser()
+    private void UpdateLaser()
     {
         if (target == null)
         {
@@ -267,7 +294,7 @@ public class Sniper : Soldier
          _laser.SetPosition(1, target.AimPoint);
     }
 
-    Quaternion GetTargetRotation(Vector3 dir)
+    private Quaternion GetTargetRotation(Vector3 dir)
     {
         Vector3 gunForward = _shootPos.forward; gunForward.y = 0;
 
@@ -280,6 +307,7 @@ public class Sniper : Soldier
         return targetRotation;
     }
 
+    /// <summary>Sets the Team.</summary>
     public void InitializeUnit(MilitaryTeam newTeam)
     {
         Team = newTeam;

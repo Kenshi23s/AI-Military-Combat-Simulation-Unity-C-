@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using System;
-using Unity.Mathematics;
 
 public enum MilitaryTeam
 {

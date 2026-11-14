@@ -21,8 +21,8 @@ public static class JExtensionMethods
         rb.MoveRotation(targetRotation);
     }
 
-    // ¿Por qué no usar Vector3.ProjectOnPlane?
-    // Ese método hace lo mismo pero no asume que el vector normal proporcionado es de longitud unitaria;
+    // Â¿Por quÃ© no usar Vector3.ProjectOnPlane?
+    // Ese mÃ©todo hace lo mismo pero no asume que el vector normal proporcionado es de longitud unitaria;
     // Divide el resultado por la longitud al cuadrado de la normal, que siempre es 1, por lo que no es necesario.
     public static Vector3 ProjectDirectionOnPlane(this Vector3 direction, Vector3 planeNormal)
     {

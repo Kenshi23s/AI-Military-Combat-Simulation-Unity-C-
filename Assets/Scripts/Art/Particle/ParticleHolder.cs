@@ -9,11 +9,11 @@ public struct ParticleHold
 }
 public class ParticleHolder : MonoBehaviour
 {  
-    [SerializeField, Range(0, 10)] float _totalDuration;
-    Action<ParticleHolder,int> _returnToPool;
+    [SerializeField, Range(0, 10)] private float _totalDuration;
+    private Action<ParticleHolder,int> _returnToPool;
     public event Action OnFinish;
 
-    int _key;
+    private int _key;
     private void Awake()
     {    
         //buscar la manera de decirle q no haga update pero si OnEnabled(consultar a algun profe)

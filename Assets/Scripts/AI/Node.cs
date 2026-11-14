@@ -9,7 +9,7 @@ using UnityEngine;
 public class Node : MonoBehaviour
 {
     /// <summary>Radius of the SphereCast that checks line of sight to a neighbor.</summary>
-    const float NeighborCastRadius = 1f;
+    private const float NeighborCastRadius = 1f;
 
     /// <summary>Nodes connected to this node.</summary>
     public List<Node> Neighbors { get; private set; } = new List<Node>();
@@ -21,7 +21,7 @@ public class Node : MonoBehaviour
     public Vector3 groundPosition;
 
     // Same nodes as Neighbors, for O(1) lookups in NodeGizmo.
-    HashSet<Node> _neighborSet = new HashSet<Node>();
+    private HashSet<Node> _neighborSet = new HashSet<Node>();
 
     /// <summary>Adds value to cost.</summary>
     public void AddCost(int value) => cost += value;
@@ -54,7 +54,7 @@ public class Node : MonoBehaviour
     /// <summary>Returns true when node is in Neighbors.</summary>
     public bool IsNeighbor(Node node) => _neighborSet.Contains(node);
 
-    List<Node> FindNeighbors(AI_Manager manager, IReadOnlyList<Vector3> nodePositions)
+    private List<Node> FindNeighbors(AI_Manager manager, IReadOnlyList<Vector3> nodePositions)
     {
         Vector3 position = transform.position;
         float sqrMaxDistance = manager.MaxDistanceBetweenNodes * manager.MaxDistanceBetweenNodes;

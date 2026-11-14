@@ -26,6 +26,9 @@ public class Plane : Vehicle
     /// <summary>Current state of the FSM.</summary>
     public PlaneStates actualState => _planeFSM.CurrentKey;
 
+    // true in PURSUIT_TARGET and FLEE_FROM_PURSUITER.
+    public override bool InCombat => actualState == PlaneStates.PURSUIT_TARGET || actualState == PlaneStates.FLEE_FROM_PURSUITER;
+
     /// <summary>The enemy plane this plane pursues.</summary>
     [field : Header("Plane Variables"),SerializeField]
     public Plane targetPlane { get; private set; }

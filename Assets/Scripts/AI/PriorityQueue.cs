@@ -12,7 +12,7 @@ using System.Collections.Generic;
 /// <typeparam name="T">Type of the stored elements.</typeparam>
 public class PriorityQueue<T>
 {
-    struct Entry
+    private struct Entry
     {
         public readonly T Item;
         public readonly float Priority;
@@ -25,7 +25,7 @@ public class PriorityQueue<T>
     }
 
     // Implicit heap: the children of index i live at 2i+1 and 2i+2, its parent at (i-1)/2.
-    readonly List<Entry> _heap = new List<Entry>();
+    private readonly List<Entry> _heap = new List<Entry>();
 
     /// <summary>Number of entries in the heap.</summary>
     public int Count => _heap.Count;
@@ -80,7 +80,7 @@ public class PriorityQueue<T>
     public void Clear() => _heap.Clear();
 
     /// <summary>Moves the entry at index up while its priority is lower than its parent's.</summary>
-    void SiftUp(int index)
+    private void SiftUp(int index)
     {
         Entry entry = _heap[index];
 
@@ -98,7 +98,7 @@ public class PriorityQueue<T>
     }
 
     /// <summary>Moves the entry at index down while a child has a lower priority.</summary>
-    void SiftDown(int index)
+    private void SiftDown(int index)
     {
         Entry entry = _heap[index];
         int count = _heap.Count;

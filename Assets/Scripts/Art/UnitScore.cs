@@ -7,9 +7,9 @@ using UnityEngine.UI;
 public class UnitScore : MonoBehaviour
 {
     [SerializeField] 
-    Image icon;
-    [SerializeField] TextMeshProUGUI UnitName;
-    [SerializeField] TextMeshProUGUI damageDealtTXT;
+    private Image icon;
+    [SerializeField] private TextMeshProUGUI UnitName;
+    [SerializeField] private TextMeshProUGUI damageDealtTXT;
 
     public void SetOwner(IMilitary military)
     {
