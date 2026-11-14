@@ -31,6 +31,9 @@ public class NewAIMovement : MonoBehaviour
     private Action OnCurrentDestinationReached;
     private Action OnCurrentDestinationFailed;
 
+    // onFinishCalculating of the current destination until it is called. The stuck recovery keeps it for its own path.
+    private Action<bool> _pendingFinishCalculating;
+
     private DebugableObject _debug;
 
     private Action _fixedUpdate;
@@ -179,6 +182,7 @@ public class NewAIMovement : MonoBehaviour
         Destination = newDestination;
         OnCurrentDestinationReached = onDestinationReached;
         OnCurrentDestinationFailed = onFailed;
+        _pendingFinishCalculating = onFinishCalculating;
 
         _stuckAttempts = 0;
         _isBackingOff = false;
@@ -186,12 +190,12 @@ public class NewAIMovement : MonoBehaviour
 
         if (HasClearPathTo(newDestination))
         {
-            onFinishCalculating?.Invoke(true);
+            FinishCalculating(true);
             OnDesinationAtSight(newDestination);
         }
         else
         {
-            CalculatePath(newDestination, onFinishCalculating);
+            CalculatePath(newDestination);
         }
     }
 
@@ -237,7 +241,15 @@ public class NewAIMovement : MonoBehaviour
 
     #region CalculatePath
 
-    private void CalculatePath(Vector3 newDestination, Action<bool> onFinishCalculating)
+    // Calls the pending onFinishCalculating once.
+    private void FinishCalculating(bool success)
+    {
+        Action<bool> callback = _pendingFinishCalculating;
+        _pendingFinishCalculating = null;
+        callback?.Invoke(success);
+    }
+
+    private void CalculatePath(Vector3 newDestination)
     {
         _debug.Log("No veo el destino, calculo el camino.");
 
@@ -254,14 +266,14 @@ public class NewAIMovement : MonoBehaviour
                 _debug.Log("El nodo INICIAL" + node1 + " y El nodo FINAL" + node2);
             }
 
-            onFinishCalculating?.Invoke(false);
+            FinishCalculating(false);
             return;
         }
 
         Action<bool, List<Vector3>> onPathCalculated = (pathMade, newPath) =>
         {
             _pathCalculation = null;
-            onFinishCalculating?.Invoke(pathMade);
+            FinishCalculating(pathMade);
             CanPlayPath(pathMade, newPath);
         };
 
@@ -345,6 +357,7 @@ public class NewAIMovement : MonoBehaviour
     {
         OnCurrentDestinationReached = null;
         OnCurrentDestinationFailed = null;
+        _pendingFinishCalculating = null;
     }
 
     #endregion
@@ -444,7 +457,7 @@ public class NewAIMovement : MonoBehaviour
     private void RecalculatePath()
     {
         StopPathCalculation();
-        CalculatePath(Destination, null);
+        CalculatePath(Destination);
     }
 
     // Moves away from the last wall for BackoffDuration seconds and then recalculates the path.

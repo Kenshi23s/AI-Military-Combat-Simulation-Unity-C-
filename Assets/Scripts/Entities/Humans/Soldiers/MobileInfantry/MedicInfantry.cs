@@ -34,6 +34,19 @@ public class MedicInfantry : MobileInfantry
     // Running coroutines. Each state stops the ones it started.
     private Coroutine _findPoint, _followLeaderRoutine;
 
+    // Wounded ally the medic could not reach, skipped by QueryForHealTarget until _ignoreHealTargetUntil.
+    private MobileInfantry _ignoredHealTarget;
+    private float _ignoreHealTargetUntil;
+
+    // Extra distance over DestinationArriveDistance at which healing starts.
+    private const float HealStartMargin = 0.25f;
+
+    // Failed attempts to reach HealTarget before the medic ignores it.
+    private const int MaxReachFailures = 2;
+
+    // Seconds the medic ignores an unreachable HealTarget.
+    private const float UnreachableIgnoreSeconds = 5f;
+
     /// <summary>States of the FSM.</summary>
     public enum MEDIC_INFANTRY_STATES
     {
@@ -102,10 +115,19 @@ public class MedicInfantry : MobileInfantry
                .OfType<AssaultInfantry>()
                .Where(x => x.Team == Team)
                .Where(x => x.IsAlive && x.Life < x.MaxLife)
+               .Where(x => x != _ignoredHealTarget || Time.time >= _ignoreHealTargetUntil)
                .Minimum(x => Vector3.SqrMagnitude(x.transform.position - transform.position));
 
             yield return wait;
         }
+    }
+
+    // Squared distance to target on the ground plane. The pivots of the medic and the target are at different heights.
+    private float HorizontalSqrDistanceTo(Transform target)
+    {
+        Vector3 offset = target.position - transform.position;
+        offset.y = 0f;
+        return offset.sqrMagnitude;
     }
 
     // Devuelve verdadero si el HealthTarget deberia seguir siendo el mismo.
@@ -238,7 +260,27 @@ public class MedicInfantry : MobileInfantry
         float recalculatePathTime = 2;
         float currentTime = 0;
         bool calculatingPath = false;
-        float sqrIdealHealDistance = _idealHealDistance * _idealHealDistance;
+        int reachFailures = 0;
+
+        // The medic stops at DestinationArriveDistance from the destination, so healing starts at that distance or farther.
+        float healStartDistance = Mathf.Min(Mathf.Max(_idealHealDistance, Movement.DestinationArriveDistance) + HealStartMargin, _maxHealDistance);
+        float sqrHealStartDistance = healStartDistance * healStartDistance;
+        float sqrMaxHealDistance = _maxHealDistance * _maxHealDistance;
+
+        // Counts a failed attempt to reach HealTarget. After MaxReachFailures the medic ignores it for a while.
+        void OnReachFailed()
+        {
+            calculatingPath = false;
+            Anim.SetBool("Running", false);
+
+            if (++reachFailures < MaxReachFailures)
+                return;
+
+            DebugEntity.Log("No puedo llegar al herido, lo ignoro un rato");
+            _ignoredHealTarget = HealTarget;
+            _ignoreHealTargetUntil = Time.time + UnreachableIgnoreSeconds;
+            HealTarget = null;
+        }
 
         void GoToHealTarget()
         {
@@ -247,29 +289,36 @@ public class MedicInfantry : MobileInfantry
             calculatingPath = true;
 
             Movement.SetDestination(HealTarget.transform.position,
+                onDestinationReached: () =>
+                {
+                    // Llego al destino: si el herido sigue cerca, empieza a curar.
+                    if (HealTarget && HorizontalSqrDistanceTo(HealTarget.transform) <= sqrMaxHealDistance)
+                        SendInputToFSM(MEDIC_INFANTRY_STATES.HEAL);
+                },
                 onFinishCalculating: pathFound =>
                 {
-                    calculatingPath = false;
-
                     if (pathFound)
                     {
                         // Si se encontro camino, empezamos a correr
+                        calculatingPath = false;
+                        reachFailures = 0;
                         Anim.SetBool("Running", true);
                     }
                     else
                     {
                         // Si no se encontro camino, esperamos y volvemos a calcular
-                        Anim.SetBool("Running", false);
                         Movement.CancelMovement();
+                        OnReachFailed();
                     }
                 },
                 // Si se traba, frena y el timer de este estado vuelve a calcular el camino.
-                onFailed: () => Anim.SetBool("Running", false));
+                onFailed: OnReachFailed);
         }
 
         runTo.OnEnter += _ =>
         {
             currentTime = 0;
+            reachFailures = 0;
             GoToHealTarget();
         };
 
@@ -283,7 +332,7 @@ public class MedicInfantry : MobileInfantry
             }
 
             // Si llegamos, pasar a estado de curacion
-            if (Vector3.SqrMagnitude(HealTarget.transform.position - transform.position) <= sqrIdealHealDistance)
+            if (HorizontalSqrDistanceTo(HealTarget.transform) <= sqrHealStartDistance)
             {
                 DebugEntity.Log("Entrando al estado de Heal");
                 SendInputToFSM(MEDIC_INFANTRY_STATES.HEAL);
@@ -339,7 +388,7 @@ public class MedicInfantry : MobileInfantry
             }
 
             // Si el objetivo se aleja, correr hacia el
-            if (Vector3.SqrMagnitude(HealTarget.transform.position - transform.position) > sqrMaxHealDistance)
+            if (HorizontalSqrDistanceTo(HealTarget.transform) > sqrMaxHealDistance)
             {
                 SendInputToFSM(MEDIC_INFANTRY_STATES.RUN_TO_HEAL);
                 return;
