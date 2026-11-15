@@ -77,6 +77,12 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     // Planes of each team in _teams.
     private readonly Dictionary<MilitaryTeam, List<Plane>> _planes = new Dictionary<MilitaryTeam, List<Plane>>();
 
+    // Spawn parameters of each team with the quantities of the match. Set by StartMatch and used by the reinforcements.
+    private readonly Dictionary<MilitaryTeam, TeamParameters> _matchTeamParameters = new Dictionary<MilitaryTeam, TeamParameters>();
+
+    // Children of TeamsManager that group the spawned units, by name.
+    private readonly Dictionary<string, Transform> _groups = new Dictionary<string, Transform>();
+
     // sprites indexed by System.Type. Built on the first GetSprite call.
     private Dictionary<Type, Sprite> _spritesByType;
 
@@ -254,6 +260,7 @@ public class TeamsManager : MonoSingleton<TeamsManager>
             parameters.FireteamQuantity = teamSettings.Fireteams;
             parameters.membersPerFireteam = teamSettings.MembersPerFireteam;
             parameters.planesQuantity = teamSettings.Planes;
+            _matchTeamParameters[team] = parameters;
 
             StartCoroutine(SpawnFireteams(team, parameters));
             StartCoroutine(SpawnPlanes(team, parameters));
@@ -267,76 +274,127 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
     #region SpawnMethods
 
-    private IEnumerator SpawnFireteams(MilitaryTeam team, TeamParameters param)
+    /// <summary>Spawns one fireteam of team in its spawn area.</summary>
+    /// <remarks>The fireteam joins the team after WaitFramesBeforeContinuing frames. The call does nothing before StartMatch.</remarks>
+    public void ReinforceFireteam(MilitaryTeam team)
     {
-        Transform group = CreateGroup(team + " Infantry", transform);
+        if (!MatchStarted || !_matchTeamParameters.TryGetValue(team, out TeamParameters parameters))
+            return;
 
-        for (int i = 0; i < param.FireteamQuantity; i++)
+        if (TryCreateFireteam(team, parameters, out FList<MobileInfantry> members))
+            StartCoroutine(AddFireteamToTeam(team, members));
+    }
+
+    /// <summary>Spawns one plane of team in its spawn area. The call does nothing before StartMatch.</summary>
+    public void ReinforcePlane(MilitaryTeam team)
+    {
+        if (!MatchStarted || !_matchTeamParameters.TryGetValue(team, out TeamParameters parameters))
+            return;
+
+        TrySpawnPlane(team, parameters);
+    }
+
+    /// <summary>Spawns quantity civilians in the civilian spawn area. The call does nothing before StartMatch.</summary>
+    public void ReinforceCivilians(int quantity)
+    {
+        if (!MatchStarted)
+            return;
+
+        StartCoroutine(SpawnCivilians(quantity));
+    }
+
+    private IEnumerator SpawnFireteams(MilitaryTeam team, TeamParameters parameters)
+    {
+        for (int i = 0; i < parameters.FireteamQuantity; i++)
         {
-            FList<MobileInfantry> members = new FList<MobileInfantry>();
-
-            Transform fireteamGroup = CreateGroup("Fireteam" + ColomboMethods.GenerateName(5), group);
-            bool medicSpawned = false;
-
-            for (int j = 0; j < param.membersPerFireteam; j++)
-            {
-                if (!TryGetRandomFreePosOnGround(param.SpawnArea.position, param.width, param.height, out Vector3 pos))
-                    break;
-
-                MobileInfantry newUnit;
-
-                if (!medicSpawned && Random.Range(0, 4) == 0)
-                {
-                    newUnit = Instantiate(_medicPrefab, pos, Quaternion.identity);
-                    medicSpawned = true;
-                }
-                else
-                    newUnit = Instantiate(_assaultPrefab, pos, Quaternion.identity);
-
-                newUnit.transform.parent = fireteamGroup;
-
-                //IA2-LINQ
-                members += newUnit;
-            }
-
-            if (!members.Any())
+            if (!TryCreateFireteam(team, parameters, out FList<MobileInfantry> members))
                 yield break;
 
-            //IA2-LINQ
-            var nameAndSurname = members.Zip(members.Count().GenerateNames(6), (x, y) => Tuple.Create(x, x.name + " " + y));
-
-            foreach (var zip in nameAndSurname) zip.Item1.gameObject.name = zip.Item2;
-
-            Fireteam.Create(team, members.ToList());
-
-            for (int k = 0; k < WaitFramesBeforeContinuing; k++) yield return null;
-
-            AddToTeam(team, members);
+            yield return AddFireteamToTeam(team, members);
         }
+    }
+
+    // Instantiates the members of one fireteam, names them and creates the Fireteam.
+    // Returns false when the spawn area has no free position for any member.
+    private bool TryCreateFireteam(MilitaryTeam team, TeamParameters parameters, out FList<MobileInfantry> members)
+    {
+        members = new FList<MobileInfantry>();
+
+        Transform fireteamGroup = CreateGroup("Fireteam" + ColomboMethods.GenerateName(5), GetGroup(team + " Infantry"));
+        bool medicSpawned = false;
+
+        for (int j = 0; j < parameters.membersPerFireteam; j++)
+        {
+            if (!TryGetRandomFreePosOnGround(parameters.SpawnArea.position, parameters.width, parameters.height, out Vector3 pos))
+                break;
+
+            MobileInfantry newUnit;
+
+            if (!medicSpawned && Random.Range(0, 4) == 0)
+            {
+                newUnit = Instantiate(_medicPrefab, pos, Quaternion.identity);
+                medicSpawned = true;
+            }
+            else
+                newUnit = Instantiate(_assaultPrefab, pos, Quaternion.identity);
+
+            newUnit.transform.parent = fireteamGroup;
+
+            //IA2-LINQ
+            members += newUnit;
+        }
+
+        if (!members.Any())
+        {
+            Destroy(fireteamGroup.gameObject);
+            return false;
+        }
+
+        //IA2-LINQ
+        var nameAndSurname = members.Zip(members.Count().GenerateNames(6), (x, y) => Tuple.Create(x, x.name + " " + y));
+
+        foreach (var zip in nameAndSurname) zip.Item1.gameObject.name = zip.Item2;
+
+        Fireteam.Create(team, members.ToList());
+        return true;
+    }
+
+    // Waits WaitFramesBeforeContinuing frames and adds the members to the team.
+    private IEnumerator AddFireteamToTeam(MilitaryTeam team, FList<MobileInfantry> members)
+    {
+        for (int k = 0; k < WaitFramesBeforeContinuing; k++) yield return null;
+
+        AddToTeam(team, members);
     }
 
     private IEnumerator SpawnPlanes(MilitaryTeam team, TeamParameters parameters)
     {
-        Transform group = CreateGroup(team + " Planes", transform);
-
         for (int i = 0; i < parameters.planesQuantity; i++)
         {
-            if (!TryGetRandomFreePosOnAir(parameters, out Vector3 pos))
-                break;
-
-            var plane = Instantiate(_planePrefab, pos, Quaternion.identity);
-            plane.Initialize(team);
-
-            AddToTeam(team, plane, GetSprite(typeof(Plane)));
-            plane.transform.parent = group;
+            if (!TrySpawnPlane(team, parameters))
+                yield break;
 
             for (int j = 0; j < WaitFramesBeforeContinuing; j++) yield return null;
         }
     }
 
+    // Instantiates one plane of team in the air of its spawn area. Returns false without a free position.
+    private bool TrySpawnPlane(MilitaryTeam team, TeamParameters parameters)
+    {
+        if (!TryGetRandomFreePosOnAir(parameters, out Vector3 pos))
+            return false;
+
+        var plane = Instantiate(_planePrefab, pos, Quaternion.identity);
+        plane.Initialize(team);
+
+        AddToTeam(team, plane, GetSprite(typeof(Plane)));
+        plane.transform.parent = GetGroup(team + " Planes");
+        return true;
+    }
+
     private IEnumerator SpawnCivilians(int quantity)
     {
-        Transform group = CreateGroup("Civilians", transform);
+        Transform group = GetGroup("Civilians");
 
         for (int i = 0; i < quantity; i++)
         {
@@ -352,6 +410,18 @@ public class TeamsManager : MonoSingleton<TeamsManager>
                 yield return null;
             }
         }
+    }
+
+    // Returns the child of TeamsManager named name, created on the first call.
+    private Transform GetGroup(string name)
+    {
+        if (!_groups.TryGetValue(name, out Transform group) || group == null)
+        {
+            group = CreateGroup(name, transform);
+            _groups[name] = group;
+        }
+
+        return group;
     }
 
     private static Transform CreateGroup(string name, Transform parent)
