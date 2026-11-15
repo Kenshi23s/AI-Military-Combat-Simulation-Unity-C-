@@ -22,7 +22,10 @@ public struct TeamParameters
 /// Spawns the fireteams, planes and civilians of the match.
 /// Stores the entities of each team with their TeamIndicator.
 /// </summary>
-/// <remarks>AddToTeam, GetSprite, GetAllyFireteams and the team membership checks run in O(1) per entity.</remarks>
+/// <remarks>
+/// <para>The spawns begin with StartMatch. Without a MatchSetupPanel in the scene, Start calls it with DefaultSettings.</para>
+/// <para>AddToTeam, GetSprite, GetAllyFireteams and the team membership checks run in O(1) per entity.</para>
+/// </remarks>
 public class TeamsManager : MonoSingleton<TeamsManager>
 {
     /// <summary>Layers where an entity blocks a spawn position.</summary>
@@ -82,8 +85,14 @@ public class TeamsManager : MonoSingleton<TeamsManager>
     private const int MaxGroundSpawnAttempts = 200;
     private const int MaxAirSpawnAttempts = 1000;
 
+    /// <summary>true after StartMatch.</summary>
+    public bool MatchStarted { get; private set; }
+
     /// <summary>Raised in LateUpdate.</summary>
     public event Action OnLateUpdate;
+
+    /// <summary>Raised by StartMatch with the settings of the match.</summary>
+    public event Action<MatchSettings> OnMatchStarted;
 
     #region MemberAdd
 
@@ -178,12 +187,9 @@ public class TeamsManager : MonoSingleton<TeamsManager>
 
     private void Start()
     {
-        foreach (MilitaryTeam key in _teams.Keys)
-        {
-            StartCoroutine(SpawnFireteams(key, _matchParameters[key]));
-            StartCoroutine(SpawnPlanes(key, _matchParameters[key]));
-        }
-        StartCoroutine(SpawnCivilians());
+        // Without a setup panel in the scene the match starts right away with the inspector values.
+        if (FindObjectOfType<MatchSetupPanel>(true) == null)
+            StartMatch(DefaultSettings());
     }
 
     private void LateUpdate()
@@ -197,6 +203,64 @@ public class TeamsManager : MonoSingleton<TeamsManager>
             _matchParameters.Remove(MilitaryTeam.None);
 
         _spritesByType = null;
+    }
+
+    #endregion
+
+    #region Match
+
+    /// <summary>Returns the settings in the inspector of TeamsManager and GameManager.</summary>
+    public MatchSettings DefaultSettings()
+    {
+        var settings = new MatchSettings
+        {
+            Civilians = _civiliansQuantity,
+            TimeScale = GameManager.instance != null ? GameManager.instance.timeScale : 1f
+        };
+
+        foreach (MilitaryTeam team in _teams.Keys)
+        {
+            TeamMatchSettings teamSettings = settings.ForTeam(team);
+            if (teamSettings == null || !_matchParameters.TryGetValue(team, out TeamParameters parameters))
+                continue;
+
+            teamSettings.Fireteams = parameters.FireteamQuantity;
+            teamSettings.MembersPerFireteam = parameters.membersPerFireteam;
+            teamSettings.Planes = parameters.planesQuantity;
+        }
+
+        return settings;
+    }
+
+    /// <summary>
+    /// Spawns the fireteams, planes and civilians of settings and applies its TimeScale.
+    /// Raises OnMatchStarted. A second call does nothing.
+    /// </summary>
+    public void StartMatch(MatchSettings settings)
+    {
+        if (MatchStarted)
+            return;
+
+        MatchStarted = true;
+        Time.timeScale = settings.TimeScale;
+
+        foreach (MilitaryTeam team in _teams.Keys)
+        {
+            TeamMatchSettings teamSettings = settings.ForTeam(team);
+            if (teamSettings == null || !_matchParameters.TryGetValue(team, out TeamParameters parameters))
+                continue;
+
+            // The spawn area comes from the inspector. The quantities come from settings.
+            parameters.FireteamQuantity = teamSettings.Fireteams;
+            parameters.membersPerFireteam = teamSettings.MembersPerFireteam;
+            parameters.planesQuantity = teamSettings.Planes;
+
+            StartCoroutine(SpawnFireteams(team, parameters));
+            StartCoroutine(SpawnPlanes(team, parameters));
+        }
+
+        StartCoroutine(SpawnCivilians(settings.Civilians));
+        OnMatchStarted?.Invoke(settings);
     }
 
     #endregion
@@ -270,11 +334,11 @@ public class TeamsManager : MonoSingleton<TeamsManager>
         }
     }
 
-    private IEnumerator SpawnCivilians()
+    private IEnumerator SpawnCivilians(int quantity)
     {
         Transform group = CreateGroup("Civilians", transform);
 
-        for (int i = 0; i < _civiliansQuantity; i++)
+        for (int i = 0; i < quantity; i++)
         {
             if (TryGetRandomFreePosOnGround(_civilianPos.position, _width_CivilianSpawn, _height_CivilianSpawn, out var pos))
             {
