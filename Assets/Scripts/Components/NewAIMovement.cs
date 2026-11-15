@@ -199,6 +199,16 @@ public class NewAIMovement : MonoBehaviour
         }
     }
 
+    /// <summary>Sets DestinationArriveDistance and the speed of ManualMovement from stats.</summary>
+    public void ApplyStats(MovementStats stats)
+    {
+        DestinationArriveDistance = stats.DestinationArriveDistance;
+
+        if (ManualMovement == null)
+            ManualMovement = GetComponent<NewPhysicsMovement>();
+        ManualMovement.ApplyStats(stats);
+    }
+
     /// <summary>Stops the agent and clears the current destination callbacks.</summary>
     public void CancelMovement()
     {

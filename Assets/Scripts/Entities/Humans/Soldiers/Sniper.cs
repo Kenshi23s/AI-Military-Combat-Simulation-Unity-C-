@@ -12,6 +12,7 @@ using UnityEngine;
 [RequireComponent(typeof(LineRenderer))]
 public class Sniper : Soldier
 {
+    [SerializeField] private SniperStats _stats;
     [SerializeField] private int FramesBetweenEnemySearch = 4;
     [SerializeField] private float _aimSpeed;
 
@@ -48,7 +49,22 @@ public class Sniper : Soldier
         _laser = GetComponent<LineRenderer>(); _laser.enabled = false;
         ShootComponent.onHit += _ => TotalDamageDealt += ShootComponent.BulletDamage;
         Health.OnKilled += () => _fsm?.SendInput(SNIPER_STATES.DIE);
-      
+
+        BindStats(_stats);
+    }
+
+    protected override void ApplyStats(bool refill)
+    {
+        base.ApplyStats(refill);
+
+        ShootComponent.ApplyStats(_stats.Weapon);
+        _fovAgent.ApplyStats(_stats.Vision);
+
+        FramesBetweenEnemySearch = _stats.FramesBetweenEnemySearch;
+        _aimSpeed = _stats.AimSpeed;
+        _addPerTimesFocused = _stats.AddPerTimesFocused;
+        _requiredFocusTime = _stats.RequiredFocusTime;
+        maxShootsInRow = _stats.MaxShootsInRow;
     }
     private void Start()
     {

@@ -150,8 +150,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e93288dfe4ea0034a841e74b4b20ce22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _bulletspread: 20
   <BulletDamage>k__BackingField: 25
+  ShootPos: {fileID: 0}
+  _bulletspread: 20
   shootableLayers:
     serializedVersion: 2
     m_Bits: 1984
@@ -160,7 +161,6 @@ MonoBehaviour:
   _bulletsPerBurst: 0
   _burstCD: 3
   _bulletCD: 0.3
-  ShootPos: {fileID: 0}
 --- !u!54 &6565769872705145564
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -190,21 +190,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Movement: 1
-  _acceleration: 25
-  _maxSpeed: 35
-  _maxGroundAngle: 45
   GroundSnapping: 1
-  _groundProbeDistance: 0.5
   GroundMask:
     serializedVersion: 2
     m_Bits: 4294967295
   Alignment: 0
-  _alignmentMix: 0.5
   AlignmentTarget: {fileID: 0}
-  _alignTime: 0
   FreezeXAlignment: 0
   FreezeYAlignment: 0
   FreezeZAlignment: 0
+  _acceleration: 25
+  _maxSpeed: 35
+  _maxGroundAngle: 45
+  _groundProbeDistance: 0.5
+  _alignmentMix: 0.5
+  _alignTime: 0
 --- !u!114 &6565769872705145565
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -248,13 +248,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9c8b9bb2e7803e418e7eb18ca7d9b0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _life: 100
-  _maxLife: 100
-  _dmgMultiplier: 1
   dmgResist: 1
   CanTakeDamage: 1
   CanBeHealed: 1
   IsCrit: 0
+  _life: 100
+  _maxLife: 100
+  _dmgMultiplier: 1
 --- !u!65 &3740303564570812394
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -301,6 +301,7 @@ MonoBehaviour:
   _sightRadius: 80
   _loseSightRadius: 100.3
   <targetPlane>k__BackingField: {fileID: 0}
+  _stats: {fileID: 11400000, guid: 41e84c296d1e3d44983964229170a4cd, type: 2}
   _cd_OnRandomDir: 4
   RandomAngleToStart: 90
   _unitsBehindPlane: 30

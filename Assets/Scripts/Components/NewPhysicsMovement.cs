@@ -249,6 +249,13 @@ public class NewPhysicsMovement : MonoBehaviour
             _rotation = desiredRotation;
     }
 
+    /// <summary>Sets Acceleration and MaxSpeed from stats.</summary>
+    public void ApplyStats(MovementStats stats)
+    {
+        Acceleration = stats.Acceleration;
+        MaxSpeed = stats.MaxSpeed;
+    }
+
     /// <summary>Sets inputDir as the direction FixedUpdate accelerates toward.</summary>
     public void AccelerateTowards(Vector3 inputDir)
     {

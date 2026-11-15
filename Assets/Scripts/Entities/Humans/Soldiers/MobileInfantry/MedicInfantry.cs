@@ -15,6 +15,8 @@ public class MedicInfantry : MobileInfantry
     /// <summary>The ally the medic heals.</summary>
     public MobileInfantry HealTarget;
 
+    [SerializeField] private MedicStats _stats;
+
     // La velocidad de curacion en health points por segundo
     [SerializeField] private float _healSpeed = 40f;
 
@@ -47,6 +49,20 @@ public class MedicInfantry : MobileInfantry
     // Seconds the medic ignores an unreachable HealTarget.
     private const float UnreachableIgnoreSeconds = 5f;
 
+    // Squared distance at which healing stops and the medic runs to the patient again.
+    private float SqrMaxHealDistance => _maxHealDistance * _maxHealDistance;
+
+    // Squared distance at which healing starts.
+    // The medic stops at DestinationArriveDistance from the destination, so healing starts at that distance or farther.
+    private float SqrHealStartDistance
+    {
+        get
+        {
+            float distance = Mathf.Min(Mathf.Max(_idealHealDistance, Movement.DestinationArriveDistance) + HealStartMargin, _maxHealDistance);
+            return distance * distance;
+        }
+    }
+
     /// <summary>States of the FSM.</summary>
     public enum MEDIC_INFANTRY_STATES
     {
@@ -63,6 +79,21 @@ public class MedicInfantry : MobileInfantry
         base.Awake();
 
         Health.OnKilled += () => SendInputToFSM(MEDIC_INFANTRY_STATES.DIE);
+
+        BindStats(_stats);
+    }
+
+    protected override void ApplyStats(bool refill)
+    {
+        base.ApplyStats(refill);
+
+        Movement.ApplyStats(_stats.Movement);
+        _fovAgent.ApplyStats(_stats.Vision);
+
+        _minDistanceFromDestination = _stats.MinDistanceFromDestination;
+        _healSpeed = _stats.HealSpeed;
+        _maxHealDistance = _stats.MaxHealDistance;
+        _idealHealDistance = _stats.IdealHealDistance;
     }
 
     protected override void CreateFSM()
@@ -262,11 +293,6 @@ public class MedicInfantry : MobileInfantry
         bool calculatingPath = false;
         int reachFailures = 0;
 
-        // The medic stops at DestinationArriveDistance from the destination, so healing starts at that distance or farther.
-        float healStartDistance = Mathf.Min(Mathf.Max(_idealHealDistance, Movement.DestinationArriveDistance) + HealStartMargin, _maxHealDistance);
-        float sqrHealStartDistance = healStartDistance * healStartDistance;
-        float sqrMaxHealDistance = _maxHealDistance * _maxHealDistance;
-
         // Counts a failed attempt to reach HealTarget. After MaxReachFailures the medic ignores it for a while.
         void OnReachFailed()
         {
@@ -292,7 +318,7 @@ public class MedicInfantry : MobileInfantry
                 onDestinationReached: () =>
                 {
                     // Llego al destino: si el herido sigue cerca, empieza a curar.
-                    if (HealTarget && HorizontalSqrDistanceTo(HealTarget.transform) <= sqrMaxHealDistance)
+                    if (HealTarget && HorizontalSqrDistanceTo(HealTarget.transform) <= SqrMaxHealDistance)
                         SendInputToFSM(MEDIC_INFANTRY_STATES.HEAL);
                 },
                 onFinishCalculating: pathFound =>
@@ -332,7 +358,7 @@ public class MedicInfantry : MobileInfantry
             }
 
             // Si llegamos, pasar a estado de curacion
-            if (HorizontalSqrDistanceTo(HealTarget.transform) <= sqrHealStartDistance)
+            if (HorizontalSqrDistanceTo(HealTarget.transform) <= SqrHealStartDistance)
             {
                 DebugEntity.Log("Entrando al estado de Heal");
                 SendInputToFSM(MEDIC_INFANTRY_STATES.HEAL);
@@ -364,7 +390,6 @@ public class MedicInfantry : MobileInfantry
     {
         var heal = new State<MEDIC_INFANTRY_STATES>("HEAL");
         float floatHealAmount = 0;
-        float sqrMaxHealDistance = _maxHealDistance * _maxHealDistance;
 
         heal.OnEnter += _ =>
         {
@@ -388,7 +413,7 @@ public class MedicInfantry : MobileInfantry
             }
 
             // Si el objetivo se aleja, correr hacia el
-            if (HorizontalSqrDistanceTo(HealTarget.transform) > sqrMaxHealDistance)
+            if (HorizontalSqrDistanceTo(HealTarget.transform) > SqrMaxHealDistance)
             {
                 SendInputToFSM(MEDIC_INFANTRY_STATES.RUN_TO_HEAL);
                 return;

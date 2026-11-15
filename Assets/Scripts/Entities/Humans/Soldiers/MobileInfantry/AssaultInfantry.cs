@@ -13,6 +13,7 @@ using AlignmentType = NewPhysicsMovement.AlignmentType;
 /// </summary>
 public class AssaultInfantry : MobileInfantry
 {
+    [SerializeField] private AssaultStats _stats;
     [SerializeField] private float _timeBeforeSelectingTarget;
 
     private State<ASSAULT_INFANTRY_STATES> _awaitingOrders, _leaderMoveTo, _followLeader, _fireAtWill, _die;
@@ -55,6 +56,21 @@ public class AssaultInfantry : MobileInfantry
         };
 
         Health.OnKilled += () => FSM.SendInput(ASSAULT_INFANTRY_STATES.DIE);
+
+        BindStats(_stats);
+    }
+
+    protected override void ApplyStats(bool refill)
+    {
+        base.ApplyStats(refill);
+
+        ShootComponent.ApplyStats(_stats.Weapon);
+        Movement.ApplyStats(_stats.Movement);
+        _fovAgent.ApplyStats(_stats.Vision);
+
+        _minDistanceFromDestination = _stats.MinDistanceFromDestination;
+        _timeBeforeSelectingTarget = _stats.TimeBeforeSelectingTarget;
+        _selectTargetWait = new WaitForSeconds(_timeBeforeSelectingTarget);
     }
 
     private void Update()

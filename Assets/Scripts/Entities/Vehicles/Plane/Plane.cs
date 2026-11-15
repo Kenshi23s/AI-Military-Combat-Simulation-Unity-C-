@@ -24,6 +24,7 @@ public class Plane : Vehicle
     [field : Header("Plane Variables"),SerializeField]
     public Plane targetPlane { get; private set; }
 
+    [SerializeField] private PlaneStats _stats;
     [SerializeField] private float _cd_OnRandomDir;
     [SerializeField] private float RandomAngleToStart = 90;
     [SerializeField, Min(0)] private float _unitsBehindPlane = 30f;
@@ -73,6 +74,8 @@ public class Plane : Vehicle
 
     public override void VehicleAwake()
     {
+        BindStats(_stats);
+
         _gridEntity.LookGrid();
 
         DebugEntity.AddGizmoAction(DrawTowardsTarget); DebugEntity.AddGizmoAction(DrawAirstrikeZone);
@@ -84,6 +87,39 @@ public class Plane : Vehicle
         
         misileStats.owner = gameObject;
         Health.OnKilled += () => _planeFSM.SendInput(PlaneStates.ABANDONED);
+    }
+
+    protected override void ApplyStats(bool refill)
+    {
+        base.ApplyStats(refill);
+
+        _shootComponent.ApplyStats(_stats.Weapon);
+        _movement.ApplyStats(_stats.Movement);
+        _fov.ApplyStats(_stats.Vision);
+
+        _sightRadius = _stats.Vision.ViewRadius;
+        _loseSightRadius = Mathf.Max(_stats.LoseSightRadius, _sightRadius);
+
+        _flockingParameters.viewRadius = _fov.ViewRadius;
+        _flockingParameters.AlignmentForce = _stats.AlignmentForce;
+        _flockingParameters._separationForce = _stats.SeparationForce;
+        _flockingParameters._cohesionForce = _stats.CohesionForce;
+
+        // owner is set by the plane, so it survives the copy of the asset values.
+        GameObject owner = misileStats.owner;
+        misileStats = _stats.Misile;
+        misileStats.owner = owner;
+
+        misileCD = _stats.MisileCooldown;
+        minimumDistanceForStrike = _stats.MinimumDistanceForStrike;
+        _ExplosionDamageOnDeath = _stats.ExplosionDamageOnDeath;
+        _unitsBehindPlane = _stats.UnitsBehindPlane;
+        _collisionCheckDistance = _stats.CollisionCheckDistance;
+        _cd_OnRandomDir = _stats.RandomDirectionCooldown;
+
+        bulletsPerBurst = _stats.Weapon.BulletsPerBurst;
+        BulletCD = _stats.Weapon.BulletCooldown;
+        burstCD = _stats.Weapon.BurstCooldown;
     }
 
     #region UnityCalls
@@ -100,12 +136,6 @@ public class Plane : Vehicle
     private void Update() => _planeFSM.Update();
 
     private void FixedUpdate() => _planeFSM.FixedUpdate();
-
-    private void OnDestroy()
-    {
-        if (_gridEntity.SpatialGrid != null)
-            _gridEntity.SpatialGrid.RemoveEntity(_gridEntity);
-    }
 
     #endregion
 

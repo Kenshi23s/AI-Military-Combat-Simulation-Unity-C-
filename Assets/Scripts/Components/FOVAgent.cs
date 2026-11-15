@@ -23,6 +23,14 @@ public class FOVAgent : MonoBehaviour
         ViewRadius = newRadius;
     }
 
+    /// <summary>Sets ViewRadius and the view angle from stats.</summary>
+    public void ApplyStats(VisionStats stats)
+    {
+        ViewRadius = stats.ViewRadius;
+        _viewAngle = stats.ViewAngle;
+        UpdateCosHalfViewAngle();
+    }
+
     private void Awake()
     {
         GetComponent<DebugableObject>().AddGizmoAction(FovGizmos);

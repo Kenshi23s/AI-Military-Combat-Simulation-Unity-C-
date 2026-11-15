@@ -16,6 +16,7 @@ public class Turret : Entity, IMilitary
     /// <summary>Team of the turret.</summary>
     [field: SerializeField, Header("Turret")] public MilitaryTeam Team { get; private set; }
 
+    [SerializeField] private TurretStats _stats;
     [SerializeField] private Transform _pivotTurret,_pivotCanon;
     [SerializeField] private float _baseMinAngle, _canonMinAngle;
     [SerializeField] private float rotationSpeed;
@@ -43,6 +44,7 @@ public class Turret : Entity, IMilitary
     /// <summary>Damage dealt by the bullets of the turret.</summary>
     public int TotalDamageDealt { get; private set; }
 
+    /// <summary>Raised when the turret dies.</summary>
     public event Action OnDeathInCombat;
 
     /// <summary>States of the FSM.</summary>
@@ -65,6 +67,22 @@ public class Turret : Entity, IMilitary
         _fov = GetComponent<FOVAgent>();
         _ShootHandler.onHit += _ => TotalDamageDealt += _ShootHandler.BulletDamage;
         _fixedCanonPos = _pivotCanon.transform.localRotation.eulerAngles.y;
+
+        BindStats(_stats);
+    }
+
+    protected override void ApplyStats(bool refill)
+    {
+        base.ApplyStats(refill);
+
+        _ShootHandler.ApplyStats(_stats.Weapon);
+        _fov.ApplyStats(_stats.Vision);
+
+        _cd_BetweenShots = _stats.Weapon.BulletCooldown;
+        rotationSpeed = _stats.RotationSpeed;
+        _baseMinAngle = _stats.BaseMinAngle;
+        _canonMinAngle = _stats.CanonMinAngle;
+        _cd_BetweenSearch = _stats.SearchCooldown;
     }
 
     private void Start()

@@ -409,21 +409,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Movement: 0
-  _acceleration: 37.5
-  _maxSpeed: 8
-  _maxGroundAngle: 45
   GroundSnapping: 1
-  _groundProbeDistance: 0.5
   GroundMask:
     serializedVersion: 2
     m_Bits: 4294967295
   Alignment: 0
-  _alignmentMix: 0.5
   AlignmentTarget: {fileID: 0}
-  _alignTime: 0
   FreezeXAlignment: 1
   FreezeYAlignment: 0
   FreezeZAlignment: 1
+  _acceleration: 37.5
+  _maxSpeed: 8
+  _maxGroundAngle: 45
+  _groundProbeDistance: 0.5
+  _alignmentMix: 0.5
+  _alignTime: 0
 --- !u!114 &4015529176650051648
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -468,13 +468,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9c8b9bb2e7803e418e7eb18ca7d9b0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _life: 100
-  _maxLife: 100
-  _dmgMultiplier: 1
   dmgResist: 1
   CanTakeDamage: 1
   CanBeHealed: 1
   IsCrit: 0
+  _life: 100
+  _maxLife: 100
+  _dmgMultiplier: 1
 --- !u!114 &4015529176650051653
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -488,6 +488,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AimingPoint: {fileID: 4014297498884675600}
+  _stats: {fileID: 11400000, guid: 652c27bbf32fe03489e31ebdff4960a8, type: 2}
   anim: {fileID: 3956645896193352886}
 --- !u!1 &4016105130084220768
 GameObject:

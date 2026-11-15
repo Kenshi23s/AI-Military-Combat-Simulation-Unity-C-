@@ -1771,6 +1771,7 @@ MonoBehaviour:
   <Team>k__BackingField: 0
   _shootPos: {fileID: 2889329660706087394}
   _minDistanceFromDestination: 3
+  _stats: {fileID: 11400000, guid: ac2a28d0117ff514bb6866459dfe2992, type: 2}
   _timeBeforeSelectingTarget: 2
 --- !u!114 &6064664604643365114
 MonoBehaviour:
@@ -1798,21 +1799,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Movement: 0
-  _acceleration: 37.5
-  _maxSpeed: 8
-  _maxGroundAngle: 45
   GroundSnapping: 1
-  _groundProbeDistance: 0.5
   GroundMask:
     serializedVersion: 2
     m_Bits: 128
   Alignment: 0
-  _alignmentMix: 0.5
   AlignmentTarget: {fileID: 0}
-  _alignTime: 0
   FreezeXAlignment: 1
   FreezeYAlignment: 0
   FreezeZAlignment: 1
+  _acceleration: 37.5
+  _maxSpeed: 8
+  _maxGroundAngle: 45
+  _groundProbeDistance: 0.5
+  _alignmentMix: 0.5
+  _alignTime: 0
 --- !u!114 &7684651609810558662
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1857,13 +1858,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9c8b9bb2e7803e418e7eb18ca7d9b0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _life: 100
-  _maxLife: 100
-  _dmgMultiplier: 1
   dmgResist: 1
   CanTakeDamage: 1
   CanBeHealed: 1
   IsCrit: 0
+  _life: 100
+  _maxLife: 100
+  _dmgMultiplier: 1
 --- !u!114 &7684651609810558656
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1891,8 +1892,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e93288dfe4ea0034a841e74b4b20ce22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _bulletspread: 45
   <BulletDamage>k__BackingField: 25
+  ShootPos: {fileID: 0}
+  _bulletspread: 45
   shootableLayers:
     serializedVersion: 2
     m_Bits: 1984
@@ -1901,7 +1903,6 @@ MonoBehaviour:
   _bulletsPerBurst: 0
   _burstCD: 3
   _bulletCD: 0.3
-  ShootPos: {fileID: 0}
 --- !u!1 &7684651611259997065
 GameObject:
   m_ObjectHideFlags: 0

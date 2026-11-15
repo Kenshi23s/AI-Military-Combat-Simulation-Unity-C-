@@ -86,6 +86,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   AimingPoint: {fileID: 316507671084638808}
   <Team>k__BackingField: 2
+  _stats: {fileID: 11400000, guid: 489dc2ec7a496494ebbbe036def6ee6c, type: 2}
   _pivotTurret: {fileID: 6487522459118895905}
   _pivotCanon: {fileID: 7177914541589611830}
   _baseMinAngle: 4
@@ -152,13 +153,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9c8b9bb2e7803e418e7eb18ca7d9b0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _life: 100
-  _maxLife: 100
-  _dmgMultiplier: 1
   dmgResist: 1
   CanTakeDamage: 1
   CanBeHealed: 1
   IsCrit: 0
+  _life: 100
+  _maxLife: 100
+  _dmgMultiplier: 1
 --- !u!114 &1761918910852370943
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -171,8 +172,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e93288dfe4ea0034a841e74b4b20ce22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _bulletspread: 70
   <BulletDamage>k__BackingField: 10
+  ShootPos: {fileID: 0}
+  _bulletspread: 70
   shootableLayers:
     serializedVersion: 2
     m_Bits: 448
@@ -181,7 +183,6 @@ MonoBehaviour:
   _bulletsPerBurst: 0
   _burstCD: 3
   _bulletCD: 0.3
-  ShootPos: {fileID: 0}
 --- !u!205 &4905449716704564208
 LODGroup:
   m_ObjectHideFlags: 0

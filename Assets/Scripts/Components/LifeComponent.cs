@@ -76,6 +76,16 @@ public class LifeComponent : MonoBehaviour, IDamageable, IHealable,ILifeObject
         }
     }
 
+    /// <summary>Sets MaxLife, the damage multiplier and dmgResist from stats.</summary>
+    /// <param name="refill">true sets Life to MaxLife. false keeps Life, limited to MaxLife.</param>
+    public void ApplyStats(HealthStats stats, bool refill)
+    {
+        _maxLife = Mathf.Max(1, stats.MaxLife);
+        _dmgMultiplier = stats.DamageMultiplier;
+        dmgResist = Mathf.Max(1, stats.DamageResist);
+        _life = refill ? _maxLife : Mathf.Min(_life, _maxLife);
+    }
+
     private void Awake()
     {
         

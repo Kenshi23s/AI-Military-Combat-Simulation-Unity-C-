@@ -37,6 +37,16 @@ public class ShootComponent : MonoBehaviour
     /// <summary>Raised with each IDamageable the bullets damage.</summary>
     public event Action<IDamageable> onHit;
 
+    /// <summary>Sets BulletDamage, the spread and the burst timing from stats.</summary>
+    public void ApplyStats(WeaponStats stats)
+    {
+        BulletDamage = stats.BulletDamage;
+        _bulletspread = stats.BulletSpread;
+        _bulletsPerBurst = stats.BulletsPerBurst;
+        _bulletCD = stats.BulletCooldown;
+        _burstCD = stats.BurstCooldown;
+    }
+
     /// <summary>Shoots one bullet along the forward of shootPos with random spread.</summary>
     public void Shoot(Transform shootPos)
     {

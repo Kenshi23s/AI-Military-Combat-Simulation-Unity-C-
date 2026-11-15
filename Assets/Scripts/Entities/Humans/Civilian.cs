@@ -12,6 +12,7 @@ using UnityEngine;
 [RequireComponent(typeof(NewAIMovement))]
 public class Civilian : Entity
 {
+    [SerializeField] private CivilianStats _stats;
     [SerializeField]private Animator anim;
     private NewAIMovement civilian_AI;
     private Bunker nearestBunker;
@@ -37,6 +38,15 @@ public class Civilian : Entity
         civilian_AI = GetComponent<NewAIMovement>();
 
         Health.OnKilled += () => civilianFSM?.SendInput(CivilianStates.Die);
+
+        BindStats(_stats);
+    }
+
+    protected override void ApplyStats(bool refill)
+    {
+        base.ApplyStats(refill);
+
+        civilian_AI.ApplyStats(_stats.Movement);
     }
 
     private void Start()

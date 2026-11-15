@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a76032d6470de24bbb1355105754f84, type: 3}
+  m_Name: MedicStats
+  m_EditorClassIdentifier: 
+  Health:
+    MaxLife: 100
+    DamageMultiplier: 1
+    DamageResist: 1
+  Movement:
+    Acceleration: 37.5
+    MaxSpeed: 10
+    DestinationArriveDistance: 1.75
+  Vision:
+    ViewRadius: 20
+    ViewAngle: 120
+  MinDistanceFromDestination: 3
+  HealSpeed: 30
+  MaxHealDistance: 2.5
+  IdealHealDistance: 1

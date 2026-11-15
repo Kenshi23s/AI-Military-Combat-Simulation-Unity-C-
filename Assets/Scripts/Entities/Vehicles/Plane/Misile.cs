@@ -95,13 +95,6 @@ public class Misile : Entity, IMilitary
         _movement.Acceleration += Time.deltaTime * 0.5f;
     }
 
-    private void OnDestroy()
-    {
-        if (_gridEntity.SpatialGrid != null)
-            _gridEntity.SpatialGrid.RemoveEntity(_gridEntity);
-
-    }
-
     private void FixedUpdate()
     {
         if (target == null)

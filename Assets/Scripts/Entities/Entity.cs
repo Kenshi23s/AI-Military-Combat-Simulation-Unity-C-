@@ -16,6 +16,9 @@ public abstract class Entity : MonoBehaviour, ILifeObject
 {
     [SerializeField, Header("Entity")] private Transform AimingPoint;
 
+    // Stats asset bound with BindStats.
+    private UnitStats _boundStats;
+
     /// <summary>The LifeComponent of the entity.</summary>
     public LifeComponent Health { get; private set; }
 
@@ -65,6 +68,44 @@ public abstract class Entity : MonoBehaviour, ILifeObject
         gameObject.name = GetType().Name + " - " + ColomboMethods.GenerateName(Random.Range(3,7));
         Health.OnTakeDamage += _ => OnTakeDamage?.Invoke();
         Health.OnHeal += () => OnHeal?.Invoke();
+    }
+
+    protected virtual void OnDestroy()
+    {
+        if (_boundStats != null)
+            _boundStats.Changed -= OnStatsChanged;
+    }
+
+    /// <summary>
+    /// Applies stats to the entity and refills its health.
+    /// In the editor the entity applies the asset again each time it changes.
+    /// </summary>
+    /// <remarks>A null stats keeps the values of the prefab.</remarks>
+    protected void BindStats(UnitStats stats)
+    {
+        if (stats == null)
+            return;
+
+        _boundStats = stats;
+        ApplyStats(true);
+
+#if UNITY_EDITOR
+        stats.Changed += OnStatsChanged;
+#endif
+    }
+
+    /// <summary>Applies the bound stats asset to the components of the entity.</summary>
+    /// <param name="refill">true sets the health to its maximum.</param>
+    protected virtual void ApplyStats(bool refill)
+    {
+        Health.ApplyStats(_boundStats.Health, refill);
+    }
+
+    private void OnStatsChanged()
+    {
+        // The asset can change while the entity is destroyed but not collected yet.
+        if (this != null)
+            ApplyStats(false);
     }
 
     /// <summary>Calls Health.TakeDamage.</summary>

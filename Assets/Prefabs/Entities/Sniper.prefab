@@ -211,8 +211,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e93288dfe4ea0034a841e74b4b20ce22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _bulletspread: 15
   <BulletDamage>k__BackingField: 50
+  ShootPos: {fileID: 0}
+  _bulletspread: 15
   shootableLayers:
     serializedVersion: 2
     m_Bits: 960
@@ -221,7 +222,6 @@ MonoBehaviour:
   _bulletsPerBurst: 0
   _burstCD: 3
   _bulletCD: 0.3
-  ShootPos: {fileID: 0}
 --- !u!114 &6481451692193517999
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -386,13 +386,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9c8b9bb2e7803e418e7eb18ca7d9b0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _life: 100
-  _maxLife: 100
-  _dmgMultiplier: 1
   dmgResist: 1
   CanTakeDamage: 1
   CanBeHealed: 1
   IsCrit: 0
+  _life: 100
+  _maxLife: 100
+  _dmgMultiplier: 1
 --- !u!114 &5673067206364739106
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -409,6 +409,7 @@ MonoBehaviour:
   <Anim>k__BackingField: {fileID: 0}
   <Team>k__BackingField: 0
   _shootPos: {fileID: 6569154086367201079}
+  _stats: {fileID: 11400000, guid: 72d59c7e80584d6429f36452a12c153e, type: 2}
   FramesBetweenEnemySearch: 4
   _aimSpeed: 0.5
   _addPerTimesFocused: 2
